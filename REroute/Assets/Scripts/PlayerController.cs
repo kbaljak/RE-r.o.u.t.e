@@ -1,5 +1,9 @@
+using System;
 using System.Collections;
+using System.Linq;
 using Unity.Cinemachine;
+using UnityEditor;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,6 +14,7 @@ public class PlayerController : MonoBehaviour
     public PlayerAnimationController plAnimCont;
     public PlayerClimbTrigger plClmbTrig;
     public GameObject playerCamera;
+    public Transform cameraPoint;
 
     // Input
     InputAction moveAction;
@@ -19,10 +24,13 @@ public class PlayerController : MonoBehaviour
     InputAction crouchAction;
 
     /// Movement
+    // Is the character moved each frame
     public bool moveCharacter = true;
+    public bool applyGravity = true;
+    // Is the player currently controllable
     public bool canControlMove = true;
     public Transform groundRaycastPoint;
-    public bool isGrounded = false; 
+    public bool isGrounded = false;  public bool characterControllerIsGrounded;
     // Predict landing for roll input
     public bool groundPredicted = false;
     public float predictionTime = 0.1f;
@@ -31,13 +39,14 @@ public class PlayerController : MonoBehaviour
     public Vector3 groundSlopeNormal = Vector3.up;
     float groundFriction = 1f;
     // Player velocities
-    //public Vector3 playerVelocity = Vector3.zero;
     public float moveSpeed = 0f;
+    /// <summary>false = linear; true = quadratic</summary>
+    public bool linearOrQuadraticRunAccel = false;
     public Vector3 moveDirection = Vector3.forward;
     bool? backwardMovement = null;
     public float fallSpeed = 0f;
 
-    bool followCameraRotation = true;
+    internal bool followCameraRotation = true;
     // Params
     public float walkSpeed = 2f;
     public float runStartSpeed = 5f;
@@ -57,9 +66,17 @@ public class PlayerController : MonoBehaviour
     public Transform climbTriggersT;
     float climbTriggersBaseLocalPosZ;
 
+    /// Smooth transitions
+    // Roll
+    public float smooth_roll_targetSpeedDiff;
+    public float smooth_roll_duration;
+    public float smooth_roll_startDelay;
+
     // Debug
     public float moveSpeedSigned = 0f;
     public float moveAngle = 0f;
+    public float lookAngleSigned = 0f;
+    public float lookAngleSignedAnim = 0f;
 
 
     private void Start()
@@ -74,7 +91,7 @@ public class PlayerController : MonoBehaviour
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
     }
 
-
+    //// Update
     private void Update()
     {
         Update_FaceCamera();
@@ -98,27 +115,45 @@ public class PlayerController : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.Euler(new Vector3(transform.eulerAngles.x, playerCamera.transform.eulerAngles.y, transform.eulerAngles.z));
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f * 1.2f * Time.deltaTime);
-            //Quaternion.Euler(transform.eulerAngles) * Quaternion.AngleAxis(360f * Time.deltaTime, transform.up);
-            //transform.eulerAngles = new Vector3(0, playerCamera.transform.eulerAngles.y, 0);
+
+            float lookAngleSign;
+            if (Mathf.Abs(lookAngleSigned) < 0.1f) { lookAngleSign = 0; }
+            else { lookAngleSign = Mathf.Sign(lookAngleSigned); }
+            if (lookAngleSign != 0)
+            {
+                lookAngleSignedAnim = lookAngleSign;
+            }
+            else 
+            {
+                lookAngleSignedAnim = Mathf.Lerp(lookAngleSignedAnim, 0, 2f * Time.deltaTime);
+            }
+            plAnimCont.anim.SetFloat("lookAngleSign", lookAngleSignedAnim);
+        }
+        else
+        {
+            plAnimCont.anim.SetFloat("lookAngleSign", 0);
         }
     }
     void Update_FootMovement()
     {
-        if (!moveCharacter) { return; }
+        // Check if grounded no matter if we can move
         Update_Grounded();
+        if (!moveCharacter) { return; }
+
         //// Movement
+        // Get relevant orientation vectors on the plane we are standing on
         Vector3 cameraForward = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal);
         Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
+        Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
         if (canControlMove)
         {
-            // Get vectors
-            Vector2 input = moveAction.ReadValue<Vector2>();
             // Get forward and right direction for movement
+            Vector2 input = moveAction.ReadValue<Vector2>();
             Vector3 frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
             // Get angles
             float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
-            float angleLookToVel = Vector3.Angle(cameraForward, moveDirection);
-            if (isGrounded && fallSpeed >= 0)
+            lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
+            if (isGrounded && fallSpeed >= 0)  // = if we are grounded and our current vertical direction is downward or zero/none (otherwise we are going up)
             {
                 if (fallSpeed > 0) { fallSpeed = 0; }
 
@@ -152,21 +187,30 @@ public class PlayerController : MonoBehaviour
                     // if sprinting -> accelerate
                     else
                     {
-                        float accelFactor = moveSpeed < runStartSpeed ? (runStartSpeed / runStartAccelTime) : ((runMaxSpeed - runStartSpeed) / runAccelTime);
                         float angleToVelFactor = Mathf.Clamp(angleMoveToVel / 90f, 0f, 1f);
                         float curMaxSpeed = input.y > 0 ? runMaxSpeed : runStartSpeed;
+
+                        //Debug.Log(moveSpeed + " + " + accelFactor + " -> " + Mathf.Clamp(moveSpeed + accelFactor * Time.deltaTime, 0, curMaxSpeed) + " / " + curMaxSpeed);
 
                         // Just redirect speed
                         if (angleMoveToVel < 4f)
                         {
                             moveDirection = frameMoveDir;
-                            moveSpeed = Mathf.Lerp(moveSpeed, curMaxSpeed, accelFactor * Time.deltaTime);
+                            if (moveSpeed < runStartSpeed) { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime)), 0, curMaxSpeed); }
+                            else
+                            {
+                                float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
+                                // Acceleration function
+                                float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
+                                moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed)), 0, curMaxSpeed);
+                                //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
+                            }
                         }
                         // Slow down speed depending on angle and smoothly change direction
                         else if (angleMoveToVel < 90f)
                         {
                             // Slow down
-                            moveSpeed = Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
+                            moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
                             // Change direction
                             //     runstartspeed -> 0.2f, maxspeed -> 0.8f, < run start speed -< 0.05f
                             float timeToTurn;
@@ -194,20 +238,20 @@ public class PlayerController : MonoBehaviour
                 // Jump
                 if (jumpAction.WasPerformedThisFrame()) { Jump(); }
             }
-            // Gravity
-            fallSpeed -= Physics.gravity.y * Time.deltaTime;
         }
-        
+        // Gravity
+        fallSpeed -= Physics.gravity.y * Time.deltaTime;
+
         // Update stats
         moveSpeedSigned = moveSpeed;
         if (moveSpeed > 0) { moveSpeedSigned *= (backwardMovement != null && backwardMovement.Value ? -1 : 1); }  //angleLookToVel > 90f
         moveAngle = Vector3.SignedAngle(cameraForward, moveDirection, groundSlopeNormal);
         if (backwardMovement != null && backwardMovement.Value) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
 
-        // Combine velocities
-        Vector3 frameVelocity = moveDirection * moveSpeed;
+        // Combine velocities and move
+        Vector3 frameVelocity = Vector3.zero;
+        if (moveCharacter) { frameVelocity += moveDirection * moveSpeed; }
         frameVelocity += fallSpeed * -Vector3.up;
-        // Execute movement
         charCont.Move(frameVelocity * Time.deltaTime);
     }
     void Update_ForwardPosDelta()
@@ -226,10 +270,7 @@ public class PlayerController : MonoBehaviour
     }
     void Update_Climbing()
     {
-        if (crouchAction.IsPressed())
-        {
-            DropOffLedge();
-        }
+        if (crouchAction.IsPressed()) { DropOffLedge(); }
     }
     void Update_AnimatorParams()
     {
@@ -237,17 +278,11 @@ public class PlayerController : MonoBehaviour
         anim.SetBool("isGrounded", isGrounded);
         anim.SetFloat("moveSpeed", moveSpeedSigned);
         anim.SetFloat("moveAngle", moveAngle);
-    }
-
-
-    Vector3 GetCurrentVelocity()
-    {
-        Vector3 totalVelocity = moveDirection * moveSpeed;
-        totalVelocity += fallSpeed * -Vector3.up;
-        return totalVelocity;
+        anim.SetFloat("fallSpeed", fallSpeed);
     }
     void Update_Grounded()
     {
+        characterControllerIsGrounded = charCont.isGrounded;
         bool value = false;
         if (holdingLedge) { isGrounded = false; return; }
         if (charCont.isGrounded) { value = true; }
@@ -288,7 +323,7 @@ public class PlayerController : MonoBehaviour
             value = true;
         }
         // Is in air
-        else
+        else if (!value)
         {
             // Reset move direction plane
             if (groundSlopeNormal != Vector3.up)
@@ -297,7 +332,7 @@ public class PlayerController : MonoBehaviour
                 groundSlopeNormal = Vector3.up;
             }
             // Predict where player will land
-            if (!groundPredicted && fallSpeed > 0f)
+            if (!groundPredicted && fallSpeed >= 1f)
             {
                 Vector3 predVector = GetCurrentVelocity();
                 Vector3 predDirection = predVector.normalized;
@@ -315,12 +350,15 @@ public class PlayerController : MonoBehaviour
         if (value)
         {
             if (!isGrounded) { Landed(); }
-            //if (!followCameraRotation && !holdingLedge) { followCameraRotation = true; }
         }
         isGrounded = value;
     }
+
+    //// Main
+    // Vertical movement actions
     void Jump()
     {
+        groundPredicted = false;
         if (!plClmbTrig.CheckForLedges())
         {
             //if (groundSlopeNormal == Vector3.up || groundSlopeNormal == null) { playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y); }
@@ -344,6 +382,7 @@ public class PlayerController : MonoBehaviour
     }
     void Landed()
     {
+        Debug.Log("Landed()");
         plAnimCont.Landed();
 
         if (fallSpeed > 0f)
@@ -355,10 +394,7 @@ public class PlayerController : MonoBehaviour
             if (hardLanding) 
             {
                 plAnimCont.anim.SetInteger("landingType", roll ? 2 : 3);
-                if (roll)
-                {
-                    moveSpeed *= 0.2f; //StartCoroutine(RollMovement());
-                }
+                if (roll) { StartCoroutine(RollSpeedLoss_Smooth()); } //moveSpeed *= 0.5f; }
                 else { moveSpeed *= 0.1f; }
             }
             else
@@ -372,25 +408,6 @@ public class PlayerController : MonoBehaviour
         roll = false;
         groundPredicted = false;
         //followCameraRotation = true;
-    }
-    IEnumerator RollMovement()
-    {
-        int stateNameHash = Animator.StringToHash("Roll");
-        float timer = 0f;
-        float maxDuration = 0.9f;
-        while (timer < maxDuration && !plAnimCont.anim.GetCurrentAnimatorStateInfo(0).IsName("Roll"))
-        {
-            timer += Time.deltaTime;
-            yield return new WaitForEndOfFrame();
-        }
-        if (timer < maxDuration) 
-        { 
-            while (plAnimCont.anim.GetCurrentAnimatorStateInfo(0).IsName("Roll"))
-            {
-                transform.position += (moveSpeed * moveDirection) * Time.deltaTime;
-                yield return new WaitForEndOfFrame();
-            }
-        }
     }
 
 
@@ -425,9 +442,109 @@ public class PlayerController : MonoBehaviour
 
 
 
-    // Animation calls
-    public void LandingAnimationDone()
+    //// Common
+    Vector3 GetCurrentVelocity()
     {
-        followCameraRotation = true;
+        Vector3 totalVelocity = moveDirection * moveSpeed;
+        totalVelocity += fallSpeed * -Vector3.up;
+        return totalVelocity;
     }
+
+
+    //// External utility
+    public void RootMotionMovement(bool enabled, bool keepMoving = false)
+    {
+        GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
+        canControlMove = !enabled;
+        applyGravity = !enabled;
+        moveCharacter = !enabled || keepMoving;
+    }
+
+
+    //// Smooth transition functions
+    IEnumerator RollSpeedLoss_Smooth()
+    {
+        float moveSpeedOnCall = moveSpeed;
+        float targetSpeed = Mathf.Clamp(moveSpeed - smooth_roll_targetSpeedDiff, 0, runMaxSpeed);
+
+        float startDelay = smooth_roll_startDelay;
+        if (startDelay > 0) { yield return new WaitForSeconds(startDelay); }
+
+        float duration = smooth_roll_duration;
+        float timer = 0f;
+        while (timer < duration)
+        {
+            yield return new WaitForEndOfFrame();
+            timer += Time.deltaTime;
+            moveSpeed = Mathf.Lerp(moveSpeedOnCall, targetSpeed, timer / duration);
+        }
+    }
+}
+
+
+
+[CustomEditor(typeof(PlayerController))]
+public class PlayerController_Inspector : Editor
+{
+    PlayerController playerCont;
+
+    bool movementSpeeds;
+    bool smoothTransitions;
+
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+
+        playerCont = (PlayerController)target;
+
+        Control();
+        Speeds();
+
+        RollSmoothSlowdown();
+    }
+
+    void Control()
+    {
+        EditorGUILayout.LabelField("-- Control");
+        EditorGUILayout.Toggle("Move character", playerCont.moveCharacter);
+        EditorGUILayout.Toggle("Apply gravity", playerCont.applyGravity);
+        EditorGUILayout.Toggle("Control character movement", playerCont.canControlMove);
+    }
+    void Speeds()
+    {
+        EditorGUILayout.LabelField("-- Movement");
+        EditorGUILayout.FloatField("Current speed", playerCont.moveSpeed);
+        EditorGUILayout.FloatField("Current fall speed", playerCont.fallSpeed);
+        if (movementSpeeds = EditorGUILayout.Foldout(movementSpeeds, "Parameters"))
+        {
+            playerCont.walkSpeed = EditorGUILayout.FloatField("Walk speed", playerCont.walkSpeed);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Run start speed | Time to accelerate");
+            playerCont.runStartSpeed = EditorGUILayout.FloatField(playerCont.runStartSpeed);
+            playerCont.runStartAccelTime = EditorGUILayout.FloatField(playerCont.runStartAccelTime);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Run max speed | Time to accelerate");
+            playerCont.runMaxSpeed = EditorGUILayout.FloatField(playerCont.runMaxSpeed);
+            playerCont.runAccelTime = EditorGUILayout.FloatField(playerCont.runAccelTime);
+            EditorGUILayout.EndHorizontal();
+        }
+
+    }
+    void RollSmoothSlowdown()
+    {
+        if (smoothTransitions = EditorGUILayout.Foldout(smoothTransitions, "-- Smooth Transition Settings"))
+        {
+
+            LeftCenteredLabel("Roll");
+            playerCont.smooth_roll_targetSpeedDiff = EditorGUILayout.FloatField("Slow down value", playerCont.smooth_roll_targetSpeedDiff);
+            playerCont.smooth_roll_duration = EditorGUILayout.FloatField("Slow down duration", playerCont.smooth_roll_duration);
+            playerCont.smooth_roll_startDelay = EditorGUILayout.FloatField("Slow down start delay", playerCont.smooth_roll_startDelay);
+        }
+    }
+
+
+    // Utility
+    void CenteredLabel(string label) => EditorGUILayout.LabelField(" ", label);
+    void LeftCenteredLabel(string label) => EditorGUILayout.LabelField(String.Concat(Enumerable.Repeat(" ", 20)) + label);
 }

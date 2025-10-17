@@ -1,9 +1,13 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerAnimationController : MonoBehaviour
 {
     internal Animator anim;
+    PlayerController playerCont;
     bool ikActive = false;
+
+    public bool isRoot = true;
 
     public Transform rightHandIKTarget;
     public Transform leftHandIKTarget;
@@ -28,10 +32,15 @@ public class PlayerAnimationController : MonoBehaviour
 
     public bool holdLedgePhysicsImpact = false;
 
-
-    private void Start()
+    private void Awake()
     {
         anim = GetComponent<Animator>();
+        anim.applyRootMotion = false;
+    }
+    private void Start()
+    {
+        if (isRoot) { playerCont = GetComponent<PlayerController>(); }
+        else { playerCont = transform.parent.GetComponent<PlayerController>(); }
         baseLocalPosition = transform.localPosition;
         ikTargetParent = rightHandIKTarget.parent;
         baseIKTargetLocalPos = ikTargetParent.localPosition;
@@ -125,23 +134,40 @@ public class PlayerAnimationController : MonoBehaviour
     }
 
 
-
-
-    // During animation triggers
-    public void EnableRootMotion() 
-    { 
-        if (anim.applyRootMotion) { return; }
-        GetComponent<PlayerController>().moveCharacter = false; GetComponent<CharacterController>().enabled = false; anim.applyRootMotion = true;
-    }
-    public void DisableRootMotion() 
+    IEnumerator LandingAnimationDoneRootMotionSync()
     {
-        if (!anim.applyRootMotion) { return; }
-        //Debug.Break();
-        Vector3 rootPosDelta = transform.GetChild(0).GetChild(0).localPosition;
+        yield return new WaitUntil(() => !anim.applyRootMotion);
+        playerCont.followCameraRotation = true;
+    }
+
+
+
+    //// External animation calls
+    public void EnableRootMotion(bool keepMovement = false)
+    {
+        //Debug.Log("EnableRootMotion()");
+        //if (anim.applyRootMotion) { return; }
+        playerCont.RootMotionMovement(true, keepMovement);
+        anim.applyRootMotion = true;
+    }
+    public void DisableRootMotion(bool updatePositions = true)
+    {
+        //Debug.Log("DisableRootMotion()");
+        //if (!anim.applyRootMotion) { return; }
+        Vector3 rootPosition = transform.localPosition;
         anim.applyRootMotion = false;
-        anim.rootPosition = Vector3.zero;
-        transform.position += rootPosDelta;
-        GetComponent<CharacterController>().enabled = true;
-        GetComponent<PlayerController>().moveCharacter = true;
+        if (updatePositions)
+        {
+            if (isRoot) { transform.position = rootPosition; }
+            else { transform.parent.position += transform.rotation * rootPosition; }
+        }
+        transform.localPosition = Vector3.zero; //anim.rootPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
+        playerCont.RootMotionMovement(false);
+    }
+    public void DisableRootMotion_AnimEvent() => DisableRootMotion(true);
+    public void LandingAnimationDone()
+    {
+        StartCoroutine(LandingAnimationDoneRootMotionSync());
     }
 }

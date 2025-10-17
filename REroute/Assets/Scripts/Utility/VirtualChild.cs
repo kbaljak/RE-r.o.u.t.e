@@ -8,12 +8,12 @@ public class VirtualChild : MonoBehaviour
     public Vector3 virtualLocalPosition = Vector3.zero;
     //public bool applyRotation = true;
 
-    Vector3 baseLocalPosition;
+    //Vector3 baseLocalPosition;
     //Quaternion baseLocalRotation;
 
     private void Awake()
     {
-        baseLocalPosition = transform.localPosition;
+        //baseLocalPosition = transform.localPosition;
         //baseLocalRotation = transform.localRotation;
     }
 
