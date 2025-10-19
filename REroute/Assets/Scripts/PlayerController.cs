@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
 {
     CharacterController charCont;
     public PlayerAnimationController plAnimCont;
-    public PlayerClimbTrigger plClmbTrig;
+    public PlayerParkourDetection plParkourDet;
     public GameObject playerCamera;
     public Transform cameraPoint;
 
@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
     bool? backwardMovement = null;
     public float fallSpeed = 0f;
 
-    internal bool followCameraRotation = true;
+    public bool followCameraRotation = true;
     // Params
     public float walkSpeed = 2f;
     public float runStartSpeed = 5f;
@@ -71,6 +71,8 @@ public class PlayerController : MonoBehaviour
     public float smooth_roll_targetSpeedDiff;
     public float smooth_roll_duration;
     public float smooth_roll_startDelay;
+    // Braced hang drop
+    public float smooth_bracedHand_dropDelay;
 
     // Debug
     public float moveSpeedSigned = 0f;
@@ -128,10 +130,12 @@ public class PlayerController : MonoBehaviour
                 lookAngleSignedAnim = Mathf.Lerp(lookAngleSignedAnim, 0, 2f * Time.deltaTime);
             }
             plAnimCont.anim.SetFloat("lookAngleSign", lookAngleSignedAnim);
+            plAnimCont.anim.SetFloat("moveAngle", moveAngle);
         }
         else
         {
             plAnimCont.anim.SetFloat("lookAngleSign", 0);
+            plAnimCont.anim.SetFloat("moveAngle", 0);
         }
     }
     void Update_FootMovement()
@@ -266,7 +270,7 @@ public class PlayerController : MonoBehaviour
         bool jumpPressed = jumpAction.IsInProgress();
         if (!tryGrabLedge && jumpPressed) { tryGrabLedge = true; }
         bool detectLedge = tryGrabLedge && (jumpPressed || !isGrounded);
-        plClmbTrig.checkForLedge = detectLedge;
+        plParkourDet.checkForClimbable = detectLedge;
     }
     void Update_Climbing()
     {
@@ -277,7 +281,7 @@ public class PlayerController : MonoBehaviour
         Animator anim = plAnimCont.anim;
         anim.SetBool("isGrounded", isGrounded);
         anim.SetFloat("moveSpeed", moveSpeedSigned);
-        anim.SetFloat("moveAngle", moveAngle);
+        //anim.SetFloat("moveAngle", moveAngle);
         anim.SetFloat("fallSpeed", fallSpeed);
     }
     void Update_Grounded()
@@ -358,15 +362,24 @@ public class PlayerController : MonoBehaviour
     // Vertical movement actions
     void Jump()
     {
-        groundPredicted = false;
-        if (!plClmbTrig.CheckForLedges())
+        Debug.Log("Jump");
+        followCameraRotation = false;
+        if (!plParkourDet.CheckClimbables())
         {
+            groundPredicted = false;
             //if (groundSlopeNormal == Vector3.up || groundSlopeNormal == null) { playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y); }
             //else { playerVelocity += Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y) * groundSlopeNormal; Debug.Log("Slope jump!"); }
             fallSpeed -= Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y);
 
             plAnimCont.anim.SetTrigger("jump");
-            followCameraRotation = false;
+            Debug.Log("Normal jump");
+        }
+        else
+        {
+            holdingLedge = true;
+            //isGrounded = true;
+            Debug.Log("Ledge jump, isGrounded: " + isGrounded);
+            //Debug.Break();
         }
     }
     IEnumerator RollInputInterval()
@@ -385,13 +398,13 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Landed()");
         plAnimCont.Landed();
 
+        bool hardLanding = fallSpeed >= hardLandingVelThreshold;
         if (fallSpeed > 0f)
         {
             // Hard landing
             //Debug.Log("Hard landing? " + fallSpeed);
-            bool hardLanding = fallSpeed >= hardLandingVelThreshold;
             Debug.Log("Landing type: " + (hardLanding ? (roll ? "2 (roll)" : "3 (hard)") : "1 (normal)"));
-            if (hardLanding) 
+            if (hardLanding)
             {
                 plAnimCont.anim.SetInteger("landingType", roll ? 2 : 3);
                 if (roll) { StartCoroutine(RollSpeedLoss_Smooth()); } //moveSpeed *= 0.5f; }
@@ -405,26 +418,27 @@ public class PlayerController : MonoBehaviour
             }
             plAnimCont.anim.SetTrigger("landing");
         }
+        if (!hardLanding) { followCameraRotation = true; }
         roll = false;
         groundPredicted = false;
-        //followCameraRotation = true;
     }
 
 
-    public void JumpObstacle(float height, LedgeLevel ledgeLvl, Vector3 faceDir)
+    public void JumpObstacle(Transform ledgeTransform, float height, LedgeLevel ledgeLvl, Vector3 faceDir)
     {
+        Debug.Log("JumpObstacle: " + ledgeLvl);
         if (!holdingLedge)
         {
             if (ledgeLvl == LedgeLevel.Med || ledgeLvl == LedgeLevel.High)
             {
                 Debug.Log("JumpObstacle");
                 // Ledge
-                plClmbTrig.checkForLedge = false;
+                plParkourDet.checkForClimbable = false;
                 charCont.enabled = false;
                 float localHeight = height - 1f;
-                plAnimCont.GrabOntoLedge(localHeight, ledgeLvl == LedgeLevel.High, GetCurrentVelocity());
+                plAnimCont.GrabOntoLedge(ledgeTransform, ledgeLvl == LedgeLevel.High, GetCurrentVelocity());
                 holdingLedge = true;
-                isGrounded = false;
+                //isGrounded = false;
                 // Camera
                 followCameraRotation = false;
                 transform.LookAt(new Vector3(transform.position.x + faceDir.x, transform.position.y, transform.position.z + faceDir.z));
@@ -432,12 +446,9 @@ public class PlayerController : MonoBehaviour
         }
     }
     void DropOffLedge()
-    {
-        tryGrabLedge = false;
-        holdingLedge = false;
-        moveSpeed = 0f; fallSpeed = 0f;
-        charCont.enabled = true;
+    {     
         plAnimCont.DropOffLedge();
+        StartCoroutine(DropOffBracedHang_Smooth());
     }
 
 
@@ -479,7 +490,17 @@ public class PlayerController : MonoBehaviour
             moveSpeed = Mathf.Lerp(moveSpeedOnCall, targetSpeed, timer / duration);
         }
     }
+    IEnumerator DropOffBracedHang_Smooth()
+    {
+        yield return new WaitForSeconds(smooth_bracedHand_dropDelay);
+        tryGrabLedge = false;
+        holdingLedge = false;
+        moveSpeed = 0f; fallSpeed = 0f;
+        charCont.enabled = true;
+    }
 }
+
+enum LedgeHoldType { BracedHang, Hang, Freehang };
 
 
 

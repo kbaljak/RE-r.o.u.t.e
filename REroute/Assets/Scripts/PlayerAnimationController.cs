@@ -16,6 +16,7 @@ public class PlayerAnimationController : MonoBehaviour
     Vector3 baseLocalPosition;
 
     bool holdingLedge = false;
+    internal Vector3 targetPosition = Vector3.zero;
     Vector3 playerVelocityOnLedgeGrab = Vector3.zero;
     Vector3 hipsDeltaPos = Vector3.zero;
     float hipsDeltaPosMaxMag = 0.4f;
@@ -25,12 +26,16 @@ public class PlayerAnimationController : MonoBehaviour
     public float handIKDifference_Med = -0.175f;
     public Vector3 holdLedgePosDiff_High = new Vector3(0, 0.2f, 0);
     public Vector3 holdLedgePosDiff_Med = new Vector3(0, 0, 0);
-    Vector3 baseIKTargetLocalPos;
     public Vector3 holdLedgeIKPosDiff_High = new Vector3(0, 0.025f, -0.1f);
     public Vector3 holdLedgeIKPosDiff_Med = new Vector3(0, 0, 0);
 
-
     public bool holdLedgePhysicsImpact = false;
+
+
+    //// Animation params
+    public float ap_standToHang_animHeight = 2.66f;
+    public float ap_standToBraceHang_animHeight = 2.58f;
+
 
     private void Awake()
     {
@@ -43,7 +48,6 @@ public class PlayerAnimationController : MonoBehaviour
         else { playerCont = transform.parent.GetComponent<PlayerController>(); }
         baseLocalPosition = transform.localPosition;
         ikTargetParent = rightHandIKTarget.parent;
-        baseIKTargetLocalPos = ikTargetParent.localPosition;
     }
     private void Update()
     {
@@ -92,33 +96,29 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
-    public void GrabOntoLedge(float localHeight, bool high, Vector3 playerVelocity)
+    public void GrabOntoLedge(Transform ledgeTransform, bool high, Vector3 playerVelocity)
     {
         if (holdingLedge) { return; }
         Debug.Log("PlayerAnimationController.GrabOntoLedge()");
+
+        // Set target position
+        targetPosition = ledgeTransform.position + (ledgeTransform.rotation * (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med));
+
         // Set IK
-        localHeight += (high ? handIKDifference_High : handIKDifference_Med);
-        rightHandIKTarget.localPosition = new Vector3(rightHandIKTarget.localPosition.x, localHeight, rightHandIKTarget.localPosition.z);
-        leftHandIKTarget.localPosition = new Vector3(leftHandIKTarget.localPosition.x, localHeight, leftHandIKTarget.localPosition.z);
+        //localHeight += (high ? handIKDifference_High : handIKDifference_Med);
+        rightHandIKTarget.localPosition = new Vector3(rightHandIKTarget.localPosition.x, 0, 0);
+        leftHandIKTarget.localPosition = new Vector3(leftHandIKTarget.localPosition.x, 0, 0);
+        ikTargetParent.localPosition = new Vector3(0, ledgeTransform.position.y - targetPosition.y, 0) + (high ? holdLedgeIKPosDiff_High : holdLedgeIKPosDiff_Med);
         ikActive = true;
 
         // Set animator parameters
-        holdingLedge = true;  anim.SetBool("holdingLedge", holdingLedge);
+        holdingLedge = true; anim.SetBool("holdingLedge", holdingLedge);
         anim.SetInteger("holdLedgeLevel", high ? 2 : 1);
 
         // Hips physics from impact
         //Debug.Log("player velocity on impact: " + playerVelocity);
         //hipsDeltaPos = Vector3.zero;
         //playerVelocityOnLedgeGrab = playerVelocity;
-
-        // Adjustments
-        //transform.localPosition = baseLocalPosition + (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med);
-        //ikTargetParent.localPosition = baseIKTargetLocalPos + (high ? holdLedgeIKPosDiff_High : holdLedgeIKPosDiff_Med);
-        Debug.Log(transform.position + " + " + (transform.rotation * (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med)));
-        transform.position += transform.rotation * (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med);
-        Debug.Log(" = " + transform.position);
-        ikTargetParent.localPosition = baseIKTargetLocalPos + (high ? holdLedgeIKPosDiff_High : holdLedgeIKPosDiff_Med);
-
     }
     public void DropOffLedge()
     {
@@ -152,7 +152,7 @@ public class PlayerAnimationController : MonoBehaviour
     }
     public void DisableRootMotion(bool updatePositions = true)
     {
-        //Debug.Log("DisableRootMotion()");
+        Debug.Log("DisableRootMotion()");
         //if (!anim.applyRootMotion) { return; }
         Vector3 rootPosition = transform.localPosition;
         anim.applyRootMotion = false;
@@ -168,6 +168,7 @@ public class PlayerAnimationController : MonoBehaviour
     public void DisableRootMotion_AnimEvent() => DisableRootMotion(true);
     public void LandingAnimationDone()
     {
+        Debug.Log("LandingAnimationDone()");
         StartCoroutine(LandingAnimationDoneRootMotionSync());
     }
 }

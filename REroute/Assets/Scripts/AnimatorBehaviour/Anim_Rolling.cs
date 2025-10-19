@@ -6,7 +6,8 @@ public class Anim_Rolling : StateMachineBehaviour
     PlayerController playerCont;
 
     public bool continuallyApplyRootPos = true;
-    public bool callOnExit = true;
+    public bool callDisableRootOnExit = true;
+    public bool callLandingAnimDoneOnExit = false;
 
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -30,7 +31,8 @@ public class Anim_Rolling : StateMachineBehaviour
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        if (callOnExit) { plAnimCont.DisableRootMotion(!continuallyApplyRootPos); }
+        if (callDisableRootOnExit) { plAnimCont.DisableRootMotion(!continuallyApplyRootPos); }
+        if (callLandingAnimDoneOnExit) { plAnimCont.LandingAnimationDone(); }
         animator.ResetTrigger("break");
     }
 
