@@ -6,11 +6,12 @@ using UnityEditor;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.Rendering.DebugUI;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    CharacterController charCont;
+    public CharacterController charCont;
     public PlayerAnimationController plAnimCont;
     public PlayerParkourDetection plParkourDet;
     public GameObject playerCamera;
@@ -31,6 +32,7 @@ public class PlayerController : MonoBehaviour
     public bool canControlMove = true;
     public Transform groundRaycastPoint;
     public bool isGrounded = false;  public bool characterControllerIsGrounded;
+    bool isGroundedAnimBlock = false;
     // Predict landing for roll input
     public bool groundPredicted = false;
     public float predictionTime = 0.1f;
@@ -58,7 +60,7 @@ public class PlayerController : MonoBehaviour
     public float jumpHeight = 0.7f;
 
     /// Climbing
-    public bool holdingLedge = false;
+    //public bool holdingLedge = false;
     public bool tryGrabLedge = true;
     public float hardLandingVelThreshold = 2f;
 
@@ -98,17 +100,18 @@ public class PlayerController : MonoBehaviour
     {
         Update_FaceCamera();
 
-        if (holdingLedge)
+        if (plParkourDet.holdingLedge)
         {
             Update_Climbing();
         }
         else
         {
-            Update_FootMovement();
+            //Update_FootMovement();
+            Update_ClimbableDetect();
         }
+        Update_Movement();
 
         Update_ForwardPosDelta();
-        Update_ClimbableDetect();
         Update_AnimatorParams();
     }
     void Update_FaceCamera()
@@ -138,125 +141,128 @@ public class PlayerController : MonoBehaviour
             plAnimCont.anim.SetFloat("moveAngle", 0);
         }
     }
-    void Update_FootMovement()
+    void Update_Movement()
     {
         // Check if grounded no matter if we can move
-        Update_Grounded();
-        if (!moveCharacter) { return; }
+        if (!plParkourDet.holdingLedge) { Update_Grounded(); }
+        //if (!moveCharacter) { return; }
 
         //// Movement
         // Get relevant orientation vectors on the plane we are standing on
         Vector3 cameraForward = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal);
-        Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
-        Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
-        if (canControlMove)
+        if (moveCharacter && !plParkourDet.holdingLedge)
         {
-            // Get forward and right direction for movement
-            Vector2 input = moveAction.ReadValue<Vector2>();
-            Vector3 frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
-            // Get angles
-            float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
-            lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
-            if (isGrounded && fallSpeed >= 0)  // = if we are grounded and our current vertical direction is downward or zero/none (otherwise we are going up)
+            if (canControlMove)
             {
-                if (fallSpeed > 0) { fallSpeed = 0; }
-
-                // no input -> slow down to stand still
-                if (input == Vector2.zero)
+                Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
+                Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
+                // Get forward and right direction for movement
+                Vector2 input = moveAction.ReadValue<Vector2>();
+                Vector3 frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
+                // Get angles
+                float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
+                lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
+                if (isGrounded && fallSpeed >= 0)  // = if we are grounded and our current vertical direction is downward or zero/none (otherwise we are going up)
                 {
-                    if (moveSpeed > 0)
-                    {
-                        float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
-                        moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
-                    }
-                }
-                // otherwise -> accelerate
-                else
-                {
-                    // Movement start -> check direction
-                    backwardMovement = input.y < 0;
+                    if (fallSpeed > 0) { fallSpeed = 0; }
 
-                    bool sprinting = sprintAction.IsInProgress();
-
-                    // if walking -> walk speed + directly apply direction
-                    if (!sprinting)
+                    // no input -> slow down to stand still
+                    if (input == Vector2.zero)
                     {
-                        if (moveSpeed > walkSpeed)
+                        if (moveSpeed > 0)
                         {
                             float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
                             moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
                         }
-                        else { moveSpeed = walkSpeed; moveDirection = frameMoveDir; }
                     }
-                    // if sprinting -> accelerate
+                    // otherwise -> accelerate
                     else
                     {
-                        float angleToVelFactor = Mathf.Clamp(angleMoveToVel / 90f, 0f, 1f);
-                        float curMaxSpeed = input.y > 0 ? runMaxSpeed : runStartSpeed;
+                        // Movement start -> check direction
+                        backwardMovement = input.y < 0;
 
-                        //Debug.Log(moveSpeed + " + " + accelFactor + " -> " + Mathf.Clamp(moveSpeed + accelFactor * Time.deltaTime, 0, curMaxSpeed) + " / " + curMaxSpeed);
+                        bool sprinting = sprintAction.IsInProgress();
 
-                        // Just redirect speed
-                        if (angleMoveToVel < 4f)
+                        // if walking -> walk speed + directly apply direction
+                        if (!sprinting)
                         {
-                            moveDirection = frameMoveDir;
-                            if (moveSpeed < runStartSpeed) { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime)), 0, curMaxSpeed); }
-                            else
+                            if (moveSpeed > walkSpeed)
                             {
-                                float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
-                                // Acceleration function
-                                float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
-                                moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed)), 0, curMaxSpeed);
-                                //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
+                                float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
+                                moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
                             }
+                            else { moveSpeed = walkSpeed; moveDirection = frameMoveDir; }
                         }
-                        // Slow down speed depending on angle and smoothly change direction
-                        else if (angleMoveToVel < 90f)
-                        {
-                            // Slow down
-                            moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
-                            // Change direction
-                            //     runstartspeed -> 0.2f, maxspeed -> 0.8f, < run start speed -< 0.05f
-                            float timeToTurn;
-                            if (moveSpeed < runStartSpeed) { timeToTurn = 0.05f; }
-                            else { timeToTurn = 0.1f + (((moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed)) * 0.3f); }
-                            moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
-                                (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
-                        }
-                        // Quick brake
+                        // if sprinting -> accelerate
                         else
                         {
-                            // Brake
-                            moveSpeed = Mathf.Lerp(moveSpeed, 0f, 6f * Time.deltaTime);
-                            // Change direction only if speed low enough
-                            if (moveSpeed <= walkSpeed)
+                            float angleToVelFactor = Mathf.Clamp(angleMoveToVel / 90f, 0f, 1f);
+                            float curMaxSpeed = input.y > 0 ? runMaxSpeed : runStartSpeed;
+
+                            //Debug.Log(moveSpeed + " + " + accelFactor + " -> " + Mathf.Clamp(moveSpeed + accelFactor * Time.deltaTime, 0, curMaxSpeed) + " / " + curMaxSpeed);
+
+                            // Just redirect speed
+                            if (angleMoveToVel < 4f)
                             {
-                                float timeToTurn = 0.1f * (moveSpeed / runStartSpeed);
+                                moveDirection = frameMoveDir;
+                                if (moveSpeed < runStartSpeed) { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime)), 0, curMaxSpeed); }
+                                else
+                                {
+                                    float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
+                                    // Acceleration function
+                                    float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
+                                    moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed)), 0, curMaxSpeed);
+                                    //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
+                                }
+                            }
+                            // Slow down speed depending on angle and smoothly change direction
+                            else if (angleMoveToVel < 90f)
+                            {
+                                // Slow down
+                                moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
+                                // Change direction
+                                //     runstartspeed -> 0.2f, maxspeed -> 0.8f, < run start speed -< 0.05f
+                                float timeToTurn;
+                                if (moveSpeed < runStartSpeed) { timeToTurn = 0.05f; }
+                                else { timeToTurn = 0.1f + (((moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed)) * 0.3f); }
                                 moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
                                     (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
                             }
+                            // Quick brake
+                            else
+                            {
+                                // Brake
+                                moveSpeed = Mathf.Lerp(moveSpeed, 0f, 6f * Time.deltaTime);
+                                // Change direction only if speed low enough
+                                if (moveSpeed <= walkSpeed)
+                                {
+                                    float timeToTurn = 0.1f * (moveSpeed / runStartSpeed);
+                                    moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
+                                        (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
+                                }
+                            }
                         }
                     }
-                }
 
-                // Jump
-                if (jumpAction.WasPerformedThisFrame()) { Jump(); }
+                    // Jump
+                    if (jumpAction.WasPerformedThisFrame()) { Jump(); }
+                }
             }
+            // Gravity
+            if (applyGravity) { fallSpeed -= Physics.gravity.y * Time.deltaTime; }
+
+            // Combine velocities and move
+            Vector3 frameVelocity = Vector3.zero;
+            frameVelocity += moveDirection * moveSpeed;
+            if (applyGravity) { frameVelocity += fallSpeed * -Vector3.up; }
+            charCont.Move(frameVelocity * Time.deltaTime);
         }
-        // Gravity
-        fallSpeed -= Physics.gravity.y * Time.deltaTime;
 
         // Update stats
         moveSpeedSigned = moveSpeed;
         if (moveSpeed > 0) { moveSpeedSigned *= (backwardMovement != null && backwardMovement.Value ? -1 : 1); }  //angleLookToVel > 90f
         moveAngle = Vector3.SignedAngle(cameraForward, moveDirection, groundSlopeNormal);
         if (backwardMovement != null && backwardMovement.Value) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
-
-        // Combine velocities and move
-        Vector3 frameVelocity = Vector3.zero;
-        if (moveCharacter) { frameVelocity += moveDirection * moveSpeed; }
-        frameVelocity += fallSpeed * -Vector3.up;
-        charCont.Move(frameVelocity * Time.deltaTime);
     }
     void Update_ForwardPosDelta()
     {
@@ -275,20 +281,29 @@ public class PlayerController : MonoBehaviour
     void Update_Climbing()
     {
         if (crouchAction.IsPressed()) { DropOffLedge(); }
+        if (jumpAction.WasPerformedThisFrame()) { plAnimCont.anim.SetTrigger("jump"); }
     }
     void Update_AnimatorParams()
     {
         Animator anim = plAnimCont.anim;
-        anim.SetBool("isGrounded", isGrounded);
         anim.SetFloat("moveSpeed", moveSpeedSigned);
         //anim.SetFloat("moveAngle", moveAngle);
         anim.SetFloat("fallSpeed", fallSpeed);
+        anim.SetBool("holdingLedge", plParkourDet.holdingLedge);
+
+        // isGrounded block
+        if (isGroundedAnimBlock) 
+        {
+            anim.SetBool("isGrounded", true);
+            if (isGrounded) { isGroundedAnimBlock = false; }
+        }
+        else { anim.SetBool("isGrounded", isGrounded); }
     }
     void Update_Grounded()
     {
         characterControllerIsGrounded = charCont.isGrounded;
         bool value = false;
-        if (holdingLedge) { isGrounded = false; return; }
+        if (plParkourDet.holdingLedge) { isGrounded = false; return; }
         if (charCont.isGrounded) { value = true; }
         //
         RaycastHit hit;
@@ -372,11 +387,11 @@ public class PlayerController : MonoBehaviour
             fallSpeed -= Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y);
 
             plAnimCont.anim.SetTrigger("jump");
-            Debug.Log("Normal jump");
+            //Debug.Log("Normal jump");
         }
         else
         {
-            holdingLedge = true;
+            //holdingLedge = true;
             //isGrounded = true;
             Debug.Log("Ledge jump, isGrounded: " + isGrounded);
             //Debug.Break();
@@ -395,7 +410,7 @@ public class PlayerController : MonoBehaviour
     }
     void Landed()
     {
-        Debug.Log("Landed()");
+        //Debug.Log("Landed()");
         plAnimCont.Landed();
 
         bool hardLanding = fallSpeed >= hardLandingVelThreshold;
@@ -416,41 +431,68 @@ public class PlayerController : MonoBehaviour
                 moveSpeed *= factor; //playerVelocity.x *= factor; playerVelocity.z *= factor;
                 plAnimCont.anim.SetInteger("landingType", 1);
             }
-            plAnimCont.anim.SetTrigger("landing");
         }
         if (!hardLanding) { followCameraRotation = true; }
         roll = false;
         groundPredicted = false;
     }
-
-
-    public void JumpObstacle(Transform ledgeTransform, float height, LedgeLevel ledgeLvl, Vector3 faceDir)
+    // Ledges
+    public void GrabbedLedge(Ledge ledge)
     {
-        Debug.Log("JumpObstacle: " + ledgeLvl);
-        if (!holdingLedge)
-        {
-            if (ledgeLvl == LedgeLevel.Med || ledgeLvl == LedgeLevel.High)
-            {
-                Debug.Log("JumpObstacle");
-                // Ledge
-                plParkourDet.checkForClimbable = false;
-                charCont.enabled = false;
-                float localHeight = height - 1f;
-                plAnimCont.GrabOntoLedge(ledgeTransform, ledgeLvl == LedgeLevel.High, GetCurrentVelocity());
-                holdingLedge = true;
-                //isGrounded = false;
-                // Camera
-                followCameraRotation = false;
-                transform.LookAt(new Vector3(transform.position.x + faceDir.x, transform.position.y, transform.position.z + faceDir.z));
-            }
-        }
+        charCont.enabled = false;
+        moveSpeed = 0; fallSpeed = 0;
+        moveDirection = Vector3.zero;
+        //float localHeight = ledgeHeight - 1f;
+        //plAnimCont.GrabOntoLedge(ledge, ledgeLvl == LedgeLevel.High, GetCurrentVelocity());
+        // Camera
+        followCameraRotation = false;
+        transform.LookAt(new Vector3(transform.position.x + ledge.transform.forward.x, transform.position.y, transform.position.z + ledge.transform.forward.z));
     }
     void DropOffLedge()
-    {     
+    {
+        plParkourDet.holdingLedge = false;
         plAnimCont.DropOffLedge();
         StartCoroutine(DropOffBracedHang_Smooth());
     }
+    public void ClimbedLedge(Ledge ledge = null, bool snap = true, float speedAfterClimb = 0f)
+    {
+        Debug.Log("ClimbedLedge()");
 
+        // Enable
+        tryGrabLedge = false;
+        plParkourDet.holdingLedge = false;
+        charCont.enabled = true;
+        isGroundedAnimBlock = true; isGrounded = false;
+        plAnimCont.anim.SetBool("isGrounded", true);
+
+        // Set position to ground
+        if (snap)
+        {
+            //if (ledge == null) { SnapToGround(1f); }
+            //else { transform.position = ledge.transform.position + (ledge.transform.forward * 0.5f) + (Vector3.up * 0.05f); }
+            transform.position = ledge.transform.position + (ledge.transform.forward * 0.5f) + (Vector3.up * 0.05f);
+            //StartCoroutine(SnapToGroundSmooth(ledge.transform));
+            SimulateFall();
+            Debug.Log("ClimbedLedge() snapped!");
+        }
+        if (moveAction.ReadValue<Vector2>().y > 0) { moveSpeed = walkSpeed; }
+        //if (moveAction.ReadValue<Vector2>().y <= 0) { moveSpeed = 0; }
+    }
+
+
+    IEnumerator SnapToGroundSmooth(Transform ledge)
+    {
+        Vector3 startPosition = transform.position;
+        Vector3 targetPosition = ledge.transform.position + (ledge.transform.forward * 0.2f) + (Vector3.up * 0.05f);
+        float duration = 0.1f;
+        float timer = 0f;
+        while (timer < duration) {
+            transform.position = Vector3.Slerp(startPosition, targetPosition, timer / duration);
+            timer += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        transform.position = targetPosition;
+    }
 
 
     //// Common
@@ -461,6 +503,67 @@ public class PlayerController : MonoBehaviour
         return totalVelocity;
     }
 
+
+    //// Utility
+    void SnapToGround(float rayLength = 0.4f, float verticalStartPointDelta = 1f)
+    {
+        //Debug.Break();
+        rayLength += verticalStartPointDelta;
+        RaycastHit hit;
+        bool raycastHit = false;
+        Vector3 startPoint = groundRaycastPoint.position + (transform.forward * 0.1f) + (transform.up * verticalStartPointDelta);
+        Debug.DrawRay(startPoint, Vector3.down * rayLength, Color.rosyBrown);
+        if (Physics.Raycast(startPoint, Vector3.down, out hit, rayLength)) { raycastHit = true; }
+        else
+        {
+            startPoint = groundRaycastPoint.position - (transform.forward * 0.1f) + (transform.up * verticalStartPointDelta);
+            Debug.DrawRay(startPoint, Vector3.down * rayLength, Color.rosyBrown);
+            if (Physics.Raycast(startPoint, Vector3.down, out hit, rayLength)) { raycastHit = true; }
+            else
+            {
+                startPoint = groundRaycastPoint.position + (transform.right * 0.1f) + (transform.up * verticalStartPointDelta);
+                Debug.DrawRay(startPoint, Vector3.down * rayLength, Color.rosyBrown);
+                if (Physics.Raycast(startPoint, Vector3.down, out hit, rayLength)) { raycastHit = true; }
+                else
+                {
+                    startPoint = groundRaycastPoint.position - (transform.right * 0.1f) + (transform.up * verticalStartPointDelta);
+                    Debug.DrawRay(startPoint, Vector3.down * rayLength, Color.rosyBrown);
+                    if (Physics.Raycast(startPoint, Vector3.down, out hit, rayLength)) { raycastHit = true; }
+                }
+            }
+        }
+        if (raycastHit)
+        {
+            Debug.Log("Hit!: " + hit.point + "; snapping to " + (hit.point));
+            Vector3 hitNormalDir = hit.normal.normalized;
+            if (groundSlopeNormal != hitNormalDir)
+            {
+                // Update move direction
+                moveDirection = Vector3.ProjectOnPlane(moveDirection, hitNormalDir);
+                groundSlopeNormal = hitNormalDir;
+            }
+            if (hit.collider.material != null) { groundFriction = hit.collider.material.dynamicFriction; }
+            else { groundFriction = 1f; }
+
+            // Snap
+            transform.position = hit.point;
+            isGrounded = true;
+        }
+        else { Debug.Log("Miss!"); }
+    }
+    void SimulateFall()
+    {
+        float timer = 0f;
+        float delta = 0.02f;
+        Update_Grounded();
+        while (!isGrounded && timer < 10f)
+        {
+            charCont.Move(Vector3.down * delta);
+            Update_Grounded();
+            timer += Time.deltaTime;
+        }
+        if (timer >= 10f) { Debug.LogWarning("Failed to simulate fall."); }
+    }
 
     //// External utility
     public void RootMotionMovement(bool enabled, bool keepMoving = false)
@@ -494,7 +597,7 @@ public class PlayerController : MonoBehaviour
     {
         yield return new WaitForSeconds(smooth_bracedHand_dropDelay);
         tryGrabLedge = false;
-        holdingLedge = false;
+        plParkourDet.holdingLedge = false;
         moveSpeed = 0f; fallSpeed = 0f;
         charCont.enabled = true;
     }

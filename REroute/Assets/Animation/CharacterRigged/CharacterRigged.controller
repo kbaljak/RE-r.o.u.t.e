@@ -10,8 +10,11 @@ AnimatorState:
   m_Name: Hanging Idle
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
-  m_StateMachineBehaviours: []
+  m_Transitions:
+  - {fileID: -1959480023682866775}
+  - {fileID: -5651879335350565013}
+  m_StateMachineBehaviours:
+  - {fileID: -2785751921754935906}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -69,6 +72,44 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &-8181912825241311344
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Fall
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 0
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
+  snapDuration: 0.075
+  enableHandIK: 1
+  enableHandIkRotation: 1
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: -0.15, z: -0.03}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 1
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: 0.08
 --- !u!1101 &-8167319431011373228
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -108,13 +149,19 @@ AnimatorStateMachine:
     m_Position: {x: 430, y: 10, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3562109661580938298}
-    m_Position: {x: 310, y: 220, z: 0}
+    m_Position: {x: 180, y: 110, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3255156042297428142}
     m_Position: {x: 510, y: -110, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3536148800903445769}
-    m_Position: {x: 610, y: 220, z: 0}
+    m_Position: {x: 380, y: 210, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 2504881534786520754}
+    m_Position: {x: 690, y: 220, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -3243917004286936122}
+    m_Position: {x: 634.95264, y: 390.07928, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -122,29 +169,26 @@ AnimatorStateMachine:
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 830, y: 120, z: 0}
+  m_ExitPosition: {x: 890, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: 4681949409448865530}
---- !u!1101 &-7756084183261091815
+--- !u!1101 &-7572100756710041965
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 2
-    m_ConditionEvent: holdingLedge
-    m_EventTreshold: 0
+  m_Conditions: []
   m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: 0}
+  m_DstState: {fileID: 8530066424802533394}
   m_Solo: 0
-  m_Mute: 1
-  m_IsExit: 1
+  m_Mute: 0
+  m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
+  m_TransitionDuration: 0.3
   m_TransitionOffset: 0
-  m_ExitTime: 0.75
+  m_ExitTime: 0.08
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -219,7 +263,7 @@ AnimatorState:
   m_Transitions:
   - {fileID: 7364432771357359753}
   m_StateMachineBehaviours:
-  - {fileID: 6863810817133320038}
+  - {fileID: -3461667770662615659}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -254,19 +298,25 @@ AnimatorStateMachine:
     m_Position: {x: 490, y: -80, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -7091877376966923291}
-    m_Position: {x: 760, y: -80, z: 0}
+    m_Position: {x: 780, y: -20, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8901519514780693401}
     m_Position: {x: 500, y: 160, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3848439893710925278}
-    m_Position: {x: 770, y: 160, z: 0}
+    m_Position: {x: 770, y: 240, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 4013592783134844979}
     m_Position: {x: 220, y: -40, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3104600697225692590}
     m_Position: {x: 220, y: 210, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 8530066424802533394}
+    m_Position: {x: 770, y: -130, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -5404895186947549894}
+    m_Position: {x: 770, y: 120, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions:
@@ -301,6 +351,28 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!1101 &-6235298516113174485
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 4681949409448865530}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.3
+  m_TransitionOffset: 0
+  m_ExitTime: 0.25
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &-5810360299424874489
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -320,9 +392,87 @@ AnimatorStateTransition:
   m_ExitTime: 1
   m_HasExitTime: 1
   m_HasFixedDuration: 1
-  m_InterruptionSource: 1
+  m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &-5651879335350565013
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 1
+    m_ConditionEvent: jump
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -5404895186947549894}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.1
+  m_TransitionOffset: 0
+  m_ExitTime: 0.1
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
+--- !u!1101 &-5592145212010670872
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 1
+    m_ConditionEvent: jump
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 8530066424802533394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0
+  m_TransitionOffset: 0
+  m_ExitTime: 0.1
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
+--- !u!1102 &-5404895186947549894
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Hanging Climb
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions:
+  - {fileID: -3213756187930202029}
+  m_StateMachineBehaviours:
+  - {fileID: 170436999878299958}
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: df2d468500ca74d4c83625cf326d6ec8, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!206 &-5135018672101822003
 BlendTree:
   m_ObjectHideFlags: 1
@@ -390,8 +540,9 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -1749297601978187871}
+  - {fileID: -5592145212010670872}
   m_StateMachineBehaviours:
-  - {fileID: 6696243026561209024}
+  - {fileID: 7035614425231737545}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -406,6 +557,44 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-5128792365260641112
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Stand
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
+  snapDuration: 0.5
+  enableHandIK: 1
+  enableHandIkRotation: 1
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: -0.15, z: -0.02}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 1
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: 0.7
 --- !u!206 &-4712863134494971053
 BlendTree:
   m_ObjectHideFlags: 1
@@ -504,7 +693,7 @@ AnimatorStateTransition:
   m_ExitTime: 0.625
   m_HasExitTime: 0
   m_HasFixedDuration: 1
-  m_InterruptionSource: 0
+  m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
 --- !u!206 &-4103119997583898838
@@ -580,7 +769,8 @@ AnimatorState:
   m_Name: Hanging Drop
   m_Speed: 1
   m_CycleOffset: 0
-  m_Transitions: []
+  m_Transitions:
+  - {fileID: -6235298516113174485}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -590,7 +780,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 0}
+  m_Motion: {fileID: 7400000, guid: be92b63819fc3ca4198c589b883b3f4f, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -675,6 +865,44 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-3461667770662615659
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: 
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 0
+  callDisableRootMotionOnEnd: 1
+  enableSnapping: 0
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: 0, z: 0}
+  snapDuration: 0
+  enableHandIK: 0
+  enableHandIkRotation: 0
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: 0, z: 0}
+  handIKAdjustment_End: {x: 0, y: -0.15, z: 0.37}
+  continuallyAlignHandIkToEdge: 0
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: Infinity
 --- !u!1102 &-3255156042297428142
 AnimatorState:
   serializedVersion: 6
@@ -697,12 +925,60 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 3094330708855449807, guid: b1844fbe628f5bf4ab29e6c68912a708, type: 3}
+  m_Motion: {fileID: 7400000, guid: 1596eec049d9ed6499952b733f21ab6b, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!1102 &-3243917004286936122
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Fall 1
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 2a2d7ba253141954d94990b698110f25, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
+--- !u!1101 &-3213756187930202029
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -4568730125638663706}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.5
+  m_TransitionOffset: 0
+  m_ExitTime: 0.8
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1102 &-3177696414266654253
 AnimatorState:
   serializedVersion: 6
@@ -714,10 +990,10 @@ AnimatorState:
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
-  - {fileID: -7756084183261091815}
   - {fileID: 6279134664127122806}
+  - {fileID: -7572100756710041965}
   m_StateMachineBehaviours:
-  - {fileID: 4601337016986784272}
+  - {fileID: -8181912825241311344}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -726,7 +1002,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 3567b58ea15e96f46aedae74ad6e0379, type: 2}
+  m_Motion: {fileID: 7400000, guid: 02a155c4e5f25b64bb25c483e4d6ad27, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -805,6 +1081,44 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
+--- !u!114 &-2785751921754935906
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Idle
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 0
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: -2.48, z: -0.15}
+  snapDuration: 0.1
+  enableHandIK: 1
+  enableHandIkRotation: 1
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: 0, z: 0.15}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 0
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: Infinity
 --- !u!1101 &-2211888333968729672
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -827,6 +1141,31 @@ AnimatorStateTransition:
   m_ExitTime: 0.7058824
   m_HasExitTime: 0
   m_HasFixedDuration: 1
+  m_InterruptionSource: 2
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
+--- !u!1101 &-1959480023682866775
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 2
+    m_ConditionEvent: holdingLedge
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -3848439893710925278}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.1
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
@@ -841,7 +1180,6 @@ AnimatorState:
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
-  - {fileID: -1781272291645505926}
   - {fileID: -7370909237188407279}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
@@ -858,31 +1196,6 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
---- !u!1101 &-1781272291645505926
-AnimatorStateTransition:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 2
-    m_ConditionEvent: holdingLedge
-    m_EventTreshold: 0
-  m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: 0}
-  m_Solo: 0
-  m_Mute: 1
-  m_IsExit: 1
-  serializedVersion: 3
-  m_TransitionDuration: 0.25
-  m_TransitionOffset: 0
-  m_ExitTime: 0.75
-  m_HasExitTime: 1
-  m_HasFixedDuration: 1
-  m_InterruptionSource: 0
-  m_OrderedInterruption: 1
-  m_CanTransitionToSelf: 1
 --- !u!1101 &-1749297601978187871
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -943,6 +1256,28 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!1101 &-1365243674137744357
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 0}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 1
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0.05
+  m_ExitTime: 0.02
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &-1239711824087648761
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -957,9 +1292,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0
+  m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 1
+  m_ExitTime: 0.7
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -1032,7 +1367,7 @@ AnimatorController:
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
-    m_DefaultBool: 1
+    m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
   - m_Name: moveSpeed
     m_Type: 1
@@ -1065,12 +1400,6 @@ AnimatorController:
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
   - m_Name: jump
-    m_Type: 9
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
-  - m_Name: landing
     m_Type: 9
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -1113,6 +1442,44 @@ AnimatorController:
     m_IKPass: 1
     m_SyncedLayerAffectsTiming: 0
     m_Controller: {fileID: 9100000}
+--- !u!114 &170436999878299958
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Climb
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 0
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: 0, z: 0}
+  snapDuration: 0.1
+  enableHandIK: 1
+  enableHandIkRotation: 0
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: 0, z: 0}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 0
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: Infinity
 --- !u!206 &552067627723940234
 BlendTree:
   m_ObjectHideFlags: 1
@@ -1199,24 +1566,33 @@ AnimatorStateTransition:
   m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
---- !u!114 &2110527773664565833
-MonoBehaviour:
+--- !u!1102 &2504881534786520754
+AnimatorState:
+  serializedVersion: 6
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c149a1d1a258fe145907c6d6a0048eb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Anim_RootMotion
-  continuallyApplyRootPos: 1
-  callOnExit: 1
-  positionAdjustment: {x: 0, y: 0, z: 0}
-  adjustToTargetPosition: 0
-  adjustToTargetPositionDuration: 1
-  endRootLocalPosition: {x: 0, y: 0, z: 0}
+  m_Name: Normal Landing
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions:
+  - {fileID: -1365243674137744357}
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 2a2d7ba253141954d94990b698110f25, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1101 &2878429760529429776
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1234,7 +1610,7 @@ AnimatorStateTransition:
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 0}
   m_Solo: 0
-  m_Mute: 0
+  m_Mute: 1
   m_IsExit: 1
   serializedVersion: 3
   m_TransitionDuration: 0.2
@@ -1257,7 +1633,8 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7462058779040543069}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 5261424659104490233}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -1356,12 +1733,12 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Stand To Braced Hang
-  m_Speed: 1
+  m_Speed: 1.4
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -1239711824087648761}
   m_StateMachineBehaviours:
-  - {fileID: 2110527773664565833}
+  - {fileID: -5128792365260641112}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -1413,7 +1790,7 @@ AnimatorStateMachine:
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: -4568730125638663706}
---- !u!114 &4601337016986784272
+--- !u!114 &4349245313166317479
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1422,15 +1799,71 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c149a1d1a258fe145907c6d6a0048eb6, type: 3}
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Anim_RootMotion
-  continuallyApplyRootPos: 0
-  callOnExit: 0
-  positionAdjustment: {x: 0, y: 0, z: 0}
-  adjustToTargetPosition: 1
-  adjustToTargetPositionDuration: 0.1
-  endRootLocalPosition: {x: -0.02538865, y: -0.2485318, z: 0.3080772}
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Braced Hang Climb
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 1
+  enableSnapping: 0
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: 0.4, z: 0.2}
+  snapDuration: 1
+  enableHandIK: 1
+  enableHandIkRotation: 0
+  staticIkWeights: 1
+  useCurveForIkWeights: 1
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.55
+      value: 1
+      inSlope: Infinity
+      outSlope: -1.4585563
+      tangentMode: 7
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.58
+      value: 0
+      inSlope: -1.3523475
+      outSlope: Infinity
+      tangentMode: 97
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: 0, z: 0}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 1
+  climbing: 1
+  climbingSnap: 1
+  speedAfterClimb: 6
+  transitionExitNormalizedTime: 0.8
 --- !u!1102 &4681949409448865530
 AnimatorState:
   serializedVersion: 6
@@ -1446,6 +1879,7 @@ AnimatorState:
   - {fileID: 2878429760529429776}
   - {fileID: -8641507385691764156}
   - {fileID: -2211888333968729672}
+  - {fileID: 7063782673488047671}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -1461,6 +1895,102 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!1101 &4707786710127586239
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -4568730125638663706}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.8
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
+--- !u!114 &5261424659104490233
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Stand
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: -0.1630123, y: -2.66, z: -0.5495252}
+  snapDuration: 0.5
+  enableHandIK: 1
+  enableHandIkRotation: 1
+  staticIkWeights: 1
+  useCurveForIkWeights: 1
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.55
+      value: 0
+      inSlope: Infinity
+      outSlope: 19.999996
+      tangentMode: 65
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.6
+      value: 1
+      inSlope: 19.999996
+      outSlope: Infinity
+      tangentMode: 101
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: -0.15, z: -0.02}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 1
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: 0.8
 --- !u!1101 &5466459794479358657
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1555,53 +2085,17 @@ AnimatorStateTransition:
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -5130826940061610521}
   m_Solo: 0
-  m_Mute: 0
+  m_Mute: 1
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0
+  m_TransitionDuration: 0.2
   m_TransitionOffset: 0
-  m_ExitTime: 1
+  m_ExitTime: 0.8
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
---- !u!114 &6696243026561209024
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c149a1d1a258fe145907c6d6a0048eb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Anim_RootMotion
-  continuallyApplyRootPos: 0
-  callOnExit: 0
-  positionAdjustment: {x: 0, y: 0, z: 0}
-  adjustToTargetPosition: 1
-  adjustToTargetPositionDuration: 0
-  endRootLocalPosition: {x: 0, y: 0, z: 0}
---- !u!114 &6863810817133320038
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c149a1d1a258fe145907c6d6a0048eb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Anim_RootMotion
-  continuallyApplyRootPos: 1
-  callOnExit: 1
-  positionAdjustment: {x: 0, y: 0, z: 0}
-  adjustToTargetPosition: 0
-  adjustToTargetPositionDuration: 1
-  endRootLocalPosition: {x: 0, y: 0, z: 0}
 --- !u!1109 &7014627274904712523
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -1616,6 +2110,72 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!114 &7035614425231737545
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: 
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 0
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
+  snapDuration: 0
+  enableHandIK: 1
+  enableHandIkRotation: 1
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: -0.15, z: 0.37}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 0
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: Infinity
+--- !u!1101 &7063782673488047671
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 1
+    m_ConditionEvent: isGrounded
+    m_EventTreshold: 0
+  - m_ConditionMode: 6
+    m_ConditionEvent: landingType
+    m_EventTreshold: 1
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 2504881534786520754}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0
+  m_TransitionOffset: 0
+  m_ExitTime: 0.7058824
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 2
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1102 &7164706639470407143
 AnimatorState:
   serializedVersion: 6
@@ -1701,6 +2261,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   speedFactor: 0
+--- !u!1102 &8530066424802533394
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Braced Hang Climb
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions:
+  - {fileID: 4707786710127586239}
+  m_StateMachineBehaviours:
+  - {fileID: 4349245313166317479}
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 4dbaba62bd401b244afb93d92f39ce92, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1101 &8548455142813089984
 AnimatorStateTransition:
   m_ObjectHideFlags: 1

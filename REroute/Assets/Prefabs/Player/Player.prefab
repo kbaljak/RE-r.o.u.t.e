@@ -1139,7 +1139,6 @@ Transform:
   - {fileID: 895331731655099917}
   - {fileID: 3658263080561549509}
   - {fileID: 7475201109821886131}
-  - {fileID: 5604996663290663512}
   - {fileID: 8628040818861004512}
   m_Father: {fileID: 6008359961423701854}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1187,6 +1186,8 @@ MonoBehaviour:
   holdLedgeIKPosDiff_High: {x: 0, y: 0.25, z: -0.1}
   holdLedgeIKPosDiff_Med: {x: 0, y: 0.06, z: 0.15}
   holdLedgePhysicsImpact: 0
+  ap_standToHang_animHeight: 2.66
+  ap_standToBraceHang_animHeight: 2.58
 --- !u!1 &2608696385012948134
 GameObject:
   m_ObjectHideFlags: 0
@@ -1450,13 +1451,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58a363aaf71200449b34c7e78e769026, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
-  topRayStartPos: {fileID: 8884963277568308835}
-  forwardRayStartPos: {fileID: 3672332706308861296}
+  climbTrigger: {fileID: 0}
+  jumpClimbTrigger: {fileID: 0}
   highest: 2.4
   mediumHeight: 1.6
   lowHeight: 1.4
   vaultHeight: 1
-  checkForLedge: 0
+  checkForClimbable: 0
 --- !u!1 &3383669766447412769
 GameObject:
   m_ObjectHideFlags: 0
@@ -1939,7 +1940,7 @@ Transform:
   m_Children:
   - {fileID: 1470070983699910467}
   - {fileID: 5815202162028777996}
-  m_Father: {fileID: 8556411180200245941}
+  m_Father: {fileID: 6008359961423701854}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5426475574757109842
 GameObject:
@@ -2385,6 +2386,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8556411180200245941}
+  - {fileID: 5604996663290663512}
   - {fileID: 4499362724475081816}
   - {fileID: 7967203083294090016}
   m_Father: {fileID: 0}
@@ -2427,7 +2429,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
   plAnimCont: {fileID: 1280958438658191862}
-  plClmbTrig: {fileID: 6148794795613088992}
+  plParkourDet: {fileID: 0}
   playerCamera: {fileID: 0}
   cameraPoint: {fileID: 0}
   moveCharacter: 1
@@ -2444,6 +2446,7 @@ MonoBehaviour:
   linearOrQuadraticRunAccel: 0
   moveDirection: {x: 0, y: 0, z: 1}
   fallSpeed: 0
+  followCameraRotation: 1
   walkSpeed: 3
   runStartSpeed: 8
   runMaxSpeed: 12
@@ -2459,6 +2462,7 @@ MonoBehaviour:
   smooth_roll_targetSpeedDiff: 4
   smooth_roll_duration: 0.2
   smooth_roll_startDelay: 0.4
+  smooth_bracedHand_dropDelay: 0
   moveSpeedSigned: 0
   moveAngle: 0
   lookAngleSigned: 0

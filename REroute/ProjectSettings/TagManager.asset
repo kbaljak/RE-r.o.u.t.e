@@ -18,8 +18,8 @@ TagManager:
   - 
   - 
   - 
-  - Climbable
-  - ClimbableDetection
+  - Parkourable
+  - ParkourableDetection
   - 
   - 
   - 

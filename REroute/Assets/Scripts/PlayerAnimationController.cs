@@ -5,17 +5,18 @@ public class PlayerAnimationController : MonoBehaviour
 {
     internal Animator anim;
     PlayerController playerCont;
-    bool ikActive = false;
 
     public bool isRoot = true;
 
     public Transform rightHandIKTarget;
     public Transform leftHandIKTarget;
     Transform ikTargetParent;
+    public Vector2 handIkPosWeights = Vector2.zero;
+    public Vector2 handIkRotWeights = Vector2.zero;
 
     Vector3 baseLocalPosition;
 
-    bool holdingLedge = false;
+    internal Ledge targetLedge = null;
     internal Vector3 targetPosition = Vector3.zero;
     Vector3 playerVelocityOnLedgeGrab = Vector3.zero;
     Vector3 hipsDeltaPos = Vector3.zero;
@@ -54,7 +55,7 @@ public class PlayerAnimationController : MonoBehaviour
         // Grab ledge impact physics visualization
         if (holdLedgePhysicsImpact)
         {
-            if (holdingLedge)
+            if (playerCont.plParkourDet.holdingLedge)
             {
                 if (playerVelocityOnLedgeGrab != Vector3.zero)
                 {
@@ -74,56 +75,74 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
+    // Hand IK
     void OnAnimatorIK()
     {
-        if (ikActive)
-        {
-            anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 1);
-            anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 1);
-            anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKTarget.position);
-            //anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
+        anim.SetIKPositionWeight(AvatarIKGoal.RightHand, handIkPosWeights.y);
+        anim.SetIKRotationWeight(AvatarIKGoal.RightHand, handIkRotWeights.y);
+        anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, handIkPosWeights.x);
+        anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, handIkRotWeights.x);
 
-            anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
-            anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1);
-            anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKTarget.position);
-            //anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
-        }
-        else
+        if (handIkPosWeights.x > 0f)
         {
-            anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 0);
-            anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 0);
-            anim.SetLookAtWeight(0);
+            anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKTarget.position);
         }
+        if (handIkPosWeights.y > 0f)
+        {
+            anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKTarget.position);
+        }
+
+        /*if (handIkRotWeights.x > 0f)
+        {
+            anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
+        }
+        if (handIkRotWeights.y > 0f)
+        {
+            anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
+        }*/
+    }
+    public void SetHandIKWeights(float leftHand, float rightHand, bool includeRotation = false)
+    {
+        handIkPosWeights.x = leftHand; handIkPosWeights.y = rightHand;
+        if (includeRotation) { handIkRotWeights.x = 1; handIkRotWeights.y = 1; }
+    }
+    public void ResetHandIKWeights()
+    {
+        handIkPosWeights.x = 0; handIkPosWeights.y = 0;
+        handIkRotWeights.x = 0; handIkRotWeights.y = 0;
     }
 
-    public void GrabOntoLedge(Transform ledgeTransform, bool high, Vector3 playerVelocity)
+
+    public void GrabOntoLedge(Ledge ledge, LedgeLevel ledgeLvl)
     {
-        if (holdingLedge) { return; }
+        //if (playerCont.plParkourDet.holdingLedge) { return; }
         Debug.Log("PlayerAnimationController.GrabOntoLedge()");
 
         // Set target position
-        targetPosition = ledgeTransform.position + (ledgeTransform.rotation * (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med));
+        //targetPosition = ledgeTransform.position + (ledgeTransform.rotation * (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med));
+        targetLedge = ledge;
 
         // Set IK
         //localHeight += (high ? handIKDifference_High : handIKDifference_Med);
         rightHandIKTarget.localPosition = new Vector3(rightHandIKTarget.localPosition.x, 0, 0);
         leftHandIKTarget.localPosition = new Vector3(leftHandIKTarget.localPosition.x, 0, 0);
-        ikTargetParent.localPosition = new Vector3(0, ledgeTransform.position.y - targetPosition.y, 0) + (high ? holdLedgeIKPosDiff_High : holdLedgeIKPosDiff_Med);
-        ikActive = true;
+        //ikTargetParent.localPosition = new Vector3(0, ledge.transform.position.y - targetPosition.y, 0); //+ (high ? holdLedgeIKPosDiff_High : holdLedgeIKPosDiff_Med);
+        //ikActive = true;
 
         // Set animator parameters
-        holdingLedge = true; anim.SetBool("holdingLedge", holdingLedge);
-        anim.SetInteger("holdLedgeLevel", high ? 2 : 1);
+        anim.SetBool("holdingLedge", playerCont.plParkourDet.holdingLedge);
+        anim.SetInteger("holdLedgeLevel", (int)ledgeLvl);
 
         // Hips physics from impact
+        //playerVelocity = plCont.GetCurrentVelocity();
         //Debug.Log("player velocity on impact: " + playerVelocity);
         //hipsDeltaPos = Vector3.zero;
         //playerVelocityOnLedgeGrab = playerVelocity;
     }
     public void DropOffLedge()
     {
-        ikActive = false;
-        holdingLedge = false; anim.SetBool("holdingLedge", holdingLedge);
+        //handIKActive = false;
+        anim.SetBool("holdingLedge", playerCont.plParkourDet.holdingLedge);
 
         playerVelocityOnLedgeGrab = Vector3.zero;
         hipsDeltaPos = Vector3.zero;
@@ -134,6 +153,20 @@ public class PlayerAnimationController : MonoBehaviour
     }
 
 
+    //// External animation behviour
+    public void SetHandIKPosition(Vector3 value, bool local = true)
+    {
+        if (local) { ikTargetParent.localPosition = value; }
+        else { ikTargetParent.position = value; }
+    }
+    public void SetHandIKPositionDelta(Vector3 adjustment, bool local = true) 
+    { 
+        if (local) { ikTargetParent.localPosition += adjustment; }
+        else {  ikTargetParent.position += adjustment;}
+    }
+
+
+    //// Delayed
     IEnumerator LandingAnimationDoneRootMotionSync()
     {
         yield return new WaitUntil(() => !anim.applyRootMotion);
@@ -142,7 +175,7 @@ public class PlayerAnimationController : MonoBehaviour
 
 
 
-    //// External animation calls
+    //// External animation event calls
     public void EnableRootMotion(bool keepMovement = false)
     {
         //Debug.Log("EnableRootMotion()");
@@ -170,5 +203,11 @@ public class PlayerAnimationController : MonoBehaviour
     {
         Debug.Log("LandingAnimationDone()");
         StartCoroutine(LandingAnimationDoneRootMotionSync());
+    }
+    public void ClimbingFinished_AnimEvent()
+    {
+        Debug.Log("ClimbingFinished_AnimEvent()");
+
+        playerCont.ClimbedLedge();
     }
 }

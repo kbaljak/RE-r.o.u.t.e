@@ -1,18 +1,15 @@
 using UnityEngine;
 
-public class Anim_RootMotion : StateMachineBehaviour
+public class Anim_Snap : StateMachineBehaviour
 {
     PlayerAnimationController plAnimCont;
     PlayerController playerCont;
 
-    public bool continuallyApplyRootPos = true;
-    public bool callOnExit = true;
-    public Vector3 positionAdjustment = Vector3.zero;
+    public bool rootMotion = true;
+    public Vector3 targetAdjustment = Vector3.zero;
+    public float snapDuration = 0.1f;
 
     // Target position vars
-    public bool adjustToTargetPosition = false;
-    public float adjustToTargetPositionDuration = 1f;
-    public Vector3 endRootLocalPosition = Vector3.zero;
     Vector3 targetPosition = Vector3.zero;
     Vector3 deltaToTargetPosition;
     float timer = 0f;
@@ -24,14 +21,13 @@ public class Anim_RootMotion : StateMachineBehaviour
         plAnimCont = animator.gameObject.GetComponent<PlayerAnimationController>();
         if (plAnimCont.isRoot) { playerCont = animator.gameObject.GetComponent<PlayerController>(); }
         else { playerCont = animator.transform.parent.GetComponent<PlayerController>(); }
-        plAnimCont.EnableRootMotion(true);
-        if (adjustToTargetPosition)
-        { 
-            targetPosition = plAnimCont.targetPosition;
-            deltaToTargetPosition = targetPosition - playerCont.transform.position; //- (playerCont.transform.position + (playerCont.transform.rotation * endRootLocalPosition));
-            Debug.Log("Animation target position = " + targetPosition + "\n-> delta = " + deltaToTargetPosition);
-            timer = 0f;
-        }
+
+        if (rootMotion) { plAnimCont.EnableRootMotion(true); }
+
+        targetPosition = plAnimCont.targetPosition;
+        deltaToTargetPosition = targetPosition - playerCont.transform.position;
+        //Debug.Log("Animation target position = " + targetPosition + "\n-> delta = " + deltaToTargetPosition);
+        timer = 0f;
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
@@ -41,26 +37,19 @@ public class Anim_RootMotion : StateMachineBehaviour
     //}
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
-    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
-    {
-        if (callOnExit) { plAnimCont.DisableRootMotion(!continuallyApplyRootPos); }
-    }
+    //override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    //{
+    //
+    //}
 
     // OnStateMove is called right after Animator.OnAnimatorMove()  // Implement code that processes and affects root motion
     override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        if (animator.applyRootMotion && continuallyApplyRootPos)
+        if (timer != -1f)
         {
-            //animator.ApplyBuiltinRootMotion();
-            animator.transform.localPosition = positionAdjustment + animator.deltaPosition;
-            playerCont.transform.position += playerCont.transform.rotation * new Vector3(animator.transform.localPosition.x, 0, animator.transform.localPosition.z);
-            animator.transform.localPosition = new Vector3(0, animator.transform.localPosition.y, 0);
-        }
-        if (adjustToTargetPosition && timer != -1f)
-        {
-            if (timer < adjustToTargetPositionDuration)
+            if (timer < snapDuration)
             {
-                playerCont.transform.position += deltaToTargetPosition * (Time.deltaTime / adjustToTargetPositionDuration);
+                playerCont.transform.position += deltaToTargetPosition * (Time.deltaTime / snapDuration);
                 timer += Time.deltaTime;
             }
             else if (timer != -1f) { playerCont.transform.position = targetPosition; timer = -1f; }
