@@ -11,6 +11,7 @@ public class PlayerAnimationController : MonoBehaviour
     public Transform rightHandIKTarget;
     public Transform leftHandIKTarget;
     Transform ikTargetParent;
+    float handIkBaseX;
     public Vector2 handIkPosWeights = Vector2.zero;
     public Vector2 handIkRotWeights = Vector2.zero;
 
@@ -42,6 +43,8 @@ public class PlayerAnimationController : MonoBehaviour
     {
         anim = GetComponent<Animator>();
         anim.applyRootMotion = false;
+
+        handIkBaseX = rightHandIKTarget.localPosition.x;
     }
     private void Start()
     {
@@ -104,13 +107,21 @@ public class PlayerAnimationController : MonoBehaviour
     public void SetHandIKWeights(float leftHand, float rightHand, bool includeRotation = false)
     {
         handIkPosWeights.x = leftHand; handIkPosWeights.y = rightHand;
-        if (includeRotation) { handIkRotWeights.x = 1; handIkRotWeights.y = 1; }
+        if (includeRotation) { handIkRotWeights.x = leftHand == 0 ? 0 : 1; handIkRotWeights.y = rightHand == 0 ? 0 : 1; }
     }
     public void ResetHandIKWeights()
     {
         handIkPosWeights.x = 0; handIkPosWeights.y = 0;
         handIkRotWeights.x = 0; handIkRotWeights.y = 0;
+        anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
+        anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
     }
+    public void SetHandIkRotation(Vector3 eulerAngles)
+    {
+        anim.SetIKRotation(AvatarIKGoal.LeftHand, transform.rotation * Quaternion.Euler(eulerAngles));
+        anim.SetIKRotation(AvatarIKGoal.RightHand, transform.rotation * Quaternion.Euler(eulerAngles));
+    }
+    public bool IsHandIKActive() => handIkPosWeights != Vector2.zero;
 
 
     public void GrabOntoLedge(Ledge ledge, LedgeLevel ledgeLvl)
@@ -147,10 +158,6 @@ public class PlayerAnimationController : MonoBehaviour
         playerVelocityOnLedgeGrab = Vector3.zero;
         hipsDeltaPos = Vector3.zero;
     }
-    public void Landed()
-    {
-        //transform.localPosition = baseLocalPosition;
-    }
 
 
     //// External animation behviour
@@ -163,6 +170,11 @@ public class PlayerAnimationController : MonoBehaviour
     { 
         if (local) { ikTargetParent.localPosition += adjustment; }
         else {  ikTargetParent.position += adjustment;}
+    }
+    public void SetHandIKPositionDeltaX(float value)
+    {
+        rightHandIKTarget.localPosition = new Vector3(handIkBaseX + value, rightHandIKTarget.localPosition.y, rightHandIKTarget.localPosition.z);
+        leftHandIKTarget.localPosition = new Vector3(-handIkBaseX - value, rightHandIKTarget.localPosition.y, rightHandIKTarget.localPosition.z);
     }
 
 
@@ -180,7 +192,7 @@ public class PlayerAnimationController : MonoBehaviour
     {
         //Debug.Log("EnableRootMotion()");
         //if (anim.applyRootMotion) { return; }
-        playerCont.RootMotionMovement(true, keepMovement);
+        playerCont.AnimationSolo(true, keepMovement);  //playerCont.RootMotionMovement(true, keepMovement);
         anim.applyRootMotion = true;
     }
     public void DisableRootMotion(bool updatePositions = true)
@@ -196,12 +208,13 @@ public class PlayerAnimationController : MonoBehaviour
         }
         transform.localPosition = Vector3.zero; //anim.rootPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
-        playerCont.RootMotionMovement(false);
+        playerCont.AnimationSolo(false);  //playerCont.RootMotionMovement(false);
     }
     public void DisableRootMotion_AnimEvent() => DisableRootMotion(true);
     public void LandingAnimationDone()
     {
         Debug.Log("LandingAnimationDone()");
+        playerCont.AnimationSolo(false);
         StartCoroutine(LandingAnimationDoneRootMotionSync());
     }
     public void ClimbingFinished_AnimEvent()

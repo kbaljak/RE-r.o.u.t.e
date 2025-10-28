@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     public CharacterController charCont;
     public PlayerAnimationController plAnimCont;
     public PlayerParkourDetection plParkourDet;
-    public GameObject playerCamera;
+    public PlayerCameraController playerCamera;
     public Transform cameraPoint;
 
     // Input
@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
     public Transform groundRaycastPoint;
     public bool isGrounded = false;  public bool characterControllerIsGrounded;
     bool isGroundedAnimBlock = false;
+    bool landingPass = false;
     // Predict landing for roll input
     public bool groundPredicted = false;
     public float predictionTime = 0.1f;
@@ -56,6 +57,7 @@ public class PlayerController : MonoBehaviour
     public float runStartAccelTime = 0.5f;
     public float runAccelTime = 10f;
     public float fullDecelTime = 1f;
+    float accelerationFactor = 1f;
     [Tooltip("Jump height in meters.")]
     public float jumpHeight = 0.7f;
 
@@ -73,6 +75,10 @@ public class PlayerController : MonoBehaviour
     public float smooth_roll_targetSpeedDiff;
     public float smooth_roll_duration;
     public float smooth_roll_startDelay;
+    // Hard landing acceleration
+    public float smooth_hardlanding_startDelay;
+    public float smooth_hardlanding_accelFactor;
+    public float smooth_hardlanding_startSpeed = 0f;
     // Braced hang drop
     public float smooth_bracedHand_dropDelay;
 
@@ -154,11 +160,20 @@ public class PlayerController : MonoBehaviour
         {
             if (canControlMove)
             {
-                Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
                 Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
-                // Get forward and right direction for movement
                 Vector2 input = moveAction.ReadValue<Vector2>();
-                Vector3 frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
+                Vector3 frameMoveDir;
+                if (!followCameraRotation)
+                {
+                    Vector3 transformRight = Vector3.ProjectOnPlane(new Vector3(transform.right.x, 0, transform.right.z), groundSlopeNormal);
+                    frameMoveDir = (transformRight * input.x) + (transformForward * input.y).normalized;
+                }
+                else
+                {
+                    Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
+                    // Get forward and right direction for movement
+                    frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
+                }
                 // Get angles
                 float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
                 lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
@@ -191,7 +206,12 @@ public class PlayerController : MonoBehaviour
                                 float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
                                 moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
                             }
-                            else { moveSpeed = walkSpeed; moveDirection = frameMoveDir; }
+                            else 
+                            {
+                                moveDirection = frameMoveDir;
+                                if (accelerationFactor == 1) { moveSpeed = walkSpeed; }
+                                else { moveSpeed = Mathf.Clamp(moveSpeed + (walkSpeed * Time.deltaTime * accelerationFactor), 0, walkSpeed); }
+                            }
                         }
                         // if sprinting -> accelerate
                         else
@@ -205,13 +225,14 @@ public class PlayerController : MonoBehaviour
                             if (angleMoveToVel < 4f)
                             {
                                 moveDirection = frameMoveDir;
-                                if (moveSpeed < runStartSpeed) { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime)), 0, curMaxSpeed); }
+                                if (moveSpeed < runStartSpeed)
+                                { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime) * accelerationFactor), 0, curMaxSpeed); }
                                 else
                                 {
                                     float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
                                     // Acceleration function
                                     float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
-                                    moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed)), 0, curMaxSpeed);
+                                    moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed) * accelerationFactor), 0, curMaxSpeed);
                                     //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
                                 }
                             }
@@ -219,7 +240,8 @@ public class PlayerController : MonoBehaviour
                             else if (angleMoveToVel < 90f)
                             {
                                 // Slow down
-                                moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
+                                if (moveSpeed > runStartSpeed)
+                                { moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); } //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
                                 // Change direction
                                 //     runstartspeed -> 0.2f, maxspeed -> 0.8f, < run start speed -< 0.05f
                                 float timeToTurn;
@@ -366,9 +388,10 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (value)
+        if (value != isGrounded)
         {
-            if (!isGrounded) { Landed(); }
+            if (value) { Landed(); }
+            else { followCameraRotation = false; }
         }
         isGrounded = value;
     }
@@ -377,9 +400,10 @@ public class PlayerController : MonoBehaviour
     // Vertical movement actions
     void Jump()
     {
-        Debug.Log("Jump");
+        //Debug.Log("Jump");
         followCameraRotation = false;
-        if (!plParkourDet.CheckClimbables())
+        Tuple<bool, bool> parkourableDetectedOnJump = plParkourDet.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
+        if (!parkourableDetectedOnJump.Item1)
         {
             groundPredicted = false;
             //if (groundSlopeNormal == Vector3.up || groundSlopeNormal == null) { playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y); }
@@ -391,8 +415,6 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            //holdingLedge = true;
-            //isGrounded = true;
             Debug.Log("Ledge jump, isGrounded: " + isGrounded);
             //Debug.Break();
         }
@@ -411,9 +433,9 @@ public class PlayerController : MonoBehaviour
     void Landed()
     {
         //Debug.Log("Landed()");
-        plAnimCont.Landed();
+        //plAnimCont.Landed();
 
-        bool hardLanding = fallSpeed >= hardLandingVelThreshold;
+        bool hardLanding = fallSpeed >= hardLandingVelThreshold && !landingPass;
         if (fallSpeed > 0f)
         {
             // Hard landing
@@ -423,24 +445,31 @@ public class PlayerController : MonoBehaviour
             {
                 plAnimCont.anim.SetInteger("landingType", roll ? 2 : 3);
                 if (roll) { StartCoroutine(RollSpeedLoss_Smooth()); } //moveSpeed *= 0.5f; }
-                else { moveSpeed *= 0.1f; }
+                else { AnimationSolo(true, true);
+                    moveSpeed = smooth_hardlanding_startSpeed; //(moveSpeed * 0.25f > smooth_hardlanding_startSpeed) ? smooth_hardlanding_startSpeed : (moveSpeed * 0.25f);
+                    StartCoroutine(HardLandingAcceleration_Smooth()); }
             }
             else
             {
-                float factor = 1 - (0.1f * (fallSpeed / hardLandingVelThreshold));
-                moveSpeed *= factor; //playerVelocity.x *= factor; playerVelocity.z *= factor;
+                if (moveSpeed < runStartSpeed) { moveSpeed = 0f; }
+                else
+                {
+                    float factor = 1 - (0.1f * (fallSpeed / hardLandingVelThreshold));
+                    moveSpeed *= factor; //playerVelocity.x *= factor; playerVelocity.z *= factor;
+                }
                 plAnimCont.anim.SetInteger("landingType", 1);
             }
         }
-        if (!hardLanding) { followCameraRotation = true; }
+        followCameraRotation = !hardLanding; //if (!hardLanding) { followCameraRotation = true; }
         roll = false;
         groundPredicted = false;
+        landingPass = false;
     }
     // Ledges
     public void GrabbedLedge(Ledge ledge)
     {
         charCont.enabled = false;
-        moveSpeed = 0; fallSpeed = 0;
+        moveSpeed = 0; //fallSpeed = 0;
         moveDirection = Vector3.zero;
         //float localHeight = ledgeHeight - 1f;
         //plAnimCont.GrabOntoLedge(ledge, ledgeLvl == LedgeLevel.High, GetCurrentVelocity());
@@ -450,6 +479,7 @@ public class PlayerController : MonoBehaviour
     }
     void DropOffLedge()
     {
+        fallSpeed = 0;
         plParkourDet.holdingLedge = false;
         plAnimCont.DropOffLedge();
         StartCoroutine(DropOffBracedHang_Smooth());
@@ -458,6 +488,7 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("ClimbedLedge()");
 
+        fallSpeed = 0;
         // Enable
         tryGrabLedge = false;
         plParkourDet.holdingLedge = false;
@@ -465,13 +496,18 @@ public class PlayerController : MonoBehaviour
         isGroundedAnimBlock = true; isGrounded = false;
         plAnimCont.anim.SetBool("isGrounded", true);
 
+        landingPass = true;
+
         // Set position to ground
         if (snap)
         {
             //if (ledge == null) { SnapToGround(1f); }
             //else { transform.position = ledge.transform.position + (ledge.transform.forward * 0.5f) + (Vector3.up * 0.05f); }
-            transform.position = ledge.transform.position + (ledge.transform.forward * 0.5f) + (Vector3.up * 0.05f);
+
+            transform.position = new Vector3(transform.position.x, ledge.transform.position.y + 0.05f, transform.position.z);
+            //transform.position = ledge.transform.position + (ledge.transform.forward * 0.5f) + (Vector3.up * 0.05f);
             //StartCoroutine(SnapToGroundSmooth(ledge.transform));
+
             SimulateFall();
             Debug.Log("ClimbedLedge() snapped!");
         }
@@ -502,7 +538,15 @@ public class PlayerController : MonoBehaviour
         totalVelocity += fallSpeed * -Vector3.up;
         return totalVelocity;
     }
-
+    public void AnimationSolo(bool enabled, bool keepMoving = false)
+    {
+        GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
+        canControlMove = !enabled;
+        if (!enabled) { accelerationFactor = 1f; }
+        applyGravity = !enabled;
+        moveCharacter = !enabled || keepMoving;
+        followCameraRotation = !enabled;
+    }
 
     //// Utility
     void SnapToGround(float rayLength = 0.4f, float verticalStartPointDelta = 1f)
@@ -553,26 +597,26 @@ public class PlayerController : MonoBehaviour
     }
     void SimulateFall()
     {
-        float timer = 0f;
+        float heightFell = 0f; float heightLimit = 10f;
         float delta = 0.02f;
         Update_Grounded();
-        while (!isGrounded && timer < 10f)
+        while (!isGrounded && heightFell < heightLimit)
         {
             charCont.Move(Vector3.down * delta);
             Update_Grounded();
-            timer += Time.deltaTime;
+            heightFell += delta;
         }
-        if (timer >= 10f) { Debug.LogWarning("Failed to simulate fall."); }
+        if (heightFell >= heightLimit) { Debug.LogWarning("Failed to simulate fall - height limit reached."); }
     }
 
     //// External utility
-    public void RootMotionMovement(bool enabled, bool keepMoving = false)
+    /*public void RootMotionMovement(bool enabled, bool keepMoving = false)
     {
         GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
         canControlMove = !enabled;
         applyGravity = !enabled;
         moveCharacter = !enabled || keepMoving;
-    }
+    }*/
 
 
     //// Smooth transition functions
@@ -600,6 +644,14 @@ public class PlayerController : MonoBehaviour
         plParkourDet.holdingLedge = false;
         moveSpeed = 0f; fallSpeed = 0f;
         charCont.enabled = true;
+    }
+    IEnumerator HardLandingAcceleration_Smooth()
+    {
+        float startDelay = smooth_hardlanding_startDelay;
+        if (startDelay > 0) { yield return new WaitForSeconds(startDelay); }
+
+        accelerationFactor = smooth_hardlanding_accelFactor;
+        canControlMove = true;
     }
 }
 

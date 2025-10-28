@@ -7,7 +7,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Hanging Idle
+  m_Name: Hanging Idle (Slow)
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -44,6 +44,28 @@ BlendTree:
   m_UseAutomaticThresholds: 1
   m_NormalizedBlendValues: 0
   m_BlendType: 0
+--- !u!1101 &-8688807096824370809
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -5404895186947549894}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.5
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &-8641507385691764156
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -93,8 +115,8 @@ MonoBehaviour:
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
   snapDuration: 0.075
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
-  enableHandIkRotation: 1
   staticIkWeights: 1
   useCurveForIkWeights: 0
   handIKWeightCurve:
@@ -106,6 +128,9 @@ MonoBehaviour:
   handIKAdjustment_During: {x: 0, y: -0.15, z: -0.03}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
   continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 1
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
@@ -149,19 +174,22 @@ AnimatorStateMachine:
     m_Position: {x: 430, y: 10, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3562109661580938298}
-    m_Position: {x: 180, y: 110, z: 0}
+    m_Position: {x: 190, y: 110, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3255156042297428142}
     m_Position: {x: 510, y: -110, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3536148800903445769}
-    m_Position: {x: 380, y: 210, z: 0}
+    m_Position: {x: 380, y: 220, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 2504881534786520754}
     m_Position: {x: 690, y: 220, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3243917004286936122}
     m_Position: {x: 634.95264, y: 390.07928, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -4210414316535209162}
+    m_Position: {x: 190, y: 160, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []
@@ -178,34 +206,25 @@ AnimatorStateTransition:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions: []
+  m_Name: Fast Climb
+  m_Conditions:
+  - m_ConditionMode: 4
+    m_ConditionEvent: fallSpeed
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 8530066424802533394}
   m_Solo: 0
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.3
+  m_TransitionDuration: 0.2
   m_TransitionOffset: 0
-  m_ExitTime: 0.08
+  m_ExitTime: 0.05
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
---- !u!114 &-7485405116580822969
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ef193c5b07ad3a4fa2a1c3353d74a2b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
 --- !u!1101 &-7462058779040543069
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -217,7 +236,7 @@ AnimatorStateTransition:
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8901519514780693401}
   m_Solo: 0
-  m_Mute: 0
+  m_Mute: 1
   m_IsExit: 0
   serializedVersion: 3
   m_TransitionDuration: 0.2
@@ -234,7 +253,7 @@ AnimatorStateTransition:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 
+  m_Name: Slow Climb
   m_Conditions: []
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -8901519514780693401}
@@ -242,12 +261,12 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
+  m_TransitionDuration: 0.4
   m_TransitionOffset: 0
-  m_ExitTime: 1
+  m_ExitTime: 0.75
   m_HasExitTime: 1
   m_HasFixedDuration: 1
-  m_InterruptionSource: 0
+  m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
 --- !u!1102 &-7091877376966923291
@@ -301,7 +320,7 @@ AnimatorStateMachine:
     m_Position: {x: 780, y: -20, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -8901519514780693401}
-    m_Position: {x: 500, y: 160, z: 0}
+    m_Position: {x: 500, y: 90, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -3848439893710925278}
     m_Position: {x: 770, y: 240, z: 0}
@@ -310,13 +329,19 @@ AnimatorStateMachine:
     m_Position: {x: 220, y: -40, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3104600697225692590}
-    m_Position: {x: 220, y: 210, z: 0}
+    m_Position: {x: 220, y: 230, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 8530066424802533394}
     m_Position: {x: 770, y: -130, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -5404895186947549894}
     m_Position: {x: 770, y: 120, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: -3432051559321847249}
+    m_Position: {x: 220, y: 360, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 4645933081718851104}
+    m_Position: {x: 500, y: 160, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions:
@@ -324,10 +349,11 @@ AnimatorStateMachine:
   - {fileID: 3548983655957665266}
   - {fileID: -1412616840491660614}
   - {fileID: 8938755113980360360}
+  - {fileID: -32305886652568871}
   m_StateMachineTransitions: {}
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: -40, y: -180, z: 0}
-  m_EntryPosition: {x: 20, y: 40, z: 0}
+  m_EntryPosition: {x: -140, y: 40, z: 0}
   m_ExitPosition: {x: 1070, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 1070, y: 20, z: 0}
   m_DefaultState: {fileID: -3177696414266654253}
@@ -345,6 +371,9 @@ AnimatorTransition:
   - m_ConditionMode: 6
     m_ConditionEvent: holdLedgeLevel
     m_EventTreshold: 2
+  - m_ConditionMode: 3
+    m_ConditionEvent: fallSpeed
+    m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -1911355364780367878}
   m_Solo: 0
@@ -401,21 +430,18 @@ AnimatorStateTransition:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: jump
-    m_EventTreshold: 0
+  m_Name: Slow Climb
+  m_Conditions: []
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -5404895186947549894}
   m_Solo: 0
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.1
+  m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 0.1
-  m_HasExitTime: 0
+  m_ExitTime: 0.05
+  m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -427,20 +453,17 @@ AnimatorStateTransition:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 
-  m_Conditions:
-  - m_ConditionMode: 1
-    m_ConditionEvent: jump
-    m_EventTreshold: 0
+  m_Conditions: []
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 8530066424802533394}
   m_Solo: 0
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0
+  m_TransitionDuration: 0.1
   m_TransitionOffset: 0
-  m_ExitTime: 0.1
-  m_HasExitTime: 0
+  m_ExitTime: 0.145
+  m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
@@ -453,7 +476,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Hanging Climb
-  m_Speed: 1
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -3213756187930202029}
@@ -578,8 +601,8 @@ MonoBehaviour:
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
   snapDuration: 0.5
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
-  enableHandIkRotation: 1
   staticIkWeights: 1
   useCurveForIkWeights: 0
   handIKWeightCurve:
@@ -591,10 +614,35 @@ MonoBehaviour:
   handIKAdjustment_During: {x: 0, y: -0.15, z: -0.02}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
   continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
   transitionExitNormalizedTime: 0.7
+--- !u!1101 &-4854773184908447700
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -5404895186947549894}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.5
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!206 &-4712863134494971053
 BlendTree:
   m_ObjectHideFlags: 1
@@ -696,6 +744,33 @@ AnimatorStateTransition:
   m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1102 &-4210414316535209162
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Hard Landing (Tree)
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions:
+  - {fileID: 716333408253062093}
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 3434530217223015756}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!206 &-4103119997583898838
 BlendTree:
   m_ObjectHideFlags: 1
@@ -798,8 +873,7 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 7582516093001385410}
-  m_StateMachineBehaviours:
-  - {fileID: -7485405116580822969}
+  m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -886,8 +960,8 @@ MonoBehaviour:
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: 0, z: 0}
   snapDuration: 0
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 0
-  enableHandIkRotation: 0
   staticIkWeights: 1
   useCurveForIkWeights: 0
   handIKWeightCurve:
@@ -899,10 +973,39 @@ MonoBehaviour:
   handIKAdjustment_During: {x: 0, y: 0, z: 0}
   handIKAdjustment_End: {x: 0, y: -0.15, z: 0.37}
   continuallyAlignHandIkToEdge: 0
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
   transitionExitNormalizedTime: Infinity
+--- !u!1102 &-3432051559321847249
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Low Climb
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 3c52dc6e3469f6e46905bbd2c1213f8a, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &-3255156042297428142
 AnimatorState:
   serializedVersion: 6
@@ -971,9 +1074,9 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.5
+  m_TransitionDuration: 0.4
   m_TransitionOffset: 0
-  m_ExitTime: 0.8
+  m_ExitTime: 0.875
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -987,11 +1090,12 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Fall Braced Hang Grab
-  m_Speed: 1
+  m_Speed: 1.2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 6279134664127122806}
   - {fileID: -7572100756710041965}
+  - {fileID: -2257356168312024650}
   m_StateMachineBehaviours:
   - {fileID: -8181912825241311344}
   m_Position: {x: 50, y: 50, z: 0}
@@ -1100,10 +1204,10 @@ MonoBehaviour:
   callDisableRootMotionOnEnd: 0
   enableSnapping: 1
   enableSnapAtEnd: 0
-  snapTargetAdjustment: {x: 0, y: -2.48, z: -0.15}
+  snapTargetAdjustment: {x: 0, y: -2.45, z: -0.15}
   snapDuration: 0.1
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
-  enableHandIkRotation: 1
   staticIkWeights: 1
   useCurveForIkWeights: 0
   handIKWeightCurve:
@@ -1112,13 +1216,41 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  handIKAdjustment_During: {x: 0, y: 0, z: 0.15}
+  handIKAdjustment_During: {x: 0, y: -0.13, z: -0.05}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
-  continuallyAlignHandIkToEdge: 0
+  continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
   transitionExitNormalizedTime: Infinity
+--- !u!1101 &-2257356168312024650
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Slow Climb
+  m_Conditions:
+  - m_ConditionMode: 3
+    m_ConditionEvent: fallSpeed
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 8530066424802533394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.6
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1101 &-2211888333968729672
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1177,11 +1309,12 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Fall To Hanging
-  m_Speed: 1
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7370909237188407279}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 445660185066901885}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -1190,7 +1323,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: -5375319729413791424, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}
+  m_Motion: {fileID: 7400000, guid: 7a7e24ded146a9a40b645003a081f78a, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -1354,6 +1487,29 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
+--- !u!1109 &-32305886652568871
+AnimatorTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 2
+    m_ConditionEvent: isGrounded
+    m_EventTreshold: 0
+  - m_ConditionMode: 6
+    m_ConditionEvent: holdLedgeLevel
+    m_EventTreshold: 2
+  - m_ConditionMode: 4
+    m_ConditionEvent: fallSpeed
+    m_EventTreshold: 0
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 4645933081718851104}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 1
 --- !u!91 &9100000
 AnimatorController:
   m_ObjectHideFlags: 0
@@ -1429,6 +1585,12 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: Constant_8
+    m_Type: 1
+    m_DefaultFloat: 6
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -1458,28 +1620,126 @@ MonoBehaviour:
   processUpdate: 1
   enableRootMotion: 1
   applyRootMotion: 1
-  callDisableRootMotionOnEnd: 0
-  enableSnapping: 0
+  callDisableRootMotionOnEnd: 1
+  enableSnapping: 1
   enableSnapAtEnd: 0
-  snapTargetAdjustment: {x: 0, y: 0, z: 0}
-  snapDuration: 0.1
+  snapTargetAdjustment: {x: 0, y: -2, z: -0.25}
+  snapDuration: 0.2
+  snapDurationPerAxis: {x: 0, y: 0.3, z: 0.1}
   enableHandIK: 1
-  enableHandIkRotation: 0
+  staticIkWeights: 1
+  useCurveForIkWeights: 1
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.6
+      value: 1
+      inSlope: Infinity
+      outSlope: -20.00002
+      tangentMode: 71
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.65
+      value: 0
+      inSlope: -20.00002
+      outSlope: 0
+      tangentMode: 5
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: 0.05, z: 0}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 1
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 1
+  climbing: 1
+  climbingSnap: 1
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: 1
+--- !u!114 &445660185066901885
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: 
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: -2.05, z: -0.65}
+  snapDuration: 0.1
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
+  enableHandIK: 1
   staticIkWeights: 1
   useCurveForIkWeights: 0
   handIKWeightCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  handIKAdjustment_During: {x: 0, y: 0, z: 0}
+  handIKAdjustment_During: {x: 0, y: -0.1, z: -0.05}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
-  continuallyAlignHandIkToEdge: 0
+  continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
-  transitionExitNormalizedTime: Infinity
+  transitionExitNormalizedTime: 0.9
 --- !u!206 &552067627723940234
 BlendTree:
   m_ObjectHideFlags: 1
@@ -1519,6 +1779,28 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
+--- !u!1101 &716333408253062093
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -4568730125638663706}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.5
+  m_TransitionOffset: 0
+  m_ExitTime: 1
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1107 &1001837041706742146
 AnimatorStateMachine:
   serializedVersion: 6
@@ -1541,6 +1823,47 @@ AnimatorStateMachine:
   m_ExitPosition: {x: 800, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: 7164706639470407143}
+--- !u!114 &1162911212558322342
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
+  name: Fall
+  processUpdate: 1
+  enableRootMotion: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 0
+  enableSnapping: 1
+  enableSnapAtEnd: 0
+  snapTargetAdjustment: {x: 0, y: -2.05, z: -0.65}
+  snapDuration: 0.01
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
+  enableHandIK: 1
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: -0.1, z: -0.05}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
+  climbing: 0
+  climbingSnap: 0
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: 0.75
 --- !u!1101 &1601517276780388585
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -1566,6 +1889,34 @@ AnimatorStateTransition:
   m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1101 &2397254670386923792
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions:
+  - m_ConditionMode: 1
+    m_ConditionEvent: isGrounded
+    m_EventTreshold: 0
+  - m_ConditionMode: 6
+    m_ConditionEvent: landingType
+    m_EventTreshold: 3
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: -4210414316535209162}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.2
+  m_TransitionOffset: 0
+  m_ExitTime: 0.75
+  m_HasExitTime: 0
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
 --- !u!1102 &2504881534786520754
 AnimatorState:
   serializedVersion: 6
@@ -1578,7 +1929,8 @@ AnimatorState:
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -1365243674137744357}
-  m_StateMachineBehaviours: []
+  m_StateMachineBehaviours:
+  - {fileID: 6787409772151203721}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -1629,10 +1981,11 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Stand To Hanging
-  m_Speed: 1
+  m_Speed: 1.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -7462058779040543069}
+  - {fileID: -8688807096824370809}
   m_StateMachineBehaviours:
   - {fileID: 5261424659104490233}
   m_Position: {x: 50, y: 50, z: 0}
@@ -1666,6 +2019,53 @@ AnimatorTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 1
+--- !u!206 &3434530217223015756
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Blend Tree
+  m_Childs:
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: 8f193b6ced7af9b438ef370f1e61c2b3, type: 2}
+    m_Threshold: 0
+    m_Position: {x: -1, y: 6}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: moveAngle
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 7400000, guid: a9ce714f402307d48bc7a77555ee6144, type: 2}
+    m_Threshold: 8
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: moveSpeed
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 3094330708855449807, guid: 6deac83e30d8acd4cbb8c7d8a11545bd, type: 3}
+    m_Threshold: 12
+    m_Position: {x: 2, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: moveSpeed
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: 3094330708855449807, guid: cf78dc5ec3b949d47839771b740e655a, type: 3}
+    m_Threshold: 16
+    m_Position: {x: 4, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: moveSpeed
+    m_Mirror: 0
+  m_BlendParameter: moveSpeed
+  m_BlendParameterY: Constant_8
+  m_MinThreshold: 0
+  m_MaxThreshold: 16
+  m_UseAutomaticThresholds: 0
+  m_NormalizedBlendValues: 1
+  m_BlendType: 3
 --- !u!1109 &3548983655957665266
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -1807,12 +2207,12 @@ MonoBehaviour:
   enableRootMotion: 1
   applyRootMotion: 1
   callDisableRootMotionOnEnd: 1
-  enableSnapping: 0
+  enableSnapping: 1
   enableSnapAtEnd: 0
-  snapTargetAdjustment: {x: 0, y: 0.4, z: 0.2}
-  snapDuration: 1
+  snapTargetAdjustment: {x: 0, y: -1.65, z: -0.3}
+  snapDuration: 0.1
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
-  enableHandIkRotation: 0
   staticIkWeights: 1
   useCurveForIkWeights: 1
   handIKWeightCurve:
@@ -1828,7 +2228,7 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.55
+      time: 0.2
       value: 1
       inSlope: Infinity
       outSlope: -1.4585563
@@ -1837,7 +2237,7 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.58
+      time: 0.25
       value: 0
       inSlope: -1.3523475
       outSlope: Infinity
@@ -1848,22 +2248,53 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 103
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  handIKAdjustment_During: {x: 0, y: 0, z: 0}
+  handIKAdjustment_During: {x: 0, y: 0, z: -0.15}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
   continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 1
   climbing: 1
   climbingSnap: 1
-  speedAfterClimb: 6
-  transitionExitNormalizedTime: 0.8
+  speedAfterClimb: 0
+  transitionExitNormalizedTime: 1.05
+--- !u!1102 &4645933081718851104
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Hanging Idle (Fast)
+  m_Speed: 2
+  m_CycleOffset: 0
+  m_Transitions:
+  - {fileID: -4854773184908447700}
+  m_StateMachineBehaviours:
+  - {fileID: 1162911212558322342}
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 7a7e24ded146a9a40b645003a081f78a, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &4681949409448865530
 AnimatorState:
   serializedVersion: 6
@@ -1880,6 +2311,7 @@ AnimatorState:
   - {fileID: -8641507385691764156}
   - {fileID: -2211888333968729672}
   - {fileID: 7063782673488047671}
+  - {fileID: 2397254670386923792}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -1911,7 +2343,7 @@ AnimatorStateTransition:
   serializedVersion: 3
   m_TransitionDuration: 0.25
   m_TransitionOffset: 0
-  m_ExitTime: 0.8
+  m_ExitTime: 0.9
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -1937,9 +2369,9 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: -0.1630123, y: -2.66, z: -0.5495252}
-  snapDuration: 0.5
+  snapDuration: 0.25
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
-  enableHandIkRotation: 1
   staticIkWeights: 1
   useCurveForIkWeights: 1
   handIKWeightCurve:
@@ -1987,10 +2419,13 @@ MonoBehaviour:
   handIKAdjustment_During: {x: 0, y: -0.15, z: -0.02}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
   continuallyAlignHandIkToEdge: 1
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
-  transitionExitNormalizedTime: 0.8
+  transitionExitNormalizedTime: 0.5
 --- !u!1101 &5466459794479358657
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -2008,7 +2443,7 @@ AnimatorStateTransition:
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -3562109661580938298}
   m_Solo: 0
-  m_Mute: 0
+  m_Mute: 1
   m_IsExit: 0
   serializedVersion: 3
   m_TransitionDuration: 0.2
@@ -2081,21 +2516,39 @@ AnimatorStateTransition:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: 
-  m_Conditions: []
+  m_Conditions:
+  - m_ConditionMode: 3
+    m_ConditionEvent: fallSpeed
+    m_EventTreshold: -100
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -5130826940061610521}
   m_Solo: 0
   m_Mute: 1
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.2
-  m_TransitionOffset: 0
-  m_ExitTime: 0.8
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0.3128349
+  m_ExitTime: 0.7843256
   m_HasExitTime: 1
   m_HasFixedDuration: 1
-  m_InterruptionSource: 0
+  m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!114 &6787409772151203721
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdea4415d5664a14386f0c0a320e912e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  normalizedTiming: 0
+  effectDelta: {x: 0, y: -0.2, z: 0}
+  effectDuration: 0.1
 --- !u!1109 &7014627274904712523
 AnimatorTransition:
   m_ObjectHideFlags: 1
@@ -2131,8 +2584,8 @@ MonoBehaviour:
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
   snapDuration: 0
+  snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
-  enableHandIkRotation: 1
   staticIkWeights: 1
   useCurveForIkWeights: 0
   handIKWeightCurve:
@@ -2141,9 +2594,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  handIKAdjustment_During: {x: 0, y: -0.15, z: 0.37}
+  handIKAdjustment_During: {x: 0, y: -0.95, z: 0.365}
   handIKAdjustment_End: {x: 0, y: 0, z: 0}
   continuallyAlignHandIkToEdge: 0
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
   climbing: 0
   climbingSnap: 0
   speedAfterClimb: 0
@@ -2237,15 +2693,15 @@ AnimatorStateTransition:
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 0}
   m_Solo: 0
-  m_Mute: 0
+  m_Mute: 1
   m_IsExit: 1
   serializedVersion: 3
-  m_TransitionDuration: 0.5
+  m_TransitionDuration: 1
   m_TransitionOffset: 0
-  m_ExitTime: 0.8
+  m_ExitTime: 0.1
   m_HasExitTime: 1
   m_HasFixedDuration: 1
-  m_InterruptionSource: 0
+  m_InterruptionSource: 2
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
 --- !u!114 &8381559824016014644
