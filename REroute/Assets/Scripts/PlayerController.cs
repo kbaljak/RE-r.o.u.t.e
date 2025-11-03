@@ -18,11 +18,13 @@ public class PlayerController : MonoBehaviour
     public Transform cameraPoint;
 
     // Input
+    InputAction freeLookAction;
     InputAction moveAction;
     InputAction jumpAction;
     InputAction sprintAction;
     InputAction attackAction;
     InputAction crouchAction;
+    bool freeLook = false;
 
     /// Movement
     // Is the character moved each frame
@@ -43,6 +45,7 @@ public class PlayerController : MonoBehaviour
     float groundFriction = 1f;
     // Player velocities
     public float moveSpeed = 0f;
+    bool MoveSpeedIsZero() => moveSpeed < 0.001f && moveSpeed > -0.001f;
     /// <summary>false = linear; true = quadratic</summary>
     public bool linearOrQuadraticRunAccel = false;
     public Vector3 moveDirection = Vector3.forward;
@@ -93,12 +96,26 @@ public class PlayerController : MonoBehaviour
     {
         charCont = GetComponent<CharacterController>();
         // Input
+        freeLookAction = InputSystem.actions.FindAction("Free look");
         moveAction = InputSystem.actions.FindAction("Move");
         jumpAction = InputSystem.actions.FindAction("Jump");
         sprintAction = InputSystem.actions.FindAction("Sprint");
         crouchAction = InputSystem.actions.FindAction("Crouch");
         // Other
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
+    }
+
+    private void LateUpdate()
+    {
+        if (followCameraRotation && freeLook && MoveSpeedIsZero())
+        {
+            float targetYAngle = playerCamera.transform.eulerAngles.y - transform.eulerAngles.y;
+            if (targetYAngle > 180f) { targetYAngle = targetYAngle - 360f; }
+            if (targetYAngle < -180f) { targetYAngle = 360f + targetYAngle; }
+            targetYAngle = Mathf.Clamp(targetYAngle, -90f, 90f);
+            head.transform.localEulerAngles = new Vector3(0, targetYAngle, 0);
+        }
+        else { head.transform.localEulerAngles = Vector3.zero; }
     }
 
     //// Update
@@ -122,24 +139,61 @@ public class PlayerController : MonoBehaviour
     }
     void Update_FaceCamera()
     {
+        freeLook = freeLookAction.IsInProgress();
         if (followCameraRotation)
         {
-            Quaternion targetRotation = Quaternion.Euler(new Vector3(transform.eulerAngles.x, playerCamera.transform.eulerAngles.y, transform.eulerAngles.z));
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f * 1.2f * Time.deltaTime);
+            // Gameobject rotation
+            if (freeLook)
+            {
+                float targetYAngle = playerCamera.transform.eulerAngles.y - transform.eulerAngles.y;
+                if (targetYAngle > 180f) { targetYAngle = targetYAngle - 360f; }
+                if (targetYAngle < -180f) { targetYAngle = 360f + targetYAngle; }
+                targetYAngle = Mathf.Clamp(targetYAngle, -90f, 90f);
+                // Rotate to camera look
+                if (!MoveSpeedIsZero())
+                {
+                    // If moving rotate whole body
+                    //Debug.Log(playerCamera.transform.eulerAngles.y + " - " + transform.eulerAngles.y + " = " + targetYAngle);
+                    Vector3 targetLocalEulAng = new Vector3(0, targetYAngle, 0);
+                    plAnimCont.transform.localEulerAngles = targetLocalEulAng; //Vector3.RotateTowards(plAnimCont.transform.localEulerAngles, targetLocalEulAng, 360f * 1.2f * Time.deltaTime, 0);
+                }
+                else
+                {
+                    // Otherwise rotate only head
+                    plAnimCont.transform.localEulerAngles = Vector3.zero;
+                }
+                
+            }
+            else
+            {
+                Quaternion targetRotation = Quaternion.Euler(new Vector3(transform.eulerAngles.x, playerCamera.transform.eulerAngles.y, transform.eulerAngles.z));
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f * 1.2f * Time.deltaTime);
 
-            float lookAngleSign;
-            if (Mathf.Abs(lookAngleSigned) < 0.1f) { lookAngleSign = 0; }
-            else { lookAngleSign = Mathf.Sign(lookAngleSigned); }
-            if (lookAngleSign != 0)
-            {
-                lookAngleSignedAnim = lookAngleSign;
+                plAnimCont.transform.localRotation = Quaternion.identity;
             }
-            else 
+
+            // Look animator parameter
+            if (freeLook && MoveSpeedIsZero())
             {
-                lookAngleSignedAnim = Mathf.Lerp(lookAngleSignedAnim, 0, 2f * Time.deltaTime);
+                plAnimCont.anim.SetFloat("lookAngleSign", 0);
+                plAnimCont.anim.SetFloat("moveAngle", 0);
             }
-            plAnimCont.anim.SetFloat("lookAngleSign", lookAngleSignedAnim);
-            plAnimCont.anim.SetFloat("moveAngle", moveAngle);
+            else
+            {
+                float lookAngleSign;
+                if (Mathf.Abs(lookAngleSigned) < 0.1f) { lookAngleSign = 0; }
+                else { lookAngleSign = Mathf.Sign(lookAngleSigned); }
+                if (lookAngleSign != 0)
+                {
+                    lookAngleSignedAnim = lookAngleSign;
+                }
+                else
+                {
+                    lookAngleSignedAnim = Mathf.Lerp(lookAngleSignedAnim, 0, 2f * Time.deltaTime);
+                }
+                plAnimCont.anim.SetFloat("lookAngleSign", lookAngleSignedAnim);
+                plAnimCont.anim.SetFloat("moveAngle", moveAngle);
+            }
         }
         else
         {
@@ -163,7 +217,7 @@ public class PlayerController : MonoBehaviour
                 Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
                 Vector2 input = moveAction.ReadValue<Vector2>();
                 Vector3 frameMoveDir;
-                if (!followCameraRotation)
+                if (!followCameraRotation || freeLook)
                 {
                     Vector3 transformRight = Vector3.ProjectOnPlane(new Vector3(transform.right.x, 0, transform.right.z), groundSlopeNormal);
                     frameMoveDir = (transformRight * input.x) + (transformForward * input.y).normalized;
@@ -186,8 +240,8 @@ public class PlayerController : MonoBehaviour
                     {
                         if (moveSpeed > 0)
                         {
-                            float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
-                            moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
+                            float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime * (1.0f / 0.25f)) * groundFriction;
+                            moveSpeed = Mathf.Clamp(moveSpeed - factor, 0f, Mathf.Infinity); //Mathf.Lerp(moveSpeed, 0f, factor);
                         }
                     }
                     // otherwise -> accelerate
