@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
     InputAction jumpAction;
     InputAction sprintAction;
     InputAction attackAction;
-    InputAction crouchAction;
+    InputAction slideAction;
     bool freeLook = false;
 
     /// Movement
@@ -33,13 +33,17 @@ public class PlayerController : MonoBehaviour
     // Is the player currently controllable
     public bool canControlMove = true;
     public Transform groundRaycastPoint;
-    public bool isGrounded = false;  public bool characterControllerIsGrounded;
+    public bool isGroundedFrame = false; public bool isGrounded = false;
+    public bool characterControllerIsGrounded;
     bool isGroundedAnimBlock = false;
     bool landingPass = false;
+    public float groundedPadTime = 0.6f;
+    public float groundedPadTimer = 0f;
     // Predict landing for roll input
     public bool groundPredicted = false;
     public float predictionTime = 0.1f;
     public bool roll = false;
+    public bool slide = false; bool currentlySliding = false;
 
     public Vector3 groundSlopeNormal = Vector3.up;
     float groundFriction = 1f;
@@ -84,6 +88,8 @@ public class PlayerController : MonoBehaviour
     public float smooth_hardlanding_startSpeed = 0f;
     // Braced hang drop
     public float smooth_bracedHand_dropDelay;
+    // Sliding
+    //public float sli
 
     // Debug
     public float moveSpeedSigned = 0f;
@@ -100,7 +106,7 @@ public class PlayerController : MonoBehaviour
         moveAction = InputSystem.actions.FindAction("Move");
         jumpAction = InputSystem.actions.FindAction("Jump");
         sprintAction = InputSystem.actions.FindAction("Sprint");
-        crouchAction = InputSystem.actions.FindAction("Crouch");
+        slideAction = InputSystem.actions.FindAction("Slide");
         // Other
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
     }
@@ -132,7 +138,11 @@ public class PlayerController : MonoBehaviour
             //Update_FootMovement();
             Update_ClimbableDetect();
         }
+        // Check if grounded no matter if we can move
+        Update_Grounded();
+
         Update_Movement();
+        Update_Sliding();
 
         Update_ForwardPosDelta();
         Update_AnimatorParams();
@@ -203,10 +213,6 @@ public class PlayerController : MonoBehaviour
     }
     void Update_Movement()
     {
-        // Check if grounded no matter if we can move
-        if (!plParkourDet.holdingLedge) { Update_Grounded(); }
-        //if (!moveCharacter) { return; }
-
         //// Movement
         // Get relevant orientation vectors on the plane we are standing on
         Vector3 cameraForward = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal);
@@ -231,10 +237,12 @@ public class PlayerController : MonoBehaviour
                 // Get angles
                 float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
                 lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
+
+                // Fall speed correction
+                if (isGroundedFrame && fallSpeed > 0) { fallSpeed = 0.1f; }
+
                 if (isGrounded && fallSpeed >= 0)  // = if we are grounded and our current vertical direction is downward or zero/none (otherwise we are going up)
                 {
-                    if (fallSpeed > 0) { fallSpeed = 0; }
-
                     // no input -> slow down to stand still
                     if (input == Vector2.zero)
                     {
@@ -347,6 +355,18 @@ public class PlayerController : MonoBehaviour
         charCont.center = new Vector3(charCont.center.x, charCont.center.y, headForwDeltaPos);
         climbTriggersT.localPosition = new Vector3(climbTriggersT.localPosition.x, climbTriggersT.localPosition.y, climbTriggersBaseLocalPosZ + headForwDeltaPos);
     }
+    void Update_Sliding()
+    {
+        // Sliding
+        if (!slide && !currentlySliding && isGrounded && canControlMove)
+        {
+            if (slideAction.WasPressedThisFrame()) { Slide(); }
+        }
+        else if (slide && currentlySliding)
+        {
+            if (!slideAction.IsPressed()) { SlideStop(); }
+        }
+    }
     void Update_ClimbableDetect()
     {
         bool jumpPressed = jumpAction.IsInProgress();
@@ -356,8 +376,9 @@ public class PlayerController : MonoBehaviour
     }
     void Update_Climbing()
     {
-        if (crouchAction.IsPressed()) { DropOffLedge(); }
-        if (jumpAction.WasPerformedThisFrame()) { plAnimCont.anim.SetTrigger("jump"); }
+        //if (slideAction.IsPressed()) { DropOffLedge(); }
+
+        //if (jumpAction.WasPerformedThisFrame()) { plAnimCont.anim.SetTrigger("jump"); }
     }
     void Update_AnimatorParams()
     {
@@ -377,27 +398,28 @@ public class PlayerController : MonoBehaviour
     }
     void Update_Grounded()
     {
+        if (plParkourDet.holdingLedge) { isGrounded = false; return; }
         characterControllerIsGrounded = charCont.isGrounded;
         bool value = false;
-        if (plParkourDet.holdingLedge) { isGrounded = false; return; }
         if (charCont.isGrounded) { value = true; }
         //
         RaycastHit hit;
         bool raycastHit = false;
+        float raycastLength = 0.2f;
         Debug.DrawRay(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-        if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down, out hit, 0.2f)) { raycastHit = true; }
+        if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
         else
         {
             Debug.DrawRay(groundRaycastPoint.position - (transform.forward * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-            if (Physics.Raycast(groundRaycastPoint.position - (transform.forward * 0.1f), Vector3.down, out hit, 0.2f)) { raycastHit = true; }
+            if (Physics.Raycast(groundRaycastPoint.position - (transform.forward * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
             else
             {
                 Debug.DrawRay(groundRaycastPoint.position + (transform.right * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-                if (Physics.Raycast(groundRaycastPoint.position + (transform.right * 0.1f), Vector3.down, out hit, 0.2f)) { raycastHit = true; }
+                if (Physics.Raycast(groundRaycastPoint.position + (transform.right * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
                 else
                 {
                     Debug.DrawRay(groundRaycastPoint.position - (transform.right * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-                    if (Physics.Raycast(groundRaycastPoint.position - (transform.right * 0.1f), Vector3.down, out hit, 0.2f)) { raycastHit = true; }
+                    if (Physics.Raycast(groundRaycastPoint.position - (transform.right * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
                 }
             }
         }
@@ -417,7 +439,7 @@ public class PlayerController : MonoBehaviour
             else { groundFriction = 1f; }
             value = true;
         }
-        // Is in air
+        // Is in air (no timer padding; frame important)
         else if (!value)
         {
             // Reset move direction plane
@@ -426,6 +448,31 @@ public class PlayerController : MonoBehaviour
                 moveDirection = Vector3.ProjectOnPlane(moveDirection, Vector3.up);
                 groundSlopeNormal = Vector3.up;
             }
+        }
+
+        isGroundedFrame = value;
+        if (value != isGrounded)
+        {
+            if (value) { groundedPadTimer = groundedPadTime; Landed(); }
+            else 
+            {
+                // Timer padding
+                if (groundedPadTime > 0f)  // if timer padding enabled
+                {
+                    if (groundedPadTimer > 0f)
+                    {
+                        value = true;
+                        groundedPadTimer -= Time.deltaTime;
+                    }
+                }
+                if (!value) { followCameraRotation = false; }
+            }
+        }
+        isGrounded = value;
+
+        // If is in air (incl timer padding)
+        if (!isGrounded)
+        {
             // Predict where player will land
             if (!groundPredicted && fallSpeed >= 1f)
             {
@@ -441,13 +488,6 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-
-        if (value != isGrounded)
-        {
-            if (value) { Landed(); }
-            else { followCameraRotation = false; }
-        }
-        isGrounded = value;
     }
 
     //// Main
@@ -462,7 +502,7 @@ public class PlayerController : MonoBehaviour
             groundPredicted = false;
             //if (groundSlopeNormal == Vector3.up || groundSlopeNormal == null) { playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y); }
             //else { playerVelocity += Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y) * groundSlopeNormal; Debug.Log("Slope jump!"); }
-            fallSpeed -= Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y);
+            fallSpeed = -Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y);
 
             plAnimCont.anim.SetTrigger("jump");
             //Debug.Log("Normal jump");
@@ -479,7 +519,7 @@ public class PlayerController : MonoBehaviour
         roll = false;
         while (timer < predictionTime)
         {
-            if (crouchAction.IsPressed()) { roll = true; break; }
+            if (slideAction.IsPressed()) { roll = true; break; }
             timer += Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
@@ -499,7 +539,7 @@ public class PlayerController : MonoBehaviour
             {
                 plAnimCont.anim.SetInteger("landingType", roll ? 2 : 3);
                 if (roll) { StartCoroutine(RollSpeedLoss_Smooth()); } //moveSpeed *= 0.5f; }
-                else { AnimationSolo(true, true);
+                else { MovementAnimationSolo(true);  //AnimationSolo(true, true);
                     moveSpeed = smooth_hardlanding_startSpeed; //(moveSpeed * 0.25f > smooth_hardlanding_startSpeed) ? smooth_hardlanding_startSpeed : (moveSpeed * 0.25f);
                     StartCoroutine(HardLandingAcceleration_Smooth()); }
             }
@@ -518,6 +558,29 @@ public class PlayerController : MonoBehaviour
         roll = false;
         groundPredicted = false;
         landingPass = false;
+    }
+    // Sliding
+    void Slide()
+    {
+        Debug.Log("Slide!");
+        plAnimCont.anim.SetBool("sliding", true);
+        slide = true;
+        MovementAnimationSolo(true);
+    }
+    public void SlideStartDone()
+    {
+        currentlySliding = true;
+    }
+    void SlideStop()
+    {
+        Debug.Log("Slide STOP!");
+        plAnimCont.anim.SetBool("sliding", false);
+        slide = false;
+    }
+    public void SlideEndDone()
+    {
+        currentlySliding = false;
+        MovementAnimationSolo(false);
     }
     // Ledges
     public void GrabbedLedge(Ledge ledge)
@@ -599,6 +662,15 @@ public class PlayerController : MonoBehaviour
         if (!enabled) { accelerationFactor = 1f; }
         applyGravity = !enabled;
         moveCharacter = !enabled || keepMoving;
+        followCameraRotation = !enabled;
+    }
+    public void MovementAnimationSolo(bool enabled)
+    {
+        //GetComponent<CharacterController>().detectCollisions = !enabled;
+        canControlMove = !enabled;
+        if (!enabled) { accelerationFactor = 1f; }
+        //applyGravity = !enabled;
+        moveCharacter = true;
         followCameraRotation = !enabled;
     }
 

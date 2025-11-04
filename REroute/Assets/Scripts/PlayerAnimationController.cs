@@ -223,4 +223,8 @@ public class PlayerAnimationController : MonoBehaviour
 
         playerCont.ClimbedLedge();
     }
+    public void SlideStartDone_AnimEvent()
+    {
+        playerCont.SlideStartDone();
+    }
 }

@@ -2640,6 +2640,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 588751477}
     - target: {fileID: 4632275365401548454, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
+      propertyPath: jumpHeight
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4632275365401548454, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: plAnimCont
       value: 
       objectReference: {fileID: 1753360285}
@@ -2651,6 +2655,10 @@ PrefabInstance:
       propertyPath: playerCamera
       value: 
       objectReference: {fileID: 1393753245}
+    - target: {fileID: 4632275365401548454, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
+      propertyPath: groundedPadTime
+      value: 0.08
+      objectReference: {fileID: 0}
     - target: {fileID: 4632275365401548454, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: isGroundedGraceTime
       value: 0.1
@@ -4747,11 +4755,15 @@ MonoBehaviour:
   applyGravity: 1
   canControlMove: 1
   groundRaycastPoint: {fileID: 142845328}
+  isGroundedFrame: 0
   isGrounded: 0
   characterControllerIsGrounded: 0
+  groundedPadTime: 0.1
+  groundedPadTimer: 0
   groundPredicted: 0
   predictionTime: 0.1
   roll: 0
+  slide: 0
   groundSlopeNormal: {x: 0, y: 1, z: 0}
   moveSpeed: 0
   linearOrQuadraticRunAccel: 0
@@ -6596,6 +6608,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: 409b3271bb0e0f947ada67524f1124c1, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 00e67c23193d4b0458cb4e7a1a437072, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6937541551142690876, guid: 00e67c23193d4b0458cb4e7a1a437072, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
