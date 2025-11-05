@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class VirtualChild : MonoBehaviour
 {
-    public GameObject virtualParent;
+    private GameObject virtualParent;
 
     public bool applyPosition = true;
     public Vector3 virtualLocalPosition = Vector3.zero;
@@ -11,6 +11,11 @@ public class VirtualChild : MonoBehaviour
     //Vector3 baseLocalPosition;
     //Quaternion baseLocalRotation;
 
+
+    public void SetVirtualParent(GameObject player)
+    {
+        virtualParent = player;
+    }
     private void Awake()
     {
         //baseLocalPosition = transform.localPosition;
