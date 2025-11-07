@@ -225,13 +225,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58a363aaf71200449b34c7e78e769026, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
-  topRayStartPos: {fileID: 6787658472219451025}
-  forwardRayStartPos: {fileID: 7818795839584424308}
-  highest: 2.4
-  mediumHeight: 1.6
+  grabTrigger: {fileID: 0}
+  standJumpClimbTrigger: {fileID: 0}
+  hangingHeight: 2.2
+  bracedHangHeight: 2
   lowHeight: 1.4
-  vaultHeight: 1
-  checkForLedge: 0
+  holdingLedge: 0
+  checkForClimbable: 0
+  visualizeReach: 0
+  visualizeReachGO: {fileID: 0}
 --- !u!1 &3853116948311365382
 GameObject:
   m_ObjectHideFlags: 0
@@ -591,7 +593,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}
       propertyPath: m_Name
-      value: Player
+      value: Player (Root version)
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}
       propertyPath: m_Layer
@@ -805,6 +807,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1838388036669808027}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}
 --- !u!1 &4728498761618734270 stripped
 GameObject:
@@ -848,11 +853,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57a01c5b944d96a40875fffb8f322e81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  _componentIndexCache: 0
+  _addedNetworkObject: {fileID: 0}
+  _networkObjectCache: {fileID: 0}
+  charCont: {fileID: 0}
   plAnimCont: {fileID: 1838388036669808027}
-  plClmbTrig: {fileID: 4710535853844047997}
+  plParkourDet: {fileID: 0}
   playerCamera: {fileID: 0}
   cameraPoint: {fileID: 0}
   moveCharacter: 1
+  applyGravity: 1
   canControlMove: 1
   groundRaycastPoint: {fileID: 3378918923778922905}
   isGrounded: 0
@@ -862,9 +872,11 @@ MonoBehaviour:
   roll: 0
   groundSlopeNormal: {x: 0, y: 1, z: 0}
   moveSpeed: 0
+  drek: 100
   linearOrQuadraticRunAccel: 0
   moveDirection: {x: 0, y: 0, z: 1}
   fallSpeed: 0
+  followCameraRotation: 1
   walkSpeed: 3
   runStartSpeed: 8
   runMaxSpeed: 12
@@ -872,11 +884,17 @@ MonoBehaviour:
   runAccelTime: 5
   fullDecelTime: 1
   jumpHeight: 1.2
-  holdingLedge: 0
   tryGrabLedge: 1
   hardLandingVelThreshold: 0.1
   head: {fileID: 7191857280372306548}
   climbTriggersT: {fileID: 4127118611919323874}
+  smooth_roll_targetSpeedDiff: 0
+  smooth_roll_duration: 0
+  smooth_roll_startDelay: 0
+  smooth_hardlanding_startDelay: 0
+  smooth_hardlanding_accelFactor: 0
+  smooth_hardlanding_startSpeed: 0
+  smooth_bracedHand_dropDelay: 0
   moveSpeedSigned: 0
   moveAngle: 0
   lookAngleSigned: 0
@@ -893,8 +911,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c12fdb1426123684eb3ba76e591b6e06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
+  isRoot: 1
   rightHandIKTarget: {fileID: 7786998649168822303}
   leftHandIKTarget: {fileID: 6361589901721185313}
+  handIkPosWeights: {x: 0, y: 0}
+  handIkRotWeights: {x: 0, y: 0}
   handIKDifference_High: -0.175
   handIKDifference_Med: -0.175
   holdLedgePosDiff_High: {x: 0, y: 0.05, z: 0.25}
@@ -902,6 +923,8 @@ MonoBehaviour:
   holdLedgeIKPosDiff_High: {x: 0, y: 0.25, z: -0.1}
   holdLedgeIKPosDiff_Med: {x: 0, y: 0.06, z: 0.15}
   holdLedgePhysicsImpact: 0
+  ap_standToHang_animHeight: 2.66
+  ap_standToBraceHang_animHeight: 2.58
 --- !u!4 &5392163621622572548 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 7ac0bffda38e0eb49ba2797d202094f6, type: 3}

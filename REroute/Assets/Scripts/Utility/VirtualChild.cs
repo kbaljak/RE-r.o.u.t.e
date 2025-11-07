@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.Analytics;
+using UnityEngine.Rendering;
 
 public class VirtualChild : MonoBehaviour
 {
@@ -11,6 +13,10 @@ public class VirtualChild : MonoBehaviour
     //Vector3 baseLocalPosition;
     //Quaternion baseLocalRotation;
 
+    public void SetVirtualParent(GameObject player)
+    {
+        virtualParent = player;
+    }
     private void Awake()
     {
         //baseLocalPosition = transform.localPosition;
@@ -19,7 +25,8 @@ public class VirtualChild : MonoBehaviour
 
     private void Update()
     {
-        if (applyPosition)
+
+        if (applyPosition && virtualParent != null)
         {
             transform.position = virtualParent.transform.position + (virtualParent.transform.rotation * virtualLocalPosition);
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using FishNet.Object;
 using Unity.Cinemachine;
 using UnityEditor;
 using UnityEditor.ShaderGraph.Internal;
@@ -9,7 +10,7 @@ using UnityEngine.InputSystem;
 using static UnityEngine.Rendering.DebugUI;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : NetworkBehaviour
 {
     public CharacterController charCont;
     public PlayerAnimationController plAnimCont;
@@ -17,6 +18,8 @@ public class PlayerController : MonoBehaviour
     public PlayerCameraController playerCamera;
     public Transform cameraPoint;
 
+    private VirtualChild virtualChild;
+    private GameObject tpCamera;
     // Input
     InputAction freeLookAction;
     InputAction moveAction;
@@ -98,6 +101,33 @@ public class PlayerController : MonoBehaviour
     public float lookAngleSignedAnim = 0f;
 
 
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        if (IsOwner)
+        {
+            // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
+            var camPoint = GameObject.FindGameObjectWithTag("camPoint");
+            if (camPoint != null)
+            {
+                virtualChild = camPoint.GetComponent<VirtualChild>();
+                if (virtualChild != null)
+                {
+                    virtualChild.SetVirtualParent(gameObject);
+                    Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
+                }
+
+                // get player camera controller from cameraPoint
+                playerCamera = camPoint.GetComponent<PlayerCameraController>();
+
+                // assign cameraPoint to TPCamera to follow
+                tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
+                CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
+                cineCam.Follow = camPoint.transform;   
+            }
+        }
+    }
+
     private void Start()
     {
         charCont = GetComponent<CharacterController>();
@@ -127,6 +157,7 @@ public class PlayerController : MonoBehaviour
     //// Update
     private void Update()
     {
+        if (!IsOwner) return;
         Update_FaceCamera();
 
         if (plParkourDet.holdingLedge)

@@ -8,7 +8,6 @@ public class PlayerCameraController : MonoBehaviour
 {
     VirtualChild virtualChildComp;
     Vector3 virtualChildBaseLocalPosition;
-    public CinemachineCamera fpvCamera;
     public CinemachineCamera tpvCamera;
 
     // Input
@@ -93,17 +92,5 @@ public class PlayerCameraController : MonoBehaviour
             virtualChildComp.virtualLocalPosition = Vector3.Slerp(virtualChildBaseLocalPosition, target, (timer / duration));  //virtualChildComp.virtualLocalPosition -= delta * Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
-    }
-
-
-
-    // View modes
-    void SwitchToFirstPerson()
-    {
-
-    }
-    void SwitchToThirdPerson()
-    {
-
     }
 }
