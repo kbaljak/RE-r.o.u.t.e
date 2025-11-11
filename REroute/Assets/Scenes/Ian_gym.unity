@@ -1632,6 +1632,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -8763808860493201350, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 4294834462
+      objectReference: {fileID: 0}
     - target: {fileID: 1280958438658191862, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: handIKWeights.x
       value: 0
@@ -1755,7 +1759,7 @@ PrefabInstance:
     - target: {fileID: 4632275365401548454, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: playerCamera
       value: 
-      objectReference: {fileID: 1393753245}
+      objectReference: {fileID: 0}
     - target: {fileID: 4632275365401548454, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: groundedPadTime
       value: 0.08
@@ -1883,7 +1887,7 @@ PrefabInstance:
     - target: {fileID: 6148794795613088992, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: jumpClimbTrigger
       value: 
-      objectReference: {fileID: 671076357}
+      objectReference: {fileID: 0}
     - target: {fileID: 6148794795613088992, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: visualizeReachGO
       value: 
@@ -1914,7 +1918,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7815874160605487132, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7967203083294090016, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1933,9 +1937,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7967203083294090016, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1987532616}
-    - targetCorrespondingSourceObject: {fileID: 7967203083294090016, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 671076356}
     - targetCorrespondingSourceObject: {fileID: 7967203083294090016, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2053816985}
@@ -4869,16 +4870,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1754785671}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1800161499 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7815874160605487132, guid: 4a2925473bb8d57469ae4fb2d6c7c2c4, type: 3}
-  m_PrefabInstance: {fileID: 588751472}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1805672820 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -3321919801592875672, guid: 16f65a2d832e6e141bebf0d76956ab22, type: 3}
-  m_PrefabInstance: {fileID: 875283665}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1813681555
 GameObject:
   m_ObjectHideFlags: 0
@@ -6009,3 +6000,4 @@ SceneRoots:
   - {fileID: 169578589}
   - {fileID: 1152333519}
   - {fileID: 190036583}
+  - {fileID: 588751472}

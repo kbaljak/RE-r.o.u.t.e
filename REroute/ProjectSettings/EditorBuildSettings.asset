@@ -8,6 +8,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Ian_gym.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/MainMenueScene.unity
+    guid: 4bb9e2585ed7e9e40b0b6ec9fb9f3f02
+  - enabled: 1
+    path: Assets/Scenes/HostGameScene.unity
+    guid: ad212fbf45920d542bea9ada9a6308df
+  - enabled: 1
+    path: Assets/Scenes/JoinGameScene.unity
+    guid: 966fea9a3daaabd42bc0f2fb8a0d0c11
+  - enabled: 1
+    path: Assets/Scenes/SettingsScene.unity
+    guid: e88e476e909871e4d9c0a7007cb4723f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
