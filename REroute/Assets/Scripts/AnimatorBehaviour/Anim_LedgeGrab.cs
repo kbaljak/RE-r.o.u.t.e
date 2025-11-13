@@ -8,6 +8,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 {
     PlayerAnimationController plAnimCont;
     PlayerController playerCont;
+    PlayerParkourDetection playerParkour;
 
     [Header("General")]
     public string name;
@@ -51,6 +52,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 
     // Target position vars
     Ledge targetLedge = null;
+    Vector3 targetGrabPoint;
     Vector3 snapTargetPosition;
     Vector3 deltaToSnapTargetPosition;
     Vector3 deltaToRootPosition = Vector3.zero;
@@ -58,31 +60,39 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     bool snappedLastFrame = false;
 
 
+
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         //Debug.Log(name + ".OnStateEnter()");
-        // Get references
+
+        // Get main references
         if (plAnimCont == null)
         {
             plAnimCont = animator.gameObject.GetComponent<PlayerAnimationController>();
             if (plAnimCont.isRoot) { playerCont = animator.gameObject.GetComponent<PlayerController>(); }
             else { playerCont = animator.transform.parent.GetComponent<PlayerController>(); }
+            playerParkour = playerCont.playerParkour;
         }
-        targetLedge = plAnimCont.targetLedge;
+        if (!playerCont.IsOwner) { update = false; return; }
+
+        // Get other references
+        targetLedge = playerParkour.targetLedge;
+        float targetGrabXDelta = playerParkour.targetGrabXDelta.Value;
 
         // 
         if (enableRootMotion) { plAnimCont.EnableRootMotion(false); }
-        if (enableHandIK)
+        /*if (enableHandIK)
         {
             plAnimCont.SetHandIKPosition(new Vector3(0, targetLedge.transform.position.y - snapTargetPosition.y, 0) + new Vector3(0, handIKAdjustment_During.y, handIKAdjustment_During.z), true);
             plAnimCont.SetHandIKPositionDeltaX(handIKAdjustment_During.x);
             if (enableHandIkRotation) { plAnimCont.SetHandIkRotation(handIkRotation); }
-        }
+        }*/
         else { plAnimCont.ResetHandIKWeights(); }
 
         // Calculate snap target position from ledge
-        snapTargetPosition = targetLedge.transform.position + (targetLedge.transform.rotation * snapTargetAdjustment);
+        targetGrabPoint = targetLedge.transform.position + (targetLedge.transform.right * targetGrabXDelta);
+        snapTargetPosition = targetGrabPoint + (targetLedge.transform.rotation * snapTargetAdjustment);    // targetLedge.transform.position + ...
         deltaToSnapTargetPosition = snapTargetPosition - playerCont.transform.position;
 
         if (snapDurationPerAxis != Vector3.zero) { maxSnapDuration = Mathf.Max(snapDurationPerAxis.x, snapDurationPerAxis.y, snapDurationPerAxis.z); }
@@ -92,7 +102,9 @@ public class Anim_LedgeGrab : StateMachineBehaviour
         endSnapped = false;
     }
 
-    // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
+
+
+    // OnState Update is called on each Update frame between OnStateEnter and OnStateExit callbacks
     override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         if (!update) { return; }
@@ -103,9 +115,14 @@ public class Anim_LedgeGrab : StateMachineBehaviour
         if (stateInfo.normalizedTime >= transitionExitNormalizedTime) { update = false; OnStateExitInTransition(); return; }
     }
 
+
+
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
+        if (!playerCont.IsOwner) { return; }
+
+
         //Debug.Log(name + ".OnStateExit()");
         if (callDisableRootMotionOnEnd && !climbing) { plAnimCont.DisableRootMotion(); }
     }
@@ -120,6 +137,8 @@ public class Anim_LedgeGrab : StateMachineBehaviour
             playerCont.ClimbedLedge(targetLedge, climbingSnap, speedAfterClimb);
         }
     }
+
+
 
     // OnStateMove is called right after Animator.OnAnimatorMove()  // Implement code that processes and affects root motion
     override public void OnStateMove(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -208,6 +227,8 @@ public class Anim_LedgeGrab : StateMachineBehaviour
         }
     }
 
+
+
     // OnStateIK is called right after Animator.OnAnimatorIK() // Implement code that sets up animation IK (inverse kinematics)
     override public void OnStateIK(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
@@ -223,7 +244,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
                 if (enableHandIkRotation) { plAnimCont.SetHandIkRotation(handIkRotation); }
                 if (continuallyAlignHandIkToEdge)
                 {
-                    plAnimCont.SetHandIKPosition(targetLedge.transform.position + new Vector3(0, handIKAdjustment_During.y, handIKAdjustment_During.z), false);
+                    plAnimCont.SetHandIKPosition(targetGrabPoint + new Vector3(0, handIKAdjustment_During.y, handIKAdjustment_During.z), false);
                     plAnimCont.SetHandIKPositionDeltaX(handIKAdjustment_During.x);
                 }
                 //{ plAnimCont.SetHandIKPosition(new Vector3(0, targetLedge.transform.position.y - snapTargetPosition.y, 0) + handIKAdjustment_During, true); }

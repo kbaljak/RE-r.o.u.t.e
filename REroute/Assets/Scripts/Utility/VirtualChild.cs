@@ -25,7 +25,6 @@ public class VirtualChild : MonoBehaviour
 
     private void Update()
     {
-
         if (applyPosition && virtualParent != null)
         {
             transform.position = virtualParent.transform.position + (virtualParent.transform.rotation * virtualLocalPosition);

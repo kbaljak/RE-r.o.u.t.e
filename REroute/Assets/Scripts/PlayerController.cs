@@ -4,22 +4,22 @@ using System.Linq;
 using FishNet.Object;
 using Unity.Cinemachine;
 using UnityEditor;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.Rendering.DebugUI;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
 {
+    [Header("References")]
     public CharacterController charCont;
     public PlayerAnimationController plAnimCont;
-    public PlayerParkourDetection plParkourDet;
+    public PlayerParkourDetection playerParkour;
     public PlayerCameraController playerCamera;
-    public Transform cameraPoint;
-
+    public Transform head;
+    public Transform climbTriggersT;
     private VirtualChild virtualChild;
     private GameObject tpCamera;
+
     // Input
     InputAction freeLookAction;
     InputAction moveAction;
@@ -31,56 +31,60 @@ public class PlayerController : NetworkBehaviour
 
     /// Movement
     // Is the character moved each frame
-    public bool moveCharacter = true;
-    public bool applyGravity = true;
+    bool moveCharacter = true;
+    bool applyGravity = true;
     // Is the player currently controllable
-    public bool canControlMove = true;
-    public Transform groundRaycastPoint;
-    public bool isGroundedFrame = false; public bool isGrounded = false;
-    public bool characterControllerIsGrounded;
+    private bool canControlMove = true;
+    [SerializeField] private Transform groundRaycastPoint;
+    bool isGroundedFrame = false; 
     bool isGroundedAnimBlock = false;
+    [Header("Movement")]
+    public bool isGrounded = false;
     bool landingPass = false;
-    public float groundedPadTime = 0.6f;
-    public float groundedPadTimer = 0f;
+    [SerializeField] private float groundedPadTime = 0.6f;
+    float groundedPadTimer = 0f;
     // Predict landing for roll input
-    public bool groundPredicted = false;
-    public float predictionTime = 0.1f;
-    public bool roll = false;
-    public bool slide = false; bool currentlySliding = false;
+    bool groundPredicted = false;
+    [SerializeField] private float predictionTime = 0.1f;
+    bool roll = false;
+    bool slide = false; bool currentlySliding = false;
 
-    public Vector3 groundSlopeNormal = Vector3.up;
+    Vector3 groundSlopeNormal = Vector3.up;
     float groundFriction = 1f;
     // Player velocities
-    public float moveSpeed = 0f;
+    public float moveSpeed { get; private set; } = 0f;
+    float frameMoveSpeedFactor = 1f;
     bool MoveSpeedIsZero() => moveSpeed < 0.001f && moveSpeed > -0.001f;
     /// <summary>false = linear; true = quadratic</summary>
-    public bool linearOrQuadraticRunAccel = false;
-    public Vector3 moveDirection = Vector3.forward;
-    bool? backwardMovement = null;
-    public float fallSpeed = 0f;
-
+    [SerializeField] private bool linearOrQuadraticRunAccel = false;
+    public Vector3 moveDirection { get; private set; } = Vector3.forward;
+    bool backwardMovement = false;
+    public float fallSpeed { get; private set; } = 0f;
     public bool followCameraRotation = true;
+
     // Params
-    public float walkSpeed = 2f;
+    [Header("Serialized parameters")]
+    [SerializeField] float walkSpeed = 2f;
     public float runStartSpeed = 5f;
     public float runMaxSpeed = 12f;
     public float runStartAccelTime = 0.5f;
     public float runAccelTime = 10f;
     public float fullDecelTime = 1f;
+    public float slideDecelAmount = 4f;
+    public float slideAccelAmount = 10f;
     float accelerationFactor = 1f;
     [Tooltip("Jump height in meters.")]
     public float jumpHeight = 0.7f;
 
     /// Climbing
     //public bool holdingLedge = false;
-    public bool tryGrabLedge = true;
+    bool tryGrabLedge = true;
     public float hardLandingVelThreshold = 2f;
 
-    public Transform head;
-    public Transform climbTriggersT;
     float climbTriggersBaseLocalPosZ;
 
     /// Smooth transitions
+    [Header("Smoothing parameters")]
     // Roll
     public float smooth_roll_targetSpeedDiff;
     public float smooth_roll_duration;
@@ -91,9 +95,9 @@ public class PlayerController : NetworkBehaviour
     public float smooth_hardlanding_startSpeed = 0f;
     // Braced hang drop
     public float smooth_bracedHand_dropDelay;
-    // Sliding
-    //public float sli
 
+    [Space(20)]
+    [Header("DEBUG")]
     // Debug
     public float moveSpeedSigned = 0f;
     public float moveAngle = 0f;
@@ -158,15 +162,15 @@ public class PlayerController : NetworkBehaviour
     private void Update()
     {
         if (!IsOwner) return;
+
         Update_FaceCamera();
 
-        if (plParkourDet.holdingLedge)
+        if (playerParkour.holdingLedge)
         {
-            Update_Climbing();
+            
         }
         else
         {
-            //Update_FootMovement();
             Update_ClimbableDetect();
         }
         // Check if grounded no matter if we can move
@@ -247,7 +251,7 @@ public class PlayerController : NetworkBehaviour
         //// Movement
         // Get relevant orientation vectors on the plane we are standing on
         Vector3 cameraForward = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal);
-        if (moveCharacter && !plParkourDet.holdingLedge)
+        if (moveCharacter && !playerParkour.holdingLedge)
         {
             if (canControlMove)
             {
@@ -363,6 +367,23 @@ public class PlayerController : NetworkBehaviour
                     if (jumpAction.WasPerformedThisFrame()) { Jump(); }
                 }
             }
+            else
+            {
+                if (currentlySliding)
+                {
+                    if (moveDirection.y > -0.1f) {
+                        moveSpeed = Mathf.Clamp(moveSpeed - (slideDecelAmount * groundFriction * Time.deltaTime), 0, Mathf.Infinity);
+                        if (moveSpeed < 0.1f) { SlideStop(); }
+                    }
+                    else
+                    {
+                        moveSpeed = Mathf.Clamp(moveSpeed + (slideAccelAmount * groundFriction * Time.deltaTime), 0, runMaxSpeed);
+
+                        //float downwardsAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude) * Mathf.Rad2Deg);
+                        //plAnimCont.transform.localEulerAngles = new Vector3(downwardsAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
+                    }
+                }
+            }
             // Gravity
             if (applyGravity) { fallSpeed -= Physics.gravity.y * Time.deltaTime; }
 
@@ -370,32 +391,33 @@ public class PlayerController : NetworkBehaviour
             Vector3 frameVelocity = Vector3.zero;
             frameVelocity += moveDirection * moveSpeed;
             if (applyGravity) { frameVelocity += fallSpeed * -Vector3.up; }
-            charCont.Move(frameVelocity * Time.deltaTime);
+            charCont.Move(frameVelocity * Time.deltaTime * frameMoveSpeedFactor);
+            frameMoveSpeedFactor = 1f;
         }
 
         // Update stats
         moveSpeedSigned = moveSpeed;
-        if (moveSpeed > 0) { moveSpeedSigned *= (backwardMovement != null && backwardMovement.Value ? -1 : 1); }  //angleLookToVel > 90f
+        if (moveSpeed > 0) { moveSpeedSigned *= (backwardMovement ? -1 : 1); }  //angleLookToVel > 90f
         moveAngle = Vector3.SignedAngle(cameraForward, moveDirection, groundSlopeNormal);
-        if (backwardMovement != null && backwardMovement.Value) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
+        if (backwardMovement) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
     }
     void Update_ForwardPosDelta()
     {
         Vector3 headLocalPos = transform.InverseTransformPoint(head.position);
         float headForwDeltaPos = headLocalPos.z;
-        charCont.center = new Vector3(charCont.center.x, charCont.center.y, headForwDeltaPos);
+        //charCont.center = new Vector3(charCont.center.x, charCont.center.y, headForwDeltaPos);
         climbTriggersT.localPosition = new Vector3(climbTriggersT.localPosition.x, climbTriggersT.localPosition.y, climbTriggersBaseLocalPosZ + headForwDeltaPos);
     }
     void Update_Sliding()
     {
         // Sliding
-        if (!slide && !currentlySliding && isGrounded && canControlMove)
+        if (!slide && !currentlySliding && isGrounded && canControlMove && !backwardMovement)
         {
             if (slideAction.WasPressedThisFrame()) { Slide(); }
         }
         else if (slide && currentlySliding)
         {
-            if (!slideAction.IsPressed()) { SlideStop(); }
+            if (moveDirection.y > -0.1f) { if (!slideAction.IsPressed()) { SlideStop(); } }
         }
     }
     void Update_ClimbableDetect()
@@ -403,13 +425,7 @@ public class PlayerController : NetworkBehaviour
         bool jumpPressed = jumpAction.IsInProgress();
         if (!tryGrabLedge && jumpPressed) { tryGrabLedge = true; }
         bool detectLedge = tryGrabLedge && (jumpPressed || !isGrounded);
-        plParkourDet.checkForClimbable = detectLedge;
-    }
-    void Update_Climbing()
-    {
-        //if (slideAction.IsPressed()) { DropOffLedge(); }
-
-        //if (jumpAction.WasPerformedThisFrame()) { plAnimCont.anim.SetTrigger("jump"); }
+        playerParkour.checkForClimbable = detectLedge;
     }
     void Update_AnimatorParams()
     {
@@ -417,7 +433,7 @@ public class PlayerController : NetworkBehaviour
         anim.SetFloat("moveSpeed", moveSpeedSigned);
         //anim.SetFloat("moveAngle", moveAngle);
         anim.SetFloat("fallSpeed", fallSpeed);
-        anim.SetBool("holdingLedge", plParkourDet.holdingLedge);
+        anim.SetBool("holdingLedge", playerParkour.holdingLedge);
 
         // isGrounded block
         if (isGroundedAnimBlock) 
@@ -429,8 +445,7 @@ public class PlayerController : NetworkBehaviour
     }
     void Update_Grounded()
     {
-        if (plParkourDet.holdingLedge) { isGrounded = false; return; }
-        characterControllerIsGrounded = charCont.isGrounded;
+        if (playerParkour.holdingLedge) { isGrounded = false; return; }
         bool value = false;
         if (charCont.isGrounded) { value = true; }
         //
@@ -461,17 +476,33 @@ public class PlayerController : NetworkBehaviour
             {
                 // Update move direction
                 moveDirection = Vector3.ProjectOnPlane(moveDirection, hitNormalDir);
-                // Slow down
-                ////// TODO
-
                 groundSlopeNormal = hitNormalDir;
             }
             if (hit.collider.material != null) { groundFriction = hit.collider.material.dynamicFriction; }
             else { groundFriction = 1f; }
             value = true;
+
+            // Slide down if downwards slope
+            if (moveDirection.y < 0)
+            {
+                if (!slide && moveSpeed > walkSpeed)
+                {
+                    float downwardsAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude) * Mathf.Rad2Deg);
+                    if (downwardsAngle > 29f)
+                    { 
+                        Slide();
+                        plAnimCont.transform.localEulerAngles = new Vector3(downwardsAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
+                    }
+                }
+            }
+            // Otherwise move slower
+            else if (moveDirection.y > 0)
+            {
+                frameMoveSpeedFactor = 0.5f;
+            }
         }
         // Is in air (no timer padding; frame important)
-        else if (!value)
+        else //if (!value)
         {
             // Reset move direction plane
             if (groundSlopeNormal != Vector3.up)
@@ -527,7 +558,7 @@ public class PlayerController : NetworkBehaviour
     {
         //Debug.Log("Jump");
         followCameraRotation = false;
-        Tuple<bool, bool> parkourableDetectedOnJump = plParkourDet.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
+        Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
         if (!parkourableDetectedOnJump.Item1)
         {
             groundPredicted = false;
@@ -557,9 +588,6 @@ public class PlayerController : NetworkBehaviour
     }
     void Landed()
     {
-        //Debug.Log("Landed()");
-        //plAnimCont.Landed();
-
         bool hardLanding = fallSpeed >= hardLandingVelThreshold && !landingPass;
         if (fallSpeed > 0f)
         {
@@ -576,8 +604,8 @@ public class PlayerController : NetworkBehaviour
             }
             else
             {
-                if (moveSpeed < runStartSpeed) { moveSpeed = 0f; }
-                else
+                //if (moveSpeed < runStartSpeed) { moveSpeed = 0f; }
+                if (true) //else
                 {
                     float factor = 1 - (0.1f * (fallSpeed / hardLandingVelThreshold));
                     moveSpeed *= factor; //playerVelocity.x *= factor; playerVelocity.z *= factor;
@@ -593,25 +621,26 @@ public class PlayerController : NetworkBehaviour
     // Sliding
     void Slide()
     {
-        Debug.Log("Slide!");
+        if (moveSpeed < walkSpeed) { return; }
+        MovementAnimationSolo(true);
         plAnimCont.anim.SetBool("sliding", true);
         slide = true;
-        MovementAnimationSolo(true);
     }
-    public void SlideStartDone()
+    public void SlideStart()
     {
         currentlySliding = true;
+        SetSmallCollider(true);
     }
     void SlideStop()
     {
-        Debug.Log("Slide STOP!");
         plAnimCont.anim.SetBool("sliding", false);
         slide = false;
     }
-    public void SlideEndDone()
+    public void SlideEnd()
     {
         currentlySliding = false;
         MovementAnimationSolo(false);
+        SetSmallCollider(false);
     }
     // Ledges
     public void GrabbedLedge(Ledge ledge)
@@ -619,8 +648,6 @@ public class PlayerController : NetworkBehaviour
         charCont.enabled = false;
         moveSpeed = 0; //fallSpeed = 0;
         moveDirection = Vector3.zero;
-        //float localHeight = ledgeHeight - 1f;
-        //plAnimCont.GrabOntoLedge(ledge, ledgeLvl == LedgeLevel.High, GetCurrentVelocity());
         // Camera
         followCameraRotation = false;
         transform.LookAt(new Vector3(transform.position.x + ledge.transform.forward.x, transform.position.y, transform.position.z + ledge.transform.forward.z));
@@ -628,7 +655,7 @@ public class PlayerController : NetworkBehaviour
     void DropOffLedge()
     {
         fallSpeed = 0;
-        plParkourDet.holdingLedge = false;
+        playerParkour.holdingLedge = false;
         plAnimCont.DropOffLedge();
         StartCoroutine(DropOffBracedHang_Smooth());
     }
@@ -639,12 +666,14 @@ public class PlayerController : NetworkBehaviour
         fallSpeed = 0;
         // Enable
         tryGrabLedge = false;
-        plParkourDet.holdingLedge = false;
+        playerParkour.holdingLedge = false;
         charCont.enabled = true;
         isGroundedAnimBlock = true; isGrounded = false;
         plAnimCont.anim.SetBool("isGrounded", true);
 
         landingPass = true;
+
+        playerParkour.ClimbedLedge();
 
         // Set position to ground
         if (snap)
@@ -703,6 +732,7 @@ public class PlayerController : NetworkBehaviour
         //applyGravity = !enabled;
         moveCharacter = true;
         followCameraRotation = !enabled;
+        plAnimCont.transform.localEulerAngles = new Vector3(plAnimCont.transform.localEulerAngles.x, 0, plAnimCont.transform.localEulerAngles.z);
     }
 
     //// Utility
@@ -765,6 +795,19 @@ public class PlayerController : NetworkBehaviour
         }
         if (heightFell >= heightLimit) { Debug.LogWarning("Failed to simulate fall - height limit reached."); }
     }
+    public void SetSmallCollider(bool value)
+    {
+        if (value)
+        {
+            charCont.center = new Vector3(charCont.center.x, 0.35f, charCont.center.z);
+            charCont.height = 0.5f;
+        }
+        else
+        {
+            charCont.center = new Vector3(charCont.center.x, 1, charCont.center.z);
+            charCont.height = 1.8f;
+        }
+    }
 
     //// External utility
     /*public void RootMotionMovement(bool enabled, bool keepMoving = false)
@@ -798,7 +841,7 @@ public class PlayerController : NetworkBehaviour
     {
         yield return new WaitForSeconds(smooth_bracedHand_dropDelay);
         tryGrabLedge = false;
-        plParkourDet.holdingLedge = false;
+        playerParkour.holdingLedge = false;
         moveSpeed = 0f; fallSpeed = 0f;
         charCont.enabled = true;
     }
@@ -810,13 +853,20 @@ public class PlayerController : NetworkBehaviour
         accelerationFactor = smooth_hardlanding_accelFactor;
         canControlMove = true;
     }
+    IEnumerator SlideDecellerationStart_Smooth()
+    {
+        float startDelay = 1f;
+        if (startDelay > 0) { yield return new WaitForSeconds(startDelay); }
+
+        currentlySliding = true;
+    }
 }
 
 enum LedgeHoldType { BracedHang, Hang, Freehang };
 
 
 
-[CustomEditor(typeof(PlayerController))]
+/*[CustomEditor(typeof(PlayerController))]
 public class PlayerController_Inspector : Editor
 {
     PlayerController playerCont;
@@ -850,7 +900,7 @@ public class PlayerController_Inspector : Editor
         EditorGUILayout.FloatField("Current fall speed", playerCont.fallSpeed);
         if (movementSpeeds = EditorGUILayout.Foldout(movementSpeeds, "Parameters"))
         {
-            playerCont.walkSpeed = EditorGUILayout.FloatField("Walk speed", playerCont.walkSpeed);
+            //playerCont.walkSpeed = EditorGUILayout.FloatField("Walk speed", playerCont.walkSpeed);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Run start speed | Time to accelerate");
             playerCont.runStartSpeed = EditorGUILayout.FloatField(playerCont.runStartSpeed);
@@ -880,4 +930,4 @@ public class PlayerController_Inspector : Editor
     // Utility
     void CenteredLabel(string label) => EditorGUILayout.LabelField(" ", label);
     void LeftCenteredLabel(string label) => EditorGUILayout.LabelField(String.Concat(Enumerable.Repeat(" ", 20)) + label);
-}
+}*/

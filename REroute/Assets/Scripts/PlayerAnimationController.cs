@@ -17,7 +17,7 @@ public class PlayerAnimationController : MonoBehaviour
 
     Vector3 baseLocalPosition;
 
-    internal Ledge targetLedge = null;
+    //internal Ledge targetLedge = null;
     internal Vector3 targetPosition = Vector3.zero;
     Vector3 playerVelocityOnLedgeGrab = Vector3.zero;
     Vector3 hipsDeltaPos = Vector3.zero;
@@ -58,7 +58,7 @@ public class PlayerAnimationController : MonoBehaviour
         // Grab ledge impact physics visualization
         if (holdLedgePhysicsImpact)
         {
-            if (playerCont.plParkourDet.holdingLedge)
+            if (playerCont.playerParkour.holdingLedge)
             {
                 if (playerVelocityOnLedgeGrab != Vector3.zero)
                 {
@@ -131,7 +131,7 @@ public class PlayerAnimationController : MonoBehaviour
 
         // Set target position
         //targetPosition = ledgeTransform.position + (ledgeTransform.rotation * (high ? holdLedgePosDiff_High : holdLedgePosDiff_Med));
-        targetLedge = ledge;
+        //targetLedge = ledge;
 
         // Set IK
         //localHeight += (high ? handIKDifference_High : handIKDifference_Med);
@@ -141,7 +141,7 @@ public class PlayerAnimationController : MonoBehaviour
         //ikActive = true;
 
         // Set animator parameters
-        anim.SetBool("holdingLedge", playerCont.plParkourDet.holdingLedge);
+        anim.SetBool("holdingLedge", playerCont.playerParkour.holdingLedge);
         anim.SetInteger("holdLedgeLevel", (int)ledgeLvl);
 
         // Hips physics from impact
@@ -153,7 +153,7 @@ public class PlayerAnimationController : MonoBehaviour
     public void DropOffLedge()
     {
         //handIKActive = false;
-        anim.SetBool("holdingLedge", playerCont.plParkourDet.holdingLedge);
+        anim.SetBool("holdingLedge", playerCont.playerParkour.holdingLedge);
 
         playerVelocityOnLedgeGrab = Vector3.zero;
         hipsDeltaPos = Vector3.zero;
@@ -223,8 +223,6 @@ public class PlayerAnimationController : MonoBehaviour
 
         playerCont.ClimbedLedge();
     }
-    public void SlideStartDone_AnimEvent()
-    {
-        playerCont.SlideStartDone();
-    }
+    public void SlideStart_AnimEvent() { playerCont.SlideStart(); }
+    public void SlideEnd_AnimEvent() { playerCont.SlideEnd(); }
 }

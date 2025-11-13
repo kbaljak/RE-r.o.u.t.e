@@ -1,6 +1,4 @@
 using UnityEngine;
 
-public class Parkourable : MonoBehaviour
-{
-    
-}
+public interface Parkourable
+{ }

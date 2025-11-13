@@ -862,27 +862,15 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 0}
   charCont: {fileID: 0}
   plAnimCont: {fileID: 1838388036669808027}
-  plParkourDet: {fileID: 0}
+  playerParkour: {fileID: 0}
   playerCamera: {fileID: 0}
-  cameraPoint: {fileID: 0}
-  moveCharacter: 1
-  applyGravity: 1
-  canControlMove: 1
+  head: {fileID: 7191857280372306548}
+  climbTriggersT: {fileID: 4127118611919323874}
   groundRaycastPoint: {fileID: 3378918923778922905}
-  isGroundedFrame: 0
   isGrounded: 0
-  characterControllerIsGrounded: 0
   groundedPadTime: 0.6
-  groundedPadTimer: 0
-  groundPredicted: 0
   predictionTime: 0.3
-  roll: 0
-  slide: 0
-  groundSlopeNormal: {x: 0, y: 1, z: 0}
-  moveSpeed: 0
   linearOrQuadraticRunAccel: 0
-  moveDirection: {x: 0, y: 0, z: 1}
-  fallSpeed: 0
   followCameraRotation: 1
   walkSpeed: 3
   runStartSpeed: 8
@@ -890,11 +878,10 @@ MonoBehaviour:
   runStartAccelTime: 0.5
   runAccelTime: 5
   fullDecelTime: 1
+  slideDecelAmount: 1
+  slideAccelAmount: 10
   jumpHeight: 1.2
-  tryGrabLedge: 1
   hardLandingVelThreshold: 0.1
-  head: {fileID: 7191857280372306548}
-  climbTriggersT: {fileID: 4127118611919323874}
   smooth_roll_targetSpeedDiff: 0
   smooth_roll_duration: 0
   smooth_roll_startDelay: 0

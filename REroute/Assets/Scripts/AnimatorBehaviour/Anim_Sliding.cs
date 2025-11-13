@@ -27,8 +27,8 @@ public class Anim_Sliding : StateMachineBehaviour
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        if (startState) { playerCont.SlideStartDone(); }
-        else if (endState) { playerCont.SlideEndDone(); }
+        //if (startState) { playerCont.SlideStartDone(); }
+        //else if (endState) { playerCont.SlideEndDone(); }
     }
 
     // OnStateMove is called right after Animator.OnAnimatorMove()  // Implement code that processes and affects root motion

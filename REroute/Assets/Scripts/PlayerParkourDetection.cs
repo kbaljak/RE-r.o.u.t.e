@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 
 
 public class PlayerParkourDetection : MonoBehaviour
@@ -21,6 +20,8 @@ public class PlayerParkourDetection : MonoBehaviour
     public bool holdingLedge = false;
     public bool checkForClimbable = false;
     HashSet<Collider> detected = new HashSet<Collider>();
+    internal Ledge targetLedge = null;
+    internal float? targetGrabXDelta = null;
 
     [Space(20)]
     [Header("Debug")]
@@ -63,7 +64,6 @@ public class PlayerParkourDetection : MonoBehaviour
 
     private void Update()
     {
-        //if (checkForLedge) { CheckForLedges(); }
         if (checkForClimbable && !holdingLedge) { CheckClimbables(); }
     }
 
@@ -98,45 +98,61 @@ public class PlayerParkourDetection : MonoBehaviour
             case "Ledge":
                 if (!col.GetComponent<Ledge>())
                 { Debug.LogError("ERROR: No 'Ledge' object found on a GO in 'Climbable' layer and marked as 'Ledge'."); }
-                if (!InteractLedge(col.GetComponent<Ledge>())) { return ParkourInteractType.None; }
-                return ParkourInteractType.Ledge;
+                return InteractLedge(col.GetComponent<Ledge>());
             default:  // wall
                 Debug.Log("Wall");
                 return ParkourInteractType.Wall;
         }
-        return ParkourInteractType.None;
-    }
-    void DoParkourInteract(Parkourable target, ParkourInteractType interactType)
-    {
-        switch (interactType)
-        {
-            case ParkourInteractType.Ledge:
-                InteractLedge((Ledge)target);
-                break;
-            default:  // Wall
-                break;
-        }
+        //return ParkourInteractType.None;
     }
     // Specific interactions
-    bool InteractLedge(Ledge ledge)
+    ParkourInteractType InteractLedge(Ledge ledge)
     {
-        if (holdingLedge) { return false; }
+        if (holdingLedge) { return ParkourInteractType.None; }
 
         float ledgeHeight = ledge.transform.position.y - plCont.transform.position.y;
         //Debug.Log("Ledge " + ledge.name + " at height " + ledgeHeight + " (" + ledge.transform.position.y + " - " + plCont.transform.position.y + ")");
         LedgeLevel ledgeLvl = GetLedgeLevel(ledgeHeight);
 
         Debug.Log("InteractLedge: " + ledgeHeight + ", level = " + ledgeLvl);
-        if (ledgeLvl == LedgeLevel.OutOfReach) { return false; }
-        if (ledgeLvl == LedgeLevel.BracedHang || ledgeLvl == LedgeLevel.Hang)
+
+        // Ledge is out of reach
+        if (ledgeLvl == LedgeLevel.OutOfReach) { return ParkourInteractType.None; }
+
+        checkForClimbable = false;
+        if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
         {
-            // Ledge
-            checkForClimbable = false;
-            holdingLedge = true;
-            plCont.GrabbedLedge(ledge);
-            plCont.plAnimCont.GrabOntoLedge(ledge, ledgeLvl);
+            if (plCont.isGrounded && true)  // Always vault if grounded for now
+            {
+
+                return ParkourInteractType.Vault;
+            }
         }
+
+        // Climb ledge
+        if (!GrabLedge(ledge, ledgeLvl)) { return ParkourInteractType.None; }       
+        return ParkourInteractType.Ledge;
+    }
+
+    bool GrabLedge(Ledge ledge, LedgeLevel ledgeLvl)
+    {
+        targetLedge = ledge;
+        float? deltaX = ledge.PlayerGrabbed(plCont);
+        if (!deltaX.HasValue) { return false; }
+        targetGrabXDelta = deltaX;
+        //SetGrabLedgeVars_RPC(ledge, deltaX.Value);
+
+        holdingLedge = true;
+        plCont.GrabbedLedge(ledge);
+        plCont.plAnimCont.GrabOntoLedge(ledge, ledgeLvl);
         return true;
+    }
+
+    public void ClimbedLedge()
+    {
+        //SetGrabLedgeVars_RPC(null, null);
+        targetLedge = null;
+        targetGrabXDelta = null;
     }
 
 
@@ -159,4 +175,4 @@ public class PlayerParkourDetection : MonoBehaviour
 
 public enum LedgeLevel { Low, BracedHang, Hang, OutOfReach }
 // Prioritised by 1 = least, inf = most
-enum ParkourInteractType { None = -1, Wall, Ledge, VerticalClimb, Swing }
+enum ParkourInteractType { None = -1, Wall, Ledge, Vault, Swing }
