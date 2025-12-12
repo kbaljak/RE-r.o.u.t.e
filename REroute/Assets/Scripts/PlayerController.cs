@@ -109,26 +109,29 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner)
         {
             gameObject.GetComponent<PlayerController>().enabled = false;
-            return;
+            gameObject.GetComponent<CharacterController>().enabled = false;
         }
-        // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
-        var camPoint = GameObject.FindGameObjectWithTag("camPoint");
-        if (camPoint != null)
+        else
         {
-            virtualChild = camPoint.GetComponent<VirtualChild>();
-            if (virtualChild != null)
+            // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
+            var camPoint = GameObject.FindGameObjectWithTag("camPoint");
+            if (camPoint != null)
             {
-                virtualChild.SetVirtualParent(gameObject);
-                Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
+                virtualChild = camPoint.GetComponent<VirtualChild>();
+                if (virtualChild != null)
+                {
+                    virtualChild.SetVirtualParent(gameObject);
+                    Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
+                }
+
+                // get player camera controller from cameraPoint
+                playerCamera = camPoint.GetComponent<PlayerCameraController>();
+
+                // assign cameraPoint to TPCamera to follow
+                tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
+                CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
+                cineCam.Follow = camPoint.transform;   
             }
-
-            // get player camera controller from cameraPoint
-            playerCamera = camPoint.GetComponent<PlayerCameraController>();
-
-            // assign cameraPoint to TPCamera to follow
-            tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
-            CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
-            cineCam.Follow = camPoint.transform;
         }
     }
 
@@ -161,7 +164,10 @@ public class PlayerController : NetworkBehaviour
     //// Update
     private void Update()
     {
-        Update_FaceCamera();
+        if (playerCamera != null)
+        {
+            Update_FaceCamera();    
+        }
 
         if (playerParkour.holdingLedge)
         {
@@ -174,7 +180,10 @@ public class PlayerController : NetworkBehaviour
         // Check if grounded no matter if we can move
         Update_Grounded();
 
-        Update_Movement();
+        if (playerCamera != null)
+        {
+            Update_Movement();    
+        }
         Update_Sliding();
 
         Update_ForwardPosDelta();

@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 
 public class Anim_LedgeGrab : StateMachineBehaviour
@@ -256,6 +254,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 }
 
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(Anim_LedgeGrab))]
 public class Anim_LedgeGrab_Inspector : Editor
 {
@@ -263,7 +262,7 @@ public class Anim_LedgeGrab_Inspector : Editor
 
     UnityEditor.Animations.StateMachineBehaviourContext[] context;
     float clipLength = 0f;
-    List<AnimatorStateTransition> transitions = new List<AnimatorStateTransition>();
+    List<UnityEditor.Animations.AnimatorStateTransition> transitions = new List<UnityEditor.Animations.AnimatorStateTransition>();
 
     public void OnEnable()
     {
@@ -279,7 +278,7 @@ public class Anim_LedgeGrab_Inspector : Editor
                 {
                     Anim_LedgeGrab behaviour = target as Anim_LedgeGrab;
                     clipLength = state.motion.averageDuration;
-                    foreach (AnimatorStateTransition t in state.transitions)
+                    foreach (UnityEditor.Animations.AnimatorStateTransition t in state.transitions)
                     { transitions.Add(t); }
                 }
             }
@@ -302,3 +301,4 @@ public class Anim_LedgeGrab_Inspector : Editor
         
     }
 }
+#endif

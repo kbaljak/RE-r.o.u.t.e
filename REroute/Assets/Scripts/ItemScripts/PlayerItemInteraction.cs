@@ -11,6 +11,7 @@ public class PlayerItemInteraction : NetworkBehaviour
     private GameObject pickedUpItem;
     //private GameObject heldItemInstance;
     //bool hasEmptyHand;
+    private Vector3 throwDirection;
 
     [Header("Throwing Settings")]
     float throwCharege = 0f;
@@ -30,19 +31,20 @@ public class PlayerItemInteraction : NetworkBehaviour
         if (!IsOwner)
         {
            gameObject.GetComponent<PlayerItemInteraction>().enabled = false;
-           return; 
-        }  
-
-        hasEmptyHand = true;
-        
-        throwOrPourItemAction = InputSystem.actions.FindAction("Throw_pour");
-        if(throwOrPourItemAction != null)
-        {
-            throwOrPourItemAction.Enable();
         }
         else
         {
-            Debug.LogError("Throw_pour action not found!");
+            hasEmptyHand = true;
+        
+            throwOrPourItemAction = InputSystem.actions.FindAction("Throw_pour");
+            if(throwOrPourItemAction != null)
+            {
+                throwOrPourItemAction.Enable();
+            }
+            else
+            {
+                Debug.LogError("Throw_pour action not found!");
+            }    
         }
     }
 
@@ -69,7 +71,7 @@ public class PlayerItemInteraction : NetworkBehaviour
 
     public void Update()
     {
-        if(pickedUpItem != null) PickUp();
+        if (pickedUpItem != null) PickUp();
 
         if (!hasEmptyHand && heldItemInstance != null)
         {
@@ -81,7 +83,6 @@ public class PlayerItemInteraction : NetworkBehaviour
     {
         if (hasEmptyHand)
         {
-            // instantiate a picked up item prefab in player's right hand
             GameObject foundPrefab = itemPrefabs.Find(item => item.CompareTag(pickedUpItem.tag));
             if(foundPrefab != null)
             {
@@ -117,23 +118,27 @@ public class PlayerItemInteraction : NetworkBehaviour
                 heldItemInstance.transform.position = new Vector3(heldItemInstance.transform.parent.position.x + 0.236626789f,heldItemInstance.transform.parent.position.y -0.301602364f, heldItemInstance.transform.parent.position.z + 0.936370909f);
                 heldItemInstance.transform.rotation = Quaternion.Euler(42.458744f,337.735229f,345.082825f);
                 Debug.Log("Throwing banana with charge: " + throwCharege);
-                ThrowBananaServerRpc(throwCharege);
+
+                
+                GameObject camera = GameObject.FindWithTag("TPCamera");
+                if (camera != null) throwDirection = camera.transform.forward;
+                else
+                {
+                    throwDirection = itemHoldPoint.forward;
+                    Debug.Log("Camera was null!");
+                } 
+                ThrowBananaServerRpc(throwCharege, throwDirection.normalized);
                 throwCharege = 0f;
             }
         }
     }
 
     // ------------ Networking Section ------------
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     void DespawnItemServer(GameObject item)
     {
         if (item != null) 
         {
-            // Data for respawn
-            //Vector3 odlItemPos = item.transform.position;
-            //Quaternion oldRot = item.transform.rotation;
-            //string itemTag = item.tag;
-
             pickedUpItem = null;
             Despawn(item);
             StartCoroutine(ResapwnItemWithDelay());
@@ -142,47 +147,67 @@ public class PlayerItemInteraction : NetworkBehaviour
         System.Collections.IEnumerator ResapwnItemWithDelay()
         {
             yield return new WaitForSeconds(2f);
-            // GameObject originalItem = originalItems.Find(og => og.CompareTag(tag));
-            // GameObject respawnedItem = Instantiate(originalItem, pos, rot);
             Spawn(item);
 
         }
     }
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     void SetObjectInHandServer(GameObject item)
     {
         heldItemInstance = Instantiate(item, itemHoldPoint.position, itemHoldPoint.rotation);
         Spawn(heldItemInstance, Owner);
-        SetObjectInHandObserver(heldItemInstance);
+        SetObjectInHandObserver(heldItemInstance, true);
     }
 
     [ObserversRpc]
-    void SetObjectInHandObserver(GameObject item)
+    void SetObjectInHandObserver(GameObject item, bool isHeld)
     {
-        item.transform.parent = itemHoldPoint;
-        item.transform.position = itemHoldPoint.position;
-        item.transform.rotation = itemHoldPoint.rotation;
-        
-        // item.transform.localPosition = Vector3.zero;
-        // item.transform.localRotation = Quaternion.identity;
+        Rigidbody itemRB = item.GetComponent<Rigidbody>();
+        Collider itemCollider = item.GetComponent<Collider>();
+
+        if (isHeld)
+        {
+            if (itemRB != null)
+            {
+                itemRB.isKinematic = true;
+                itemRB.detectCollisions = false;
+            }
+            item.transform.SetParent(itemHoldPoint);
+            item.transform.position = itemHoldPoint.position;
+            item.transform.rotation = itemHoldPoint.rotation;
+        }
+        else
+        {
+            item.transform.SetParent(null);
+            itemCollider.enabled = true;
+
+            if (itemRB != null)
+            {
+                itemRB.isKinematic = false;
+                itemRB.detectCollisions = true;
+                itemRB.useGravity = true;
+            }
+        }
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    void ThrowBananaServerRpc(float throwForce)
+    [ServerRpc]
+    void ThrowBananaServerRpc(float throwForce, Vector3 noramlizedThrowDirection)
     {
         if(heldItemInstance != null)
         {
             heldItemInstance.transform.parent = null;
 
-            heldItemInstance.AddComponent<BoxCollider>();
-            heldItemInstance.AddComponent<Rigidbody>();
             Rigidbody heldItemRB = heldItemInstance.GetComponent<Rigidbody>();
+
+            SetObjectInHandObserver(heldItemInstance, false);
+
             if(heldItemRB != null)
             {
-                heldItemRB.mass = 0.5f;
                 heldItemRB.isKinematic = false;
-                heldItemRB.AddForce(itemHoldPoint.forward * throwForce, ForceMode.VelocityChange);
+                heldItemRB.detectCollisions = true;
+                heldItemRB.AddForce(noramlizedThrowDirection * throwForce, ForceMode.VelocityChange);
             }
+
             heldItemInstance.GetComponent<NetworkObject>().RemoveOwnership();
             heldItemInstance = null;
             SetHandEmptyObserversRpc();

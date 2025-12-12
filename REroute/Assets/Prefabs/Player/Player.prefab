@@ -2608,7 +2608,7 @@ MonoBehaviour:
   _predictionType: 0
   _graphicalObject: {fileID: 0}
   _detachGraphicalObject: 0
-  _enableStateForwarding: 1
+  _enableStateForwarding: 0
   _networkTransform: {fileID: 0}
   _ownerInterpolation: 1
   _ownerSmoothedProperties: 4294967295
@@ -2636,6 +2636,7 @@ MonoBehaviour:
   - {fileID: 4632275365401548454}
   - {fileID: -5948133355759224539}
   - {fileID: 1792036367656086916}
+  - {fileID: 1897457646274550055}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -2726,9 +2727,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 482031fd3eea2daa5866d5f2e81aca78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerItemInteraction
-  _componentIndexCache: 255
+  _componentIndexCache: 3
   _addedNetworkObject: {fileID: -8763808860493201350}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: -8763808860493201350}
   itemHoldPoint: {fileID: 2166054492481163914}
   itemPrefabs:
   - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}

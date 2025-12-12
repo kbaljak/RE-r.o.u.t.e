@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine;
 
 public class Ledge : MonoBehaviour, Parkourable
 {
     // Scriptable data
     [SerializeField] private Ledge_Data ledgeData;
+
+#if UNITY_EDITOR
     private void Reset(){ ledgeData = ScriptableObjectManager.Load<Ledge_Data>(); }
     //
-
+#endif
     public bool vaultable = false;
 
     private float width;
