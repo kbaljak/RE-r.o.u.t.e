@@ -7,6 +7,9 @@ TagManager:
   - Ledge
   - camPoint
   - TPCamera
+  - buttonSound
+  - BananaItem
+  - OilCanItem
   layers:
   - Default
   - TransparentFX
@@ -19,7 +22,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - Pickup
   - Parkourable
   - ParkourableDetection
   - 

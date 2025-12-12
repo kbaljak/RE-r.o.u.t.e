@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
-using System.Linq;
 using FishNet.Object;
 using Unity.Cinemachine;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -108,27 +106,29 @@ public class PlayerController : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        if (IsOwner)
+        if (!IsOwner)
         {
-            // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
-            var camPoint = GameObject.FindGameObjectWithTag("camPoint");
-            if (camPoint != null)
+            gameObject.GetComponent<PlayerController>().enabled = false;
+            return;
+        }
+        // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
+        var camPoint = GameObject.FindGameObjectWithTag("camPoint");
+        if (camPoint != null)
+        {
+            virtualChild = camPoint.GetComponent<VirtualChild>();
+            if (virtualChild != null)
             {
-                virtualChild = camPoint.GetComponent<VirtualChild>();
-                if (virtualChild != null)
-                {
-                    virtualChild.SetVirtualParent(gameObject);
-                    Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
-                }
-
-                // get player camera controller from cameraPoint
-                playerCamera = camPoint.GetComponent<PlayerCameraController>();
-
-                // assign cameraPoint to TPCamera to follow
-                tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
-                CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
-                cineCam.Follow = camPoint.transform;   
+                virtualChild.SetVirtualParent(gameObject);
+                Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
             }
+
+            // get player camera controller from cameraPoint
+            playerCamera = camPoint.GetComponent<PlayerCameraController>();
+
+            // assign cameraPoint to TPCamera to follow
+            tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
+            CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
+            cineCam.Follow = camPoint.transform;
         }
     }
 
@@ -161,8 +161,6 @@ public class PlayerController : NetworkBehaviour
     //// Update
     private void Update()
     {
-        if (!IsOwner) return;
-
         Update_FaceCamera();
 
         if (playerParkour.holdingLedge)
