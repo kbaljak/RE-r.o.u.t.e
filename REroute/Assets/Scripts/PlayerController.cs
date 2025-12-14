@@ -150,6 +150,8 @@ public class PlayerController : NetworkBehaviour
 
     private void LateUpdate()
     {
+        if (!IsOwner) return;
+        
         if (followCameraRotation && freeLook && MoveSpeedIsZero())
         {
             float targetYAngle = playerCamera.transform.eulerAngles.y - transform.eulerAngles.y;
@@ -164,6 +166,8 @@ public class PlayerController : NetworkBehaviour
     //// Update
     private void Update()
     {
+        if (!IsOwner) return;
+
         if (playerCamera != null)
         {
             Update_FaceCamera();    

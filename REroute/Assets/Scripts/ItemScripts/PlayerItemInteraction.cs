@@ -55,6 +55,8 @@ public class PlayerItemInteraction : NetworkBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        if (!IsOwner) return;
+
         if(other.gameObject.layer == LayerMask.NameToLayer("Pickup"))
         {
             if (hasEmptyHand)
@@ -71,6 +73,8 @@ public class PlayerItemInteraction : NetworkBehaviour
 
     public void Update()
     {
+        if (!IsOwner) return;
+
         if (pickedUpItem != null) PickUp();
 
         if (!hasEmptyHand && heldItemInstance != null)
@@ -118,7 +122,6 @@ public class PlayerItemInteraction : NetworkBehaviour
                 heldItemInstance.transform.position = new Vector3(heldItemInstance.transform.parent.position.x + 0.236626789f,heldItemInstance.transform.parent.position.y -0.301602364f, heldItemInstance.transform.parent.position.z + 0.936370909f);
                 heldItemInstance.transform.rotation = Quaternion.Euler(42.458744f,337.735229f,345.082825f);
                 Debug.Log("Throwing banana with charge: " + throwCharege);
-
                 
                 GameObject camera = GameObject.FindWithTag("TPCamera");
                 if (camera != null) throwDirection = camera.transform.forward;
@@ -126,7 +129,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     throwDirection = itemHoldPoint.forward;
                     Debug.Log("Camera was null!");
-                } 
+                }
                 ThrowBananaServerRpc(throwCharege, throwDirection.normalized);
                 throwCharege = 0f;
             }
@@ -142,6 +145,7 @@ public class PlayerItemInteraction : NetworkBehaviour
             pickedUpItem = null;
             Despawn(item);
             StartCoroutine(ResapwnItemWithDelay());
+            
         }
 
         System.Collections.IEnumerator ResapwnItemWithDelay()
@@ -157,6 +161,30 @@ public class PlayerItemInteraction : NetworkBehaviour
         heldItemInstance = Instantiate(item, itemHoldPoint.position, itemHoldPoint.rotation);
         Spawn(heldItemInstance, Owner);
         SetObjectInHandObserver(heldItemInstance, true);
+    }
+
+    [ServerRpc]
+    void ThrowBananaServerRpc(float throwForce, Vector3 noramlizedThrowDirection)
+    {
+        if(heldItemInstance != null)
+        {
+            heldItemInstance.transform.parent = null;
+
+            Rigidbody heldItemRB = heldItemInstance.GetComponent<Rigidbody>();
+
+            SetObjectInHandObserver(heldItemInstance, false);
+
+            if(heldItemRB != null)
+            {
+                heldItemRB.isKinematic = false;
+                heldItemRB.detectCollisions = true;
+                heldItemRB.AddForce(noramlizedThrowDirection * throwForce, ForceMode.VelocityChange);
+            }
+
+            heldItemInstance.GetComponent<NetworkObject>().RemoveOwnership();
+            heldItemInstance = null;
+            SetHandEmptyObserversRpc();
+        }
     }
 
     [ObserversRpc]
@@ -188,37 +216,17 @@ public class PlayerItemInteraction : NetworkBehaviour
                 itemRB.useGravity = true;
             }
         }
-    }
-
-    [ServerRpc]
-    void ThrowBananaServerRpc(float throwForce, Vector3 noramlizedThrowDirection)
-    {
-        if(heldItemInstance != null)
-        {
-            heldItemInstance.transform.parent = null;
-
-            Rigidbody heldItemRB = heldItemInstance.GetComponent<Rigidbody>();
-
-            SetObjectInHandObserver(heldItemInstance, false);
-
-            if(heldItemRB != null)
-            {
-                heldItemRB.isKinematic = false;
-                heldItemRB.detectCollisions = true;
-                heldItemRB.AddForce(noramlizedThrowDirection * throwForce, ForceMode.VelocityChange);
-            }
-
-            heldItemInstance.GetComponent<NetworkObject>().RemoveOwnership();
-            heldItemInstance = null;
-            SetHandEmptyObserversRpc();
-        }
+        //if (IsOwner && isHeld) heldItemInstance = item; <- allows throwing with wrong reference!
     }
 
     [ObserversRpc]
     void SetHandEmptyObserversRpc()
     {
-        if(IsOwner) hasEmptyHand = true;
-        heldItemInstance = null;
+        if(IsOwner) 
+        {
+            hasEmptyHand = true;
+            heldItemInstance = null;
+        }
     }
 
     private void PourOil()
