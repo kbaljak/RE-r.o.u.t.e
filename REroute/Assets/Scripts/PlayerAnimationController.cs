@@ -223,6 +223,16 @@ public class PlayerAnimationController : MonoBehaviour
 
         playerCont.ClimbedLedge();
     }
+    public void StartVault(int vaultType)
+    {
+        anim.SetInteger("vaultType", vaultType);
+        anim.SetBool("vaulting", true);
+    }
     public void SlideStart_AnimEvent() { playerCont.SlideStart(); }
     public void SlideEnd_AnimEvent() { playerCont.SlideEnd(); }
+    public void VaultStart_AnimEvent() { playerCont.VaultStart(); }
+    public void VaultEnd_AnimEvent() { 
+        playerCont.VaultEnd();
+        anim.SetBool("vaulting", false); 
+    }
 }

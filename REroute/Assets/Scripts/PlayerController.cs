@@ -96,6 +96,10 @@ public class PlayerController : NetworkBehaviour
     // Braced hang drop
     public float smooth_bracedHand_dropDelay;
 
+    /// Vaulting
+    // Vault
+    bool isVaulting = false;
+
     [Space(20)]
     [Header("DEBUG")]
     // Debug
@@ -707,6 +711,43 @@ public class PlayerController : NetworkBehaviour
         transform.position = targetPosition;
     }
 
+    // Vaults
+    public void StartVault(Ledge ledge, int vaultType)
+    {
+        Debug.Log("StartVault() type: " + vaultType);
+
+        isVaulting = true;
+
+        followCameraRotation = false;
+        transform.LookAt(new Vector3(
+            transform.position.x + ledge.transform.forward.x,
+            transform.position.y,
+            transform.position.z + ledge.transform.forward.z));
+
+        plAnimCont.StartVault(vaultType);
+    }
+
+    public void VaultStart()
+    {
+        Debug.Log("VaultStart()");
+        AnimationSolo(true, false);
+    }
+
+    public void VaultEnd()
+    {
+        Debug.Log("VaultEnd()");
+        isVaulting = false;
+        isGroundedAnimBlock = true;
+        landingPass = true;
+        AnimationSolo(false);
+        followCameraRotation = true;
+
+        //experimental
+        if (moveAction.ReadValue<Vector2>().y > 0)
+        {
+            moveSpeed = walkSpeed;
+        }
+    }
 
     //// Common
     Vector3 GetCurrentVelocity()

@@ -120,13 +120,23 @@ public class PlayerParkourDetection : MonoBehaviour
         if (ledgeLvl == LedgeLevel.OutOfReach) { return ParkourInteractType.None; }
 
         checkForClimbable = false;
+
+        //Vault logic
         if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
         {
             if (plCont.isGrounded && true)  // Always vault if grounded for now
             {
+                Vector3 playerToLedge = (ledge.transform.position - plCont.transform.position).normalized;
+                float approachAngle = Vector3.Angle(plCont.transform.forward, playerToLedge);
 
-                return ParkourInteractType.Vault;
+                if (approachAngle < 45f)
+                {
+                    int vaultType = 1;
+                    plCont.StartVault(ledge, vaultType);
+                    return ParkourInteractType.Vault;
+                }
             }
+            return ParkourInteractType.None;
         }
 
         // Climb ledge
