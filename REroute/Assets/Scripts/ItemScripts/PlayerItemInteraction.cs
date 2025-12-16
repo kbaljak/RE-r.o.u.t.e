@@ -2,19 +2,22 @@ using UnityEngine;
 using FishNet.Object;
 using System.Collections.Generic;
 using UnityEngine.InputSystem;
+using FishNet.Object.Synchronizing;
 
 public class PlayerItemInteraction : NetworkBehaviour
 {
     [SerializeField] Transform itemHoldPoint;
     [SerializeField] List<GameObject> itemPrefabs;
-    [SerializeField] List<GameObject> originalItems;
     private GameObject pickedUpItem;
-    //private GameObject heldItemInstance;
-    //bool hasEmptyHand;
+    private GameObject heldItemInstance;
+    //private int heldItemObjectId = -1;
+    private readonly SyncVar<int> _heldItemObjectId = new SyncVar<int>(-1);
+    private bool hasEmptyHand;
     private Vector3 throwDirection;
+    InputAction throwOrPourItemAction;
 
     [Header("Throwing Settings")]
-    float throwCharege = 0f;
+    float throwCharge = 0f;
     [SerializeField]
     float minThrowCharge = 5f;
     [SerializeField]
@@ -22,9 +25,36 @@ public class PlayerItemInteraction : NetworkBehaviour
 
     [Space(20)]
     [Header("DEBUG")]
-    public bool hasEmptyHand;
-    public GameObject heldItemInstance;
-    InputAction throwOrPourItemAction;
+    public bool debugHasEmptyHand;
+    public GameObject debugHeldItemInstance;
+
+    private void Awake()
+    {
+        _heldItemObjectId.OnChange += OnHeldItemChanged;
+    }
+    private void OnHeldItemChanged(int oldVal, int newVal, bool asServer)
+    {
+        Debug.Log($"OnHeldItemChanged: {oldVal} -> {newVal}, AsServer: {asServer}, IsOwner: {IsOwner}");
+
+        if (!asServer && IsOwner)
+        {
+            if (newVal == -1)
+            {
+                heldItemInstance = null;
+                hasEmptyHand = true;
+            }
+            else
+            {
+                NetworkObject itemNetObj;
+                if (ClientManager.Objects.Spawned.TryGetValue(newVal, out itemNetObj))
+                {
+                    heldItemInstance = itemNetObj.gameObject;
+                    hasEmptyHand = false;
+                    Debug.Log("Client: SyncVar updated held item to " + heldItemInstance.name);   
+                }
+            }
+        }
+    }
     public override void OnStartClient()
     {
         base.OnStartClient();
@@ -44,7 +74,16 @@ public class PlayerItemInteraction : NetworkBehaviour
             else
             {
                 Debug.LogError("Throw_pour action not found!");
-            }    
+            }
+
+            if (ItemSpawner.Instance == null)
+            {
+                Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");
+            }
+            else
+            {
+                Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance");
+            }
         }
     }
 
@@ -53,15 +92,33 @@ public class PlayerItemInteraction : NetworkBehaviour
         if(throwOrPourItemAction != null) throwOrPourItemAction.Disable();
     }
 
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+
+        if (IsServerInitialized && _heldItemObjectId.Value != -1)
+        {
+            NetworkObject heldNetObj;
+            if(ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out heldNetObj))
+            {
+                Despawn(heldNetObj.gameObject);
+            }
+            _heldItemObjectId.Value = -1;
+            Debug.Log("Server: Cleaned up held item for disconnected player " + Owner.ClientId);
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (!IsOwner) return;
+
+        //Debug.Log($"Trigger detected: {other.gameObject.name}, Layer: {LayerMask.LayerToName(other.gameObject.layer)}, HasEmptyHand: {hasEmptyHand}");
 
         if(other.gameObject.layer == LayerMask.NameToLayer("Pickup"))
         {
             if (hasEmptyHand)
             {
-                Debug.Log("Player picked up " + other.gameObject);
+                Debug.Log("Player picked up " + other.gameObject + "with ID: " + other.GetComponent<NetworkObject>().ObjectId);
                 pickedUpItem = other.gameObject;
             }
             else
@@ -75,6 +132,9 @@ public class PlayerItemInteraction : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        debugHasEmptyHand = hasEmptyHand;
+        debugHeldItemInstance = heldItemInstance;
+
         if (pickedUpItem != null) PickUp();
 
         if (!hasEmptyHand && heldItemInstance != null)
@@ -82,21 +142,20 @@ public class PlayerItemInteraction : NetworkBehaviour
             HandleItemInteraction();
         }
     }
-
     void PickUp()
     {
         if (hasEmptyHand)
         {
             GameObject foundPrefab = itemPrefabs.Find(item => item.CompareTag(pickedUpItem.tag));
-            if(foundPrefab != null)
+            if (foundPrefab != null)
             {
-                DespawnItemServer(pickedUpItem);
-                SetObjectInHandServer(foundPrefab);
-                hasEmptyHand = false;
-            } 
+                RequestPickUpServerRPC(pickedUpItem.GetComponent<NetworkObject>().ObjectId, pickedUpItem.tag);
+                pickedUpItem = null;
+            }
             else
             {
-                Debug.Log("Can't find prefab!");  
+                Debug.Log("Could not find any prefab with tag: " + pickedUpItem.tag);
+                pickedUpItem = null;
             }
         }
     }
@@ -107,10 +166,11 @@ public class PlayerItemInteraction : NetworkBehaviour
         {
             if (heldItemInstance.CompareTag("BananaItem"))
             {
-                throwCharege += Time.deltaTime * 10f;
-                throwCharege = Mathf.Clamp(throwCharege, minThrowCharge, maxThrowCharge);
-                Debug.Log("Charging throw: " + throwCharege);
-            }else if (heldItemInstance.CompareTag("OilCanItem"))
+                throwCharge += Time.deltaTime * 10f;
+                throwCharge = Mathf.Clamp(throwCharge, minThrowCharge, maxThrowCharge);
+                Debug.Log("Charging throw: " + throwCharge);
+            }
+            else if (heldItemInstance.CompareTag("OilCanItem"))
             {
                 PourOil();
             }
@@ -119,116 +179,165 @@ public class PlayerItemInteraction : NetworkBehaviour
         {
             if (heldItemInstance.CompareTag("BananaItem"))
             {
-                heldItemInstance.transform.position = new Vector3(heldItemInstance.transform.parent.position.x + 0.236626789f,heldItemInstance.transform.parent.position.y -0.301602364f, heldItemInstance.transform.parent.position.z + 0.936370909f);
-                heldItemInstance.transform.rotation = Quaternion.Euler(42.458744f,337.735229f,345.082825f);
-                Debug.Log("Throwing banana with charge: " + throwCharege);
+                Debug.Log($"Client {(IsServerInitialized ? "Host" : "Client")}: Releasing throw with charge: {throwCharge:F1}");
                 
                 GameObject camera = GameObject.FindWithTag("TPCamera");
-                if (camera != null) throwDirection = camera.transform.forward;
-                else
-                {
-                    throwDirection = itemHoldPoint.forward;
-                    Debug.Log("Camera was null!");
-                }
-                ThrowBananaServerRpc(throwCharege, throwDirection.normalized);
-                throwCharege = 0f;
+                throwDirection = camera != null ? camera.transform.forward : itemHoldPoint.forward;
+
+                //ThrowBananaServerRpc(throwCharge, throwDirection.normalized);
+                RequestThrowBananaServerRPC(throwCharge, throwDirection.normalized);
+                throwCharge = 0f;
             }
         }
     }
 
     // ------------ Networking Section ------------
+    // ##### SERVER RPCs #####
     [ServerRpc]
-    void DespawnItemServer(GameObject item)
+    void RequestPickUpServerRPC(int pickedUpObjId, string pickedUpObjTag)
     {
-        if (item != null) 
+        NetworkObject pickedUpNetObj = null;
+        if (ServerManager.Objects.Spawned.TryGetValue(pickedUpObjId, out pickedUpNetObj))
         {
-            pickedUpItem = null;
-            Despawn(item);
-            StartCoroutine(ResapwnItemWithDelay());
-            
-        }
-
-        System.Collections.IEnumerator ResapwnItemWithDelay()
-        {
-            yield return new WaitForSeconds(2f);
-            Spawn(item);
-
-        }
-    }
-    [ServerRpc]
-    void SetObjectInHandServer(GameObject item)
-    {
-        heldItemInstance = Instantiate(item, itemHoldPoint.position, itemHoldPoint.rotation);
-        Spawn(heldItemInstance, Owner);
-        SetObjectInHandObserver(heldItemInstance, true);
-    }
-
-    [ServerRpc]
-    void ThrowBananaServerRpc(float throwForce, Vector3 noramlizedThrowDirection)
-    {
-        if(heldItemInstance != null)
-        {
-            heldItemInstance.transform.parent = null;
-
-            Rigidbody heldItemRB = heldItemInstance.GetComponent<Rigidbody>();
-
-            SetObjectInHandObserver(heldItemInstance, false);
-
-            if(heldItemRB != null)
+            GameObject pickedUpObjectHandPrefab = itemPrefabs.Find(p => p.CompareTag(pickedUpObjTag));
+            if (pickedUpObjectHandPrefab == null)
             {
-                heldItemRB.isKinematic = false;
-                heldItemRB.detectCollisions = true;
-                heldItemRB.AddForce(noramlizedThrowDirection * throwForce, ForceMode.VelocityChange);
+                Debug.Log("itemPrefabs list doesn't have a prefab with tag: " + pickedUpObjTag);
             }
 
-            heldItemInstance.GetComponent<NetworkObject>().RemoveOwnership();
-            heldItemInstance = null;
-            SetHandEmptyObserversRpc();
+            if (ItemSpawner.Instance != null)
+            {
+                ItemSpawner.Instance.OnItemPickedUp(pickedUpObjId);
+            }
+            else
+            {
+                Debug.LogWarning("No ItemSpawner Instance found! Item won't respawn.");
+                Despawn(pickedUpNetObj.gameObject);
+            }
+
+            GameObject heldItem = Instantiate(pickedUpObjectHandPrefab, itemHoldPoint.transform.position, Quaternion.identity);
+            NetworkObject heldItemNetObj = heldItem.GetComponent<NetworkObject>();
+            if (heldItemNetObj != null)
+            {
+                Debug.Log("Spawning " + heldItem + "and the owner is: " + Owner.ClientId);
+                Spawn(heldItem, Owner);
+                _heldItemObjectId.Value = heldItemNetObj.ObjectId;
+                SetItemInHandObserversRPC(heldItemNetObj.ObjectId, true);
+                Debug.Log($"Server: Player {Owner.ClientId} picked up {pickedUpNetObj.gameObject.name}, ObjectId: {heldItemNetObj.ObjectId}");
+            }
         }
     }
 
-    [ObserversRpc]
-    void SetObjectInHandObserver(GameObject item, bool isHeld)
+    [ServerRpc]
+    void RequestThrowBananaServerRPC(float throwForce, Vector3 normalizedThrowDirection)
     {
-        Rigidbody itemRB = item.GetComponent<Rigidbody>();
-        Collider itemCollider = item.GetComponent<Collider>();
+         if (_heldItemObjectId.Value == -1)
+        {
+            Debug.LogWarning($"Server: Player {Owner.ClientId} tried to throw but heldItemObjectId is -1");
+            return;
+        }
+        NetworkObject heldNetObj;
+        if (ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out heldNetObj))
+        {
+            GameObject heldItem = heldNetObj.gameObject;
+            Debug.Log($"Server: Player {Owner.ClientId} throwing {heldItem.name} with force {throwForce}");
+
+            _heldItemObjectId.Value = -1;
+
+            heldNetObj.RemoveOwnership();
+            ThrowBananaObserversRPC(heldNetObj.ObjectId, throwForce, normalizedThrowDirection);
+        }
+        else
+        {
+            Debug.LogError($"Server: Could not find held item with ObjectId {_heldItemObjectId.Value} for player {Owner.ClientId}");
+            _heldItemObjectId.Value = -1;
+        }
+    }
+
+    // ##### OBSERVER RPCs #####
+    [ObserversRpc]
+    void SetItemInHandObserversRPC(int heldItemNetObjId, bool isHeld)
+    {
+        NetworkObject heldItemNetObj;
+        if (!ServerManager.Objects.Spawned.TryGetValue(heldItemNetObjId, out heldItemNetObj) && !ClientManager.Objects.Spawned.TryGetValue(heldItemNetObjId, out heldItemNetObj))
+        {
+            Debug.Log("Couldn't find network object with id: " + heldItemNetObjId);
+        }
+
+        GameObject itemInHand = heldItemNetObj.gameObject;
+        Rigidbody itemRB = itemInHand.GetComponent<Rigidbody>();
+        Collider itemCollider = itemInHand.GetComponent<Collider>();
 
         if (isHeld)
         {
-            if (itemRB != null)
+            if(itemRB != null)
             {
                 itemRB.isKinematic = true;
                 itemRB.detectCollisions = false;
             }
-            item.transform.SetParent(itemHoldPoint);
-            item.transform.position = itemHoldPoint.position;
-            item.transform.rotation = itemHoldPoint.rotation;
+            if (itemCollider != null)
+            {
+                itemCollider.enabled = false;
+            }
+            
+            itemInHand.transform.SetParent(itemHoldPoint);
+            itemInHand.transform.position = itemHoldPoint.position;
+            itemInHand.transform.rotation = itemHoldPoint.rotation;
+
+            if (IsOwner && IsServerInitialized)
+            {
+                heldItemInstance = itemInHand;
+                hasEmptyHand = false;
+                Debug.Log("Host: Now holding " + itemInHand.name);
+            }
         }
         else
         {
-            item.transform.SetParent(null);
-            itemCollider.enabled = true;
+            itemInHand.transform.SetParent(null);
 
+            if (IsOwner && IsServerInitialized)
+            {
+                heldItemInstance = null;
+                hasEmptyHand = true;
+                Debug.Log("Host: Released " + itemInHand.name);
+            }
+        }
+    }
+
+    [ObserversRpc]
+    void ThrowBananaObserversRPC(int itemNetObjId, float throwForce, Vector3 throwDirection)
+    {
+        NetworkObject heldItemNetObj;
+        if (!ServerManager.Objects.Spawned.TryGetValue(itemNetObjId, out heldItemNetObj) && !ClientManager.Objects.Spawned.TryGetValue(itemNetObjId, out heldItemNetObj))
+        {
+            Debug.Log("Couldn't find network object with id: " + itemNetObjId);
+        }
+
+        GameObject itemToThrow = heldItemNetObj.gameObject;
+        Rigidbody itemRB = itemToThrow.GetComponent<Rigidbody>();
+        Collider itemCollider = itemToThrow.GetComponent<Collider>();
+        
+        SetItemInHandObserversRPC(itemNetObjId, false);
+
+        if (IsServerInitialized)
+        {
             if (itemRB != null)
             {
                 itemRB.isKinematic = false;
                 itemRB.detectCollisions = true;
                 itemRB.useGravity = true;
+
+                itemToThrow.transform.position = new Vector3(itemHoldPoint.transform.parent.position.x + 0.064000003f, itemHoldPoint.transform.parent.position.y - 0.270999998f, itemHoldPoint.transform.parent.position.z + 0.855000019f);
+                itemToThrow.transform.rotation = Quaternion.Euler(42.458744f,337.735229f,345.082825f);
+                itemRB.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
+            }
+
+            if (itemCollider != null)
+            {
+                itemCollider.enabled = true;
             }
         }
-        //if (IsOwner && isHeld) heldItemInstance = item; <- allows throwing with wrong reference!
     }
-
-    [ObserversRpc]
-    void SetHandEmptyObserversRpc()
-    {
-        if(IsOwner) 
-        {
-            hasEmptyHand = true;
-            heldItemInstance = null;
-        }
-    }
-
     private void PourOil()
     {
         // simulate pouring oil (could be a particle effect or similar)

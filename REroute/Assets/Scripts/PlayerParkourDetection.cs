@@ -64,6 +64,7 @@ public class PlayerParkourDetection : MonoBehaviour
 
     private void Update()
     {
+        if (!plCont.IsOwner) return;
         if (checkForClimbable && !holdingLedge) { CheckClimbables(); }
     }
 

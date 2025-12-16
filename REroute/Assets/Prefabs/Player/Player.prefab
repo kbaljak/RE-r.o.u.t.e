@@ -218,8 +218,7 @@ Transform:
   m_LocalPosition: {x: -0.014857467, y: 0.24916834, z: 0.022842979}
   m_LocalScale: {x: 0.9999994, y: 0.9999994, z: 0.9999995}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2166054492481163914}
+  m_Children: []
   m_Father: {fileID: 8713887837681590704}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &449564907876948786
@@ -579,6 +578,7 @@ Transform:
   - {fileID: 3531153458617947795}
   - {fileID: 1146926978028964224}
   - {fileID: 4938939907774615663}
+  - {fileID: 2166054492481163914}
   m_Father: {fileID: 7693504762941913823}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1217078528295859607
@@ -2603,6 +2603,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: FishNet.Runtime::FishNet.Object.NetworkObject
+  <IsNested>k__BackingField: 0
+  WasActiveDuringEdit: 0
+  WasActiveDuringEdit_Set1: 1
+  <ComponentIndex>k__BackingField: 0
+  <PredictedSpawn>k__BackingField: {fileID: 0}
+  <PredictedOwner>k__BackingField: {fileID: 0}
+  NetworkBehaviours:
+  - {fileID: 4632275365401548454}
+  - {fileID: -5948133355759224539}
+  - {fileID: 1792036367656086916}
+  - {fileID: 1897457646274550055}
+  InitializedParentNetworkBehaviour: {fileID: 0}
+  InitializedNestedNetworkObjects: []
+  RuntimeParentNetworkBehaviour: {fileID: 0}
+  RuntimeChildNetworkBehaviours: []
+  _isNetworked: 1
+  _isSpawnable: 1
+  _isGlobal: 0
+  _initializeOrder: 0
+  _preventDespawnOnDisconnect: 0
+  _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}
   _enablePrediction: 0
   _predictionType: 0
@@ -2626,27 +2647,6 @@ MonoBehaviour:
     Rotation: {x: 0, y: 0, z: 0, w: 1}
     Scale: {x: 1, y: 1, z: 1}
     IsValid: 1
-  <IsNested>k__BackingField: 0
-  WasActiveDuringEdit: 0
-  WasActiveDuringEdit_Set1: 1
-  <ComponentIndex>k__BackingField: 0
-  <PredictedSpawn>k__BackingField: {fileID: 0}
-  <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours:
-  - {fileID: 4632275365401548454}
-  - {fileID: -5948133355759224539}
-  - {fileID: 1792036367656086916}
-  - {fileID: 1897457646274550055}
-  InitializedParentNetworkBehaviour: {fileID: 0}
-  InitializedNestedNetworkObjects: []
-  RuntimeParentNetworkBehaviour: {fileID: 0}
-  RuntimeChildNetworkBehaviours: []
-  _isNetworked: 1
-  _isSpawnable: 1
-  _isGlobal: 0
-  _initializeOrder: 0
-  _preventDespawnOnDisconnect: 0
-  _defaultDespawnType: 0
 --- !u!114 &-5948133355759224539
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2734,13 +2734,10 @@ MonoBehaviour:
   itemPrefabs:
   - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}
   - {fileID: 9054075434902177078, guid: 8f651a87142ae6e40afa0bf4057f6acf, type: 3}
-  originalItems:
-  - {fileID: 205880749347064312, guid: e5efdafec60348aff82ea4e6b8c51420, type: 3}
-  - {fileID: 9054075434902177078, guid: 355fc04fe7da8779bb5967ea85041f71, type: 3}
   minThrowCharge: 5
   maxThrowCharge: 20
-  hasEmptyHand: 0
-  heldItemInstance: {fileID: 0}
+  debugHasEmptyHand: 0
+  debugHeldItemInstance: {fileID: 0}
 --- !u!1 &7866691907284274524
 GameObject:
   m_ObjectHideFlags: 0
@@ -3021,12 +3018,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8464064667990645434}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.016, y: -0.018, z: 0.05}
+  m_LocalRotation: {x: 0.41901553, y: 0.0034340168, z: 0.08552875, w: 0.9039353}
+  m_LocalPosition: {x: 0.031, y: 0.088, z: 0.056}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4487561007724194677}
+  m_Father: {fileID: 8185971994679053702}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8512706156682084460
 GameObject:

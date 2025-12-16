@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 1402139570131527018}
   - component: {fileID: 2676969461474439298}
   - component: {fileID: 5144207117372813375}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: oil_can_world
   m_TagString: OilCanItem
   m_Icon: {fileID: 0}
@@ -129,6 +129,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: FishNet.Runtime::FishNet.Object.NetworkObject
+  <IsNested>k__BackingField: 0
+  WasActiveDuringEdit: 0
+  WasActiveDuringEdit_Set1: 1
+  <ComponentIndex>k__BackingField: 0
+  <PredictedSpawn>k__BackingField: {fileID: 0}
+  <PredictedOwner>k__BackingField: {fileID: 0}
+  NetworkBehaviours:
+  - {fileID: 1402139570131527018}
+  - {fileID: 5144207117372813375}
+  InitializedParentNetworkBehaviour: {fileID: 0}
+  InitializedNestedNetworkObjects: []
+  RuntimeParentNetworkBehaviour: {fileID: 0}
+  RuntimeChildNetworkBehaviours: []
+  _isNetworked: 1
+  _isSpawnable: 1
+  _isGlobal: 0
+  _initializeOrder: 0
+  _preventDespawnOnDisconnect: 0
+  _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}
   _enablePrediction: 0
   _predictionType: 0
@@ -143,7 +162,7 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 0
+  <PrefabId>k__BackingField: 13
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 16980435762411021756
   <SceneId>k__BackingField: 0
@@ -152,24 +171,6 @@ MonoBehaviour:
     Rotation: {x: 0.000000021855694, y: 0, z: -0, w: 1}
     Scale: {x: 0.007, y: 0.006, z: 0.01}
     IsValid: 1
-  <IsNested>k__BackingField: 0
-  WasActiveDuringEdit: 0
-  WasActiveDuringEdit_Set1: 1
-  <ComponentIndex>k__BackingField: 0
-  <PredictedSpawn>k__BackingField: {fileID: 0}
-  <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours:
-  - {fileID: 1402139570131527018}
-  InitializedParentNetworkBehaviour: {fileID: 0}
-  InitializedNestedNetworkObjects: []
-  RuntimeParentNetworkBehaviour: {fileID: 0}
-  RuntimeChildNetworkBehaviours: []
-  _isNetworked: 1
-  _isSpawnable: 1
-  _isGlobal: 0
-  _initializeOrder: 0
-  _preventDespawnOnDisconnect: 0
-  _defaultDespawnType: 0
 --- !u!114 &1402139570131527018
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,9 +225,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7eea2acaf016a79b858832d6e99f483, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemAnimation
-  _componentIndexCache: 255
+  _componentIndexCache: 1
   _addedNetworkObject: {fileID: -7022583493677879003}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: -7022583493677879003}
   floatAmplitude: 0.25
   floatFrequency: 1
   rotationSpeed: 30
