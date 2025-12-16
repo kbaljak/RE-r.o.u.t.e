@@ -562,6 +562,10 @@ public class PlayerController : NetworkBehaviour
     {
         //Debug.Log("Jump");
         followCameraRotation = false;
+
+        if (isGrounded && playerParkour.TryVaultFromTrigger())
+            return;
+
         Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
         if (!parkourableDetectedOnJump.Item1)
         {

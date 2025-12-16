@@ -10,7 +10,7 @@ public class PlayerParkourDetection : MonoBehaviour
     public PlayerClimbTrigger grabTrigger;
     //public PlayerClimbTrigger wallRunTrigger;
     public PlayerClimbTrigger standJumpClimbTrigger;
-
+    public PlayerClimbTrigger vaultTrigger;
     // Params
     public float hangingHeight = 2.2f;
     public float bracedHangHeight = 2f;
@@ -124,18 +124,7 @@ public class PlayerParkourDetection : MonoBehaviour
         //Vault logic
         if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
         {
-            if (plCont.isGrounded && true)  // Always vault if grounded for now
-            {
-                Vector3 playerToLedge = (ledge.transform.position - plCont.transform.position).normalized;
-                float approachAngle = Vector3.Angle(plCont.transform.forward, playerToLedge);
-
-                if (approachAngle < 45f)
-                {
-                    int vaultType = 1;
-                    plCont.StartVault(ledge, vaultType);
-                    return ParkourInteractType.Vault;
-                }
-            }
+            
             return ParkourInteractType.None;
         }
 
@@ -168,6 +157,48 @@ public class PlayerParkourDetection : MonoBehaviour
 
     internal void ClimbableEnter(Collider other) { detected.Add(other); }
     internal void ClimbableExit(Collider other) { detected.Remove(other); }
+
+    public bool TryVaultFromTrigger()
+    {
+        if (!plCont.isGrounded) return false;
+        if (holdingLedge) return false;
+        if (vaultTrigger == null || vaultTrigger.detected.Count == 0) return false;
+
+        Ledge best = null;
+        float bestScore = float.NegativeInfinity;
+
+        foreach (var col in vaultTrigger.detected)
+        {
+            if (col == null || !col.CompareTag("Ledge")) continue;
+
+            var ledge = col.GetComponent<Ledge>();
+            if (ledge == null) continue;
+
+            float ledgeHeight = ledge.transform.position.y - plCont.transform.position.y;
+            var lvl = GetLedgeLevel(ledgeHeight);
+            if (lvl != LedgeLevel.Low && lvl != LedgeLevel.BracedHang) continue;
+
+            Vector3 to = ledge.transform.position - plCont.transform.position;
+            Vector3 toFlat = Vector3.ProjectOnPlane(to, Vector3.up);
+            if (toFlat.sqrMagnitude < 0.0001f) continue;
+
+            float dist = toFlat.magnitude;
+            if (dist > 1.2f) continue;
+
+            Vector3 fwdFlat = Vector3.ProjectOnPlane(plCont.transform.forward, Vector3.up);
+            float angle = Vector3.Angle(fwdFlat, toFlat);
+            if (angle > 55f) continue;
+
+            float score = -dist - angle * 0.02f;
+            if (score > bestScore) { bestScore = score; best = ledge; }
+        }
+
+        if (best == null) return false;
+
+        checkForClimbable = false;
+        plCont.StartVault(best, 1);
+        return true;
+    }
 
     //// Utility
     public bool AnyDetected() { return detected.Count > 0; }

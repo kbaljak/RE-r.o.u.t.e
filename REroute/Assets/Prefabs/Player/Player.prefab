@@ -1586,6 +1586,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 414739887316199035}
+  - {fileID: 4635372160882007652}
   - {fileID: 1298945495513252920}
   - {fileID: 2480890381813252873}
   m_Father: {fileID: 6008359961423701854}
@@ -1604,6 +1605,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
   grabTrigger: {fileID: 4259307574198512010}
   standJumpClimbTrigger: {fileID: 6212300104731584003}
+  vaultTrigger: {fileID: 5546702335209658343}
   hangingHeight: 2.4
   bracedHangHeight: 2
   lowHeight: 1
@@ -2382,6 +2384,73 @@ Transform:
   - {fileID: 8997502592416150086}
   m_Father: {fileID: 5769378318692387869}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7064414144688179726
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4635372160882007652}
+  - component: {fileID: 7460142468453881032}
+  - component: {fileID: 5546702335209658343}
+  m_Layer: 13
+  m_Name: VaultCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4635372160882007652
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7064414144688179726}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.2, z: 0.3}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7967203083294090016}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7460142468453881032
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7064414144688179726}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.4, y: 2.4, z: 0.8}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5546702335209658343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7064414144688179726}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dabcc134493272440bcb6e702c18dcbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
+  playerParkourDetection: {fileID: 6148794795613088992}
 --- !u!1 &7140275592337475525
 GameObject:
   m_ObjectHideFlags: 0
@@ -2575,6 +2644,7 @@ MonoBehaviour:
   runAccelTime: 5
   fullDecelTime: 1
   slideDecelAmount: 4
+  slideAccelAmount: 10
   jumpHeight: 1.2
   hardLandingVelThreshold: 10
   smooth_roll_targetSpeedDiff: 4
