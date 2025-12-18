@@ -78,7 +78,7 @@ public class PlayerAnimationController : MonoBehaviour
         }
     }
 
-    //Root motion nonsense
+    /*
     void OnAnimatorMove()
     {
         if (!anim.applyRootMotion) return;
@@ -102,6 +102,7 @@ public class PlayerAnimationController : MonoBehaviour
             playerCont.charCont.Move(dp);
         }
     }
+    */
 
     // Hand IK
     void OnAnimatorIK()
@@ -258,15 +259,15 @@ public class PlayerAnimationController : MonoBehaviour
     public void VaultStart_AnimEvent() {
         Debug.Log("VaultStart event");
         playerCont.charCont.enabled = false;
-        EnableRootMotion(false);
+        //EnableRootMotion(false);
         playerCont.VaultStart(); 
     }
     public void VaultEnd_AnimEvent() {
         Debug.Log("VaultEnd event");
         playerCont.charCont.enabled = true;
-        DisableRootMotion(true);
+        //DisableRootMotion(true);
         playerCont.VaultEnd();
-        anim.SetBool("vaulting", false); 
+        anim.SetBool("vaulting", false);
     }
 
 }

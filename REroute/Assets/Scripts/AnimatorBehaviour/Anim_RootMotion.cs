@@ -51,10 +51,10 @@ public class Anim_RootMotion : StateMachineBehaviour
     {
         if (animator.applyRootMotion && continuallyApplyRootPos)
         {
+            Vector3 rootMotionFrameDeltaPosition = animator.deltaPosition;
             //animator.ApplyBuiltinRootMotion();
-            animator.transform.localPosition = positionAdjustment + animator.deltaPosition;
-            playerCont.transform.position += playerCont.transform.rotation * new Vector3(animator.transform.localPosition.x, 0, animator.transform.localPosition.z);
-            animator.transform.localPosition = new Vector3(0, animator.transform.localPosition.y, 0);
+            playerCont.transform.position += playerCont.transform.rotation * rootMotionFrameDeltaPosition;
+            animator.transform.localPosition = new Vector3(0, 0, 0);
         }
         if (adjustToTargetPosition && timer != -1f)
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using System.Text;
 using FishNet.Object;
 using Unity.Cinemachine;
 using UnityEditor;
@@ -426,9 +427,9 @@ public class PlayerController : NetworkBehaviour
     }
     void Update_ClimbableDetect()
     {
-        bool jumpPressed = jumpAction.IsInProgress();
-        if (!tryGrabLedge && jumpPressed) { tryGrabLedge = true; }
-        bool detectLedge = tryGrabLedge && (jumpPressed || !isGrounded);
+        //bool jumpPressed = jumpAction.IsInProgress();
+        if (!tryGrabLedge) { tryGrabLedge = true; }  //if (!tryGrabLedge && jumpPressed)
+        bool detectLedge = tryGrabLedge && !isGrounded; //(jumpPressed || !isGrounded);
         playerParkour.checkForClimbable = detectLedge;
     }
     void Update_AnimatorParams()
@@ -560,11 +561,15 @@ public class PlayerController : NetworkBehaviour
     // Vertical movement actions
     void Jump()
     {
-        //Debug.Log("Jump");
+        Debug.Log("Jump");
         followCameraRotation = false;
 
         if (isGrounded && playerParkour.TryVaultFromTrigger())
+        {
+            playerParkour.checkForClimbable = false;
             return;
+        }
+            
 
         Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
         if (!parkourableDetectedOnJump.Item1)
@@ -734,6 +739,7 @@ public class PlayerController : NetworkBehaviour
     public void VaultStart()
     {
         Debug.Log("VaultStart()");
+        playerParkour.checkForClimbable = false;
         AnimationSolo(true, false);
     }
 
