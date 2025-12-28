@@ -13,6 +13,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerAnimationController plAnimCont;
     public PlayerParkourDetection playerParkour;
     public PlayerCameraController playerCamera;
+    public PlayerItemInteraction playerItemInteraction;
     public Transform head;
     public Transform climbTriggersT;
     private VirtualChild virtualChild;
@@ -678,6 +679,8 @@ public class PlayerController : NetworkBehaviour
         // Enable
         tryGrabLedge = false;
         playerParkour.holdingLedge = false;
+        // player climbed ledge, player can apply oil to ledge
+        playerItemInteraction.canApplyOilToLedge();
         charCont.enabled = true;
         isGroundedAnimBlock = true; isGrounded = false;
         plAnimCont.anim.SetBool("isGrounded", true);
