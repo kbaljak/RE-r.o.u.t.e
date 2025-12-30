@@ -2222,6 +2222,7 @@ Transform:
   - {fileID: 7370200592142607685}
   - {fileID: 6491156775784264350}
   - {fileID: 5438484668775844739}
+  - {fileID: 4784847372494517927}
   m_Father: {fileID: 6059527980210496550}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5637923799492357426
@@ -2414,6 +2415,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 634604030680552484}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7437629862747375628
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4784847372494517927}
+  m_Layer: 3
+  m_Name: ItemBackHoldPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4784847372494517927
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7437629862747375628}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.12640277, y: -3.2387004e-10, z: 0.000000025623704, w: 0.991979}
+  m_LocalPosition: {x: 0.012, y: -0.064, z: -0.19}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6656655885504836476}
+  m_LocalEulerAnglesHint: {x: 14.524, y: 0, z: 0}
 --- !u!1 &7465931710217756048
 GameObject:
   m_ObjectHideFlags: 0
@@ -2730,10 +2762,13 @@ MonoBehaviour:
   _componentIndexCache: 3
   _addedNetworkObject: {fileID: -8763808860493201350}
   _networkObjectCache: {fileID: -8763808860493201350}
-  itemHoldPoint: {fileID: 2166054492481163914}
+  itemHandHoldPoint: {fileID: 0}
+  itemBackHoldPoint: {fileID: 0}
   itemPrefabs:
   - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}
   - {fileID: 9054075434902177078, guid: 8f651a87142ae6e40afa0bf4057f6acf, type: 3}
+  OIL_APPLICATION_TIME_WINDOW: 2
+  throwCharge: 0
   minThrowCharge: 5
   maxThrowCharge: 20
   debugHasEmptyHand: 0
@@ -3004,7 +3039,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2166054492481163914}
   m_Layer: 3
-  m_Name: ItemHoldPoint
+  m_Name: ItemHandHoldPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 
-public class Ledge : MonoBehaviour, Parkourable
+public class Ledge : NetworkBehaviour, Parkourable
 {
     // Scriptable data
     [SerializeField] private Ledge_Data ledgeData;
@@ -12,13 +14,40 @@ public class Ledge : MonoBehaviour, Parkourable
     //
 #endif
     public bool vaultable = false;
-
     private float width;
     private List<float> playerGrabbedDeltaXs = new List<float>();
 
+    private readonly SyncVar<bool> _isOiledUp = new SyncVar<bool>(false);
 
-    void Awake() { width = transform.lossyScale.x; }
+    public override void OnStartNetwork()
+    {
+        base.OnStartNetwork();
+    }
+    void Awake() 
+    {
+        width = transform.lossyScale.x; 
+        _isOiledUp.OnChange += OnOiledStateChange;
+    }
 
+    private void OnOiledStateChange(bool prev, bool next, bool asServer)
+    {
+        Debug.Log($"Ledge oiled state changed: {prev} -> {next}");
+        UpdateLedgeVisuals(next);
+    }
+
+    private void UpdateLedgeVisuals(bool isOiled)
+    {
+        // TODO
+        Debug.Log("UpdateLedgeVisuals()");
+        return;
+    }
+
+    [Server]
+    public void ApplyOil()
+    {
+        Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") has been oiled up!");
+        _isOiledUp.Value = true;
+    }
     
     public float? PlayerGrabbed(PlayerController playerCont)
     {
@@ -49,7 +78,6 @@ public class Ledge : MonoBehaviour, Parkourable
     {
         width = transform.lossyScale.x;
     }
-
 
     // Utility
     Tuple<int, int> IndecesOfPlayersOnEachSide(float deltaX)

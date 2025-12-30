@@ -4,21 +4,24 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using FishNet.Object.Synchronizing;
 using UnityEngine.UI;
-using System;
 
 public class PlayerItemInteraction : NetworkBehaviour
 {
-    [SerializeField] Transform itemHoldPoint;
+    [SerializeField] Transform itemHandHoldPoint;
+    [SerializeField] Transform itemBackHoldPoint;
     [SerializeField] List<GameObject> itemPrefabs;
     private GameObject pickedUpItem;
     private GameObject heldItemInstance;
-    //private int heldItemObjectId = -1;
-
     private readonly SyncVar<int> _heldItemObjectId = new SyncVar<int>(-1);
-    private readonly SyncVar<bool> _playerClimbedLedge = new SyncVar<bool>(false);
     private bool hasEmptyHand;
     private Vector3 throwDirection;
-    InputAction throwOrPourItemAction;
+    private bool canApplyOilToLedge = false;
+    private int climbedLedgeNetObjId = -1;
+    private float oilApplicationTimer = 0f;
+    public float OIL_APPLICATION_TIME_WINDOW = 1f;
+
+    InputAction throwItemAction;
+    InputAction applyOilAction;
 
     [Header("Throwing Settings")]
     public float throwCharge = 0f;
@@ -27,11 +30,11 @@ public class PlayerItemInteraction : NetworkBehaviour
     [SerializeField]
     public float maxThrowCharge = 20f;
 
-    [Header("UI")]
-    [SerializeField] public GameObject throwCanvasUI;
-    [SerializeField] public GameObject throwChargeMeter;
+    //UI
+    private GameObject playerUICanvas;
+    private GameObject throwChargeMeter;
+    private GameObject applyOilPrompt;
     
-
     [Space(20)]
     [Header("DEBUG")]
     public bool debugHasEmptyHand;
@@ -40,14 +43,6 @@ public class PlayerItemInteraction : NetworkBehaviour
     private void Awake()
     {
         _heldItemObjectId.OnChange += OnHeldItemChanged;
-        _playerClimbedLedge.OnChange += OnPlayerClimbedLedgeChanged;
-    }
-
-    private void OnPlayerClimbedLedgeChanged(bool prev, bool next, bool asServer)
-    {
-        //TODO 
-        // check if player has an oil can, if he has prompt to apply oil to ledge, else if time expires nothing happens
-        throw new NotImplementedException();
     }
 
     private void OnHeldItemChanged(int oldVal, int newVal, bool asServer)
@@ -84,39 +79,39 @@ public class PlayerItemInteraction : NetworkBehaviour
         {
             hasEmptyHand = true;
         
-            throwOrPourItemAction = InputSystem.actions.FindAction("Throw_pour");
-            if(throwOrPourItemAction != null)
-            {
-                throwOrPourItemAction.Enable();
-            }
-            else
-            {
-                Debug.LogError("Throw_pour action not found!");
-            }
+            throwItemAction = InputSystem.actions.FindAction("Throw");
+            if(throwItemAction != null){ throwItemAction.Enable(); }
+            else{ Debug.LogError("Throw action not found!"); }
 
-            if (ItemSpawner.Instance == null)
-            {
-                Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");
-            }
-            else
-            {
-                Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance");
-            }
+            applyOilAction = InputSystem.actions.FindAction("UseItem");
+            if(applyOilAction != null) { applyOilAction.Enable(); }
+            else {Debug.LogError("UseItem action not found!");}
 
-            throwCanvasUI = GameObject.Find("ThrowUI");
+            if (ItemSpawner.Instance == null) { Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");}
+            else{ Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance"); }
+
+            playerUICanvas = GameObject.Find("PlayerUI");
             throwChargeMeter = GameObject.Find("ThrowChargeMeter");
 
-            if(throwCanvasUI == null)
-            {
-                Debug.LogError("Could not find ThrowUI Canvas in scene hierarchy!");
-            }
-            throwCanvasUI.SetActive(false);
+            if(throwChargeMeter == null){ Debug.LogError("Could not find throwChargeMeter slider in scene hierarchy!"); }
+            else { throwChargeMeter.SetActive(false); }
+
+            applyOilPrompt = GameObject.Find("ApplyOilPrompt");
+            if(applyOilPrompt == null) {Debug.LogError("Could not find ApplyOilPrompt in scene hierarchy");}
+            else{ applyOilPrompt.SetActive(false); }
+
+            itemHandHoldPoint = GameObject.Find("ItemHandHoldPoint").transform;
+            if (itemHandHoldPoint == null){Debug.LogError("Could not find item hand hold point on player prefab");}
+
+            itemBackHoldPoint = GameObject.Find("ItemBackHoldPoint").transform;
+            if (itemHandHoldPoint == null){Debug.LogError("Could not find item back hold point on player prefab");}
         }
     }
 
     private void OnDisable()
     {
-        if(throwOrPourItemAction != null) throwOrPourItemAction.Disable();
+        if (throwItemAction != null) throwItemAction.Disable();
+        if (applyOilAction != null) applyOilAction.Disable();
     }
 
     public override void OnStopClient()
@@ -148,10 +143,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 Debug.Log("Player picked up " + other.gameObject + "with ID: " + other.GetComponent<NetworkObject>().ObjectId);
                 pickedUpItem = other.gameObject;
             }
-            else
-            {
-                Debug.Log("Would pick up " + other.gameObject + "but hand is full!");
-            }
+            else { Debug.Log("Would pick up " + other.gameObject + "but hand is full!"); }
         }
 
         if(other.gameObject.CompareTag("BananaItem") && other.gameObject.layer == LayerMask.NameToLayer("GroundItem"))
@@ -169,10 +161,10 @@ public class PlayerItemInteraction : NetworkBehaviour
 
         if (pickedUpItem != null) PickUp();
 
-        if (!hasEmptyHand && heldItemInstance != null)
-        {
-            HandleItemInteraction();
-        }
+        if (canApplyOilToLedge) { HandleOilApplicationToLedge(); }
+
+        //if (!hasEmptyHand && heldItemInstance != null){ HandleThrowBananaAction(); }
+        if (!hasEmptyHand && heldItemInstance.CompareTag("BananaItem")){ HandleThrowBananaAction(); }
     }
     void PickUp()
     {
@@ -192,62 +184,89 @@ public class PlayerItemInteraction : NetworkBehaviour
         }
     }
 
-    void HandleItemInteraction()
+    void HandleOilApplicationToLedge()
     {
-        if (throwOrPourItemAction.IsPressed())
+        Debug.Log("Oil application window started - press E to apply oil!");
+        applyOilPrompt.SetActive(true);   
+        oilApplicationTimer -= Time.deltaTime;
+        if (oilApplicationTimer <= 0f)
+        {
+            canApplyOilToLedge = false;
+            climbedLedgeNetObjId = -1;
+            oilApplicationTimer = 0f;
+            applyOilPrompt.SetActive(false);
+            Debug.Log("Oil application window expired");
+        }
+        else if (applyOilAction.WasPressedThisFrame())
+        {
+            if (climbedLedgeNetObjId != -1)
+            {
+                Debug.Log("Oil applied to ledge(" + climbedLedgeNetObjId + ")!");
+                RequestApplyOilToLedgeServerRPC(climbedLedgeNetObjId);
+                canApplyOilToLedge = false;
+                climbedLedgeNetObjId = -1;
+                applyOilPrompt.SetActive(false);
+            }
+            oilApplicationTimer = 0f;
+        }
+    }
+    void HandleThrowBananaAction()
+    {
+        if (throwItemAction.IsPressed())
         {
             if (heldItemInstance.CompareTag("BananaItem"))
             {
-                throwCanvasUI.SetActive(true);
+                throwChargeMeter.SetActive(true);
                 throwCharge += Time.deltaTime * 10f;
                 throwCharge = Mathf.Clamp(throwCharge, minThrowCharge, maxThrowCharge);
                 Debug.Log("Charging throw: " + throwCharge);
-                updateThrowChargeSlider(throwCharge);
+                UpdateThrowChargeSlider(throwCharge);
             }
             else if (heldItemInstance.CompareTag("OilCanItem"))
             {
-                PourOil();
+                // Discard picked up oil can!
+                Debug.Log("This will remove oil can from back and sync with other clients!");
             }
         }
-        if (throwOrPourItemAction.WasReleasedThisFrame())
+        if (throwItemAction.WasReleasedThisFrame())
         {
             if (heldItemInstance.CompareTag("BananaItem"))
             {
                 Debug.Log($"Client {(IsServerInitialized ? "Host" : "Client")}: Releasing throw with charge: {throwCharge:F1}");
                 
                 GameObject camera = GameObject.FindWithTag("TPCamera");
-                throwDirection = camera != null ? camera.transform.forward : itemHoldPoint.forward;
+                throwDirection = camera != null ? camera.transform.forward : itemHandHoldPoint.forward;
                 //ThrowBananaServerRpc(throwCharge, throwDirection.normalized);
                 RequestThrowBananaServerRPC(throwCharge, throwDirection.normalized);
                 throwCharge = 0f;
-                throwCanvasUI.SetActive(false);
-                updateThrowChargeSlider(throwCharge);
-                
+                throwChargeMeter.SetActive(false);
+                UpdateThrowChargeSlider(throwCharge);
             }
         }
     }
 
-    private void updateThrowChargeSlider(float throwCharge)
+    private void UpdateThrowChargeSlider(float throwCharge)
     {
         Slider throwMeter = throwChargeMeter.GetComponent<Slider>();
         if (throwMeter == null) Debug.LogError("Could not find Slider component on ThrowChargeMeter GameObject!");
-        if (throwCharge > 0f)
-        {
-            throwMeter.value = Mathf.Lerp(throwMeter.value, throwCharge,Time.deltaTime * 10f);
-        }
-        else
-        {
-            throwMeter.value = 0f;
-        }
+        if (throwCharge > 0f) { throwMeter.value = Mathf.Lerp(throwMeter.value, throwCharge,Time.deltaTime * 10f); }
+        else { throwMeter.value = 0f; }
     }
 
-    public void canApplyOilToLedge()
+    public void StartOilApplicationTimeWindow(int ledgeNetObjId)
     {
-        Debug.Log("Player just climbed a ledge, there is a small window in which he can apply oil to it");
-        _playerClimbedLedge.Value = true;
+        if (heldItemInstance != null && heldItemInstance.CompareTag("OilCanItem"))
+        {
+            Debug.Log("Player just climbed a ledge(" + ledgeNetObjId + "), there is a " + OIL_APPLICATION_TIME_WINDOW + " window in which he can apply oil to it");
+            // set all needed flags
+            canApplyOilToLedge = true;
+            climbedLedgeNetObjId = ledgeNetObjId;
+            oilApplicationTimer = OIL_APPLICATION_TIME_WINDOW;    
+        }else { Debug.Log("Player just climbed a ledge(" + ledgeNetObjId + "), but does not have an oil can!"); }
+        
     }
 
-        private void PourOil()
+    private void PourOil()
     {
         // simulate pouring oil (could be a particle effect or similar)
         if(heldItemInstance != null)
@@ -284,7 +303,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 Despawn(pickedUpNetObj.gameObject);
             }
 
-            GameObject heldItem = Instantiate(pickedUpObjectHandPrefab, itemHoldPoint.transform.position, Quaternion.identity);
+            GameObject heldItem = Instantiate(pickedUpObjectHandPrefab, itemHandHoldPoint.transform.position, Quaternion.identity);
             NetworkObject heldItemNetObj = heldItem.GetComponent<NetworkObject>();
             if (heldItemNetObj != null)
             {
@@ -298,9 +317,35 @@ public class PlayerItemInteraction : NetworkBehaviour
     }
 
     [ServerRpc]
+    void RequestApplyOilToLedgeServerRPC(int ledgeObjectId)
+    {
+        NetworkObject ledgeNetObj;
+        if (ServerManager.Objects.Spawned.TryGetValue(ledgeObjectId, out ledgeNetObj))
+        {
+            Ledge ledgeToOilUp = ledgeNetObj.GetComponent<Ledge>();
+            ledgeToOilUp.ApplyOil();
+
+            NetworkObject oilCanNetObj;
+            if (ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out oilCanNetObj))
+            {
+                _heldItemObjectId.Value = -1;
+
+                oilCanNetObj.RemoveOwnership();
+                SetItemInHandObserversRPC(oilCanNetObj.ObjectId, false);
+                Despawn(oilCanNetObj.gameObject);
+            }
+            else
+            {
+                Debug.LogError($"Server: Could not find held item with ObjectId {_heldItemObjectId.Value} for player {Owner.ClientId}");
+                _heldItemObjectId.Value = -1;
+            }
+        }
+    }
+
+    [ServerRpc]
     void RequestThrowBananaServerRPC(float throwForce, Vector3 normalizedThrowDirection)
     {
-         if (_heldItemObjectId.Value == -1)
+        if (_heldItemObjectId.Value == -1)
         {
             Debug.LogWarning($"Server: Player {Owner.ClientId} tried to throw but heldItemObjectId is -1");
             return;
@@ -334,41 +379,71 @@ public class PlayerItemInteraction : NetworkBehaviour
         }
 
         GameObject itemInHand = heldItemNetObj.gameObject;
-        Rigidbody itemRB = itemInHand.GetComponent<Rigidbody>();
-        Collider itemCollider = itemInHand.GetComponent<Collider>();
-
-        if (isHeld)
+        if (itemInHand.CompareTag("BananaItem"))
         {
-            if(itemRB != null)
-            {
-                itemRB.isKinematic = true;
-                itemRB.detectCollisions = false;
-            }
-            if (itemCollider != null)
-            {
-                itemCollider.enabled = false;
-            }
-            
-            itemInHand.transform.SetParent(itemHoldPoint);
-            itemInHand.transform.position = itemHoldPoint.position;
-            itemInHand.transform.rotation = itemHoldPoint.rotation;
+            Rigidbody itemRB = itemInHand.GetComponent<Rigidbody>();
+            Collider itemCollider = itemInHand.GetComponent<Collider>();
 
-            if (IsOwner && IsServerInitialized)
+            if (isHeld)
             {
-                heldItemInstance = itemInHand;
-                hasEmptyHand = false;
-                Debug.Log("Host: Now holding " + itemInHand.name);
+                if(itemRB != null)
+                {
+                    itemRB.isKinematic = true;
+                    itemRB.detectCollisions = false;
+                }
+                if (itemCollider != null)
+                {
+                    itemCollider.enabled = false;
+                }
+                
+                itemInHand.transform.SetParent(itemHandHoldPoint);
+                itemInHand.transform.position = itemHandHoldPoint.position;
+                itemInHand.transform.rotation = itemHandHoldPoint.rotation;
+
+                if (IsOwner && IsServerInitialized)
+                {
+                    heldItemInstance = itemInHand;
+                    hasEmptyHand = false;
+                    Debug.Log("Host: Now holding " + itemInHand.name);
+                }
+            }
+            else
+            {
+                itemInHand.transform.SetParent(null);
+
+                if (IsOwner && IsServerInitialized)
+                {
+                    heldItemInstance = null;
+                    hasEmptyHand = true;
+                    Debug.Log("Host: Released " + itemInHand.name);
+                }
             }
         }
-        else
+        else if (itemInHand.CompareTag("OilCanItem"))
         {
-            itemInHand.transform.SetParent(null);
-
-            if (IsOwner && IsServerInitialized)
+            if (isHeld)
             {
-                heldItemInstance = null;
-                hasEmptyHand = true;
-                Debug.Log("Host: Released " + itemInHand.name);
+                itemInHand.transform.SetParent(itemBackHoldPoint);
+                itemInHand.transform.position = itemBackHoldPoint.position;
+                itemInHand.transform.rotation = itemBackHoldPoint.rotation;
+
+                if (IsOwner && IsServerInitialized)
+                {
+                    heldItemInstance = itemInHand;
+                    hasEmptyHand = false;
+                    Debug.Log("Host: Now holding " + itemInHand.name);
+                }
+            }
+            else
+            {
+                itemInHand.transform.SetParent(null);
+
+                if (IsOwner && IsServerInitialized)
+                {
+                    heldItemInstance = null;
+                    hasEmptyHand = true;
+                    Debug.Log("Host: Released " + itemInHand.name);
+                }
             }
         }
     }
@@ -396,15 +471,12 @@ public class PlayerItemInteraction : NetworkBehaviour
                 itemRB.detectCollisions = true;
                 itemRB.useGravity = true;
 
-                itemToThrow.transform.position = new Vector3(itemHoldPoint.transform.parent.position.x + 0.064000003f, itemHoldPoint.transform.parent.position.y - 0.270999998f, itemHoldPoint.transform.parent.position.z + 0.855000019f);
+                itemToThrow.transform.position = new Vector3(itemHandHoldPoint.transform.parent.position.x + 0.064000003f, itemHandHoldPoint.transform.parent.position.y - 0.270999998f, itemHandHoldPoint.transform.parent.position.z + 0.855000019f);
                 itemToThrow.transform.rotation = Quaternion.Euler(42.458744f,337.735229f,345.082825f);
                 itemRB.AddForce(throwDirection * throwForce, ForceMode.VelocityChange);
             }
 
-            if (itemCollider != null)
-            {
-                itemCollider.enabled = true;
-            }
+            if (itemCollider != null) { itemCollider.enabled = true;}
         }
     }
 }

@@ -13,7 +13,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerAnimationController plAnimCont;
     public PlayerParkourDetection playerParkour;
     public PlayerCameraController playerCamera;
-    public PlayerItemInteraction playerItemInteraction;
+    private PlayerItemInteraction playerItemInteraction;
     public Transform head;
     public Transform climbTriggersT;
     private VirtualChild virtualChild;
@@ -132,6 +132,12 @@ public class PlayerController : NetworkBehaviour
                 tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
                 CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
                 cineCam.Follow = camPoint.transform;   
+            }
+
+            playerItemInteraction = GetComponent<PlayerItemInteraction>();
+            if (playerItemInteraction == null)
+            {
+                Debug.LogError("PlayerItemInteraction component not found on PlayerController!");
             }
         }
     }
@@ -673,14 +679,20 @@ public class PlayerController : NetworkBehaviour
     }
     public void ClimbedLedge(Ledge ledge = null, bool snap = true, float speedAfterClimb = 0f)
     {
-        Debug.Log("ClimbedLedge()");
+        Debug.Log("ClimbedLedge() => ledge: " + ledge + " snap: " + snap);
 
         fallSpeed = 0;
         // Enable
         tryGrabLedge = false;
         playerParkour.holdingLedge = false;
+        
         // player climbed ledge, player can apply oil to ledge
-        playerItemInteraction.canApplyOilToLedge();
+        int ledgeNetID = ledge.GetComponent<NetworkObject>().ObjectId;
+        Debug.Log("Ledge net id: " + ledgeNetID);
+        // if (ledge != null) { playerItemInteraction.StartOilApplicationTimeWindow(ledge.GetComponent<NetworkObject>().ObjectId);}
+        // else { Debug.Log("Ledge was NULL!"); }
+        playerItemInteraction.StartOilApplicationTimeWindow(ledgeNetID);
+
         charCont.enabled = true;
         isGroundedAnimBlock = true; isGrounded = false;
         plAnimCont.anim.SetBool("isGrounded", true);
