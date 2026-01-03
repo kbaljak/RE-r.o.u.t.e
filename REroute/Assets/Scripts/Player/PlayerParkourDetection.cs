@@ -142,7 +142,6 @@ public class PlayerParkourDetection : MonoBehaviour
         if (!deltaX.HasValue) { return false; }
         targetGrabXDelta = deltaX;
         //SetGrabLedgeVars_RPC(ledge, deltaX.Value);
-
         holdingLedge = true;
         plCont.GrabbedLedge(ledge);
         plCont.plAnimCont.GrabOntoLedge(ledge, ledgeLvl);
@@ -151,9 +150,6 @@ public class PlayerParkourDetection : MonoBehaviour
 
     public void ClimbedLedge()
     {
-        // player climbed ledge, player can apply oil to ledge
-        // if (targetLedge != null) { playerItemInteraction.StartOilApplicationTimeWindow(targetLedge);}
-        // else { Debug.Log("Ledge was NULL!"); }
         //SetGrabLedgeVars_RPC(null, null);
         targetLedge = null;
         targetGrabXDelta = null;

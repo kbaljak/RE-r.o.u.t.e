@@ -2762,8 +2762,8 @@ MonoBehaviour:
   _componentIndexCache: 3
   _addedNetworkObject: {fileID: -8763808860493201350}
   _networkObjectCache: {fileID: -8763808860493201350}
-  itemHandHoldPoint: {fileID: 0}
-  itemBackHoldPoint: {fileID: 0}
+  itemHandHoldPoint: {fileID: 2166054492481163914}
+  itemBackHoldPoint: {fileID: 4784847372494517927}
   itemPrefabs:
   - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}
   - {fileID: 9054075434902177078, guid: 8f651a87142ae6e40afa0bf4057f6acf, type: 3}

@@ -323,7 +323,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         if (ServerManager.Objects.Spawned.TryGetValue(ledgeObjectId, out ledgeNetObj))
         {
             Ledge ledgeToOilUp = ledgeNetObj.GetComponent<Ledge>();
-            ledgeToOilUp.ApplyOil();
+            ledgeToOilUp.ApplyOilToLedge();
 
             NetworkObject oilCanNetObj;
             if (ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out oilCanNetObj))
@@ -339,6 +339,17 @@ public class PlayerItemInteraction : NetworkBehaviour
                 Debug.LogError($"Server: Could not find held item with ObjectId {_heldItemObjectId.Value} for player {Owner.ClientId}");
                 _heldItemObjectId.Value = -1;
             }
+        }
+    }
+
+    [ServerRpc]
+    public void RequestRemoveOilFromLedge(int ledgeNetObjId)
+    {
+        NetworkObject ledgeNetObj;
+        if (ServerManager.Objects.Spawned.TryGetValue(ledgeNetObjId, out ledgeNetObj))
+        {
+            Ledge ledge = ledgeNetObj.GetComponent<Ledge>();
+            ledge.RemoveOilFromLedge();
         }
     }
 

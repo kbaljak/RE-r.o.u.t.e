@@ -663,6 +663,13 @@ public class PlayerController : NetworkBehaviour
     // Ledges
     public void GrabbedLedge(Ledge ledge)
     {
+        if (ledge.IsLedgeOiledUp())
+        {
+            Debug.LogError($"Player just grabbed a oiled ledge, apply penalty for climbing or something!");
+            //ledge.RemoveOilFromLedge();
+            playerItemInteraction.RequestRemoveOilFromLedge(ledge.GetComponent<NetworkObject>().ObjectId);
+        }
+
         charCont.enabled = false;
         moveSpeed = 0; //fallSpeed = 0;
         moveDirection = Vector3.zero;
@@ -689,8 +696,6 @@ public class PlayerController : NetworkBehaviour
         // player climbed ledge, player can apply oil to ledge
         int ledgeNetID = ledge.GetComponent<NetworkObject>().ObjectId;
         Debug.Log("Ledge net id: " + ledgeNetID);
-        // if (ledge != null) { playerItemInteraction.StartOilApplicationTimeWindow(ledge.GetComponent<NetworkObject>().ObjectId);}
-        // else { Debug.Log("Ledge was NULL!"); }
         playerItemInteraction.StartOilApplicationTimeWindow(ledgeNetID);
 
         charCont.enabled = true;

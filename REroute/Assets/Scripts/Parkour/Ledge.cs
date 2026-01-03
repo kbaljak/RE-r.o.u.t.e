@@ -17,11 +17,19 @@ public class Ledge : NetworkBehaviour, Parkourable
     private float width;
     private List<float> playerGrabbedDeltaXs = new List<float>();
 
+    public Color32 defaultLedgeColor;
+    public Color32 oiledUpLedgeColor;
     private readonly SyncVar<bool> _isOiledUp = new SyncVar<bool>(false);
-
+    private List<SpriteRenderer> ledgeVisuals = new List<SpriteRenderer>();
     public override void OnStartNetwork()
     {
         base.OnStartNetwork();
+
+        foreach(Transform ledgeVisual in transform.Find("Visual"))
+        {
+            SpriteRenderer ledgeVisualSpriteRenderer = ledgeVisual.GetComponent<SpriteRenderer>();
+            if (ledgeVisualSpriteRenderer != null) {ledgeVisuals.Add(ledgeVisualSpriteRenderer); }
+        }
     }
     void Awake() 
     {
@@ -37,18 +45,39 @@ public class Ledge : NetworkBehaviour, Parkourable
 
     private void UpdateLedgeVisuals(bool isOiled)
     {
-        // TODO
         Debug.Log("UpdateLedgeVisuals()");
-        return;
+        if (isOiled)
+        {
+            foreach(SpriteRenderer ledgeVisual in ledgeVisuals)
+            {
+                ledgeVisual.color = oiledUpLedgeColor;
+            }
+        }
+        else
+        {
+            foreach(SpriteRenderer ledgeVisual in ledgeVisuals)
+            {
+                ledgeVisual.color = defaultLedgeColor;
+            }  
+        }
     }
 
-    [Server]
-    public void ApplyOil()
+    public void ApplyOilToLedge()
     {
         Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") has been oiled up!");
         _isOiledUp.Value = true;
     }
+
+    public void RemoveOilFromLedge()
+    {
+        Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") oil should be removed!");
+        _isOiledUp.Value = false;
+    }
     
+    public bool IsLedgeOiledUp()
+    {
+        return _isOiledUp.Value;
+    }
     public float? PlayerGrabbed(PlayerController playerCont)
     {
         // Calculate grab X delta

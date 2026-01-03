@@ -462,6 +462,14 @@ PrefabInstance:
       propertyPath: <SceneId>k__BackingField
       value: 4116707702
       objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: WasActiveDuringEdit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 3615358907
+      objectReference: {fileID: 0}
     - target: {fileID: 5962893270377827923, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.2
@@ -1489,6 +1497,14 @@ PrefabInstance:
     - target: {fileID: 4802663436694671584, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: <SceneId>k__BackingField
       value: 3709598202
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: WasActiveDuringEdit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 4156128143
       objectReference: {fileID: 0}
     - target: {fileID: 6124038449474862472, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: ledgeData
@@ -2702,6 +2718,14 @@ PrefabInstance:
       propertyPath: <SceneId>k__BackingField
       value: 4252727683
       objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: WasActiveDuringEdit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 4261150606
+      objectReference: {fileID: 0}
     - target: {fileID: 5962893270377827923, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.2
@@ -3070,10 +3094,22 @@ PrefabInstance:
       propertyPath: <SceneId>k__BackingField
       value: 4245420807
       objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: WasActiveDuringEdit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 3708550010
+      objectReference: {fileID: 0}
     - target: {fileID: 6124038449474862472, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: ledgeData
       value: 
       objectReference: {fileID: 11400000, guid: 9e88bded1482c8049be78e000f3d236d, type: 2}
+    - target: {fileID: 6124038449474862472, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: oiledUpLedgeColor.rgba
+      value: 3778563537
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4574,6 +4610,14 @@ PrefabInstance:
     - target: {fileID: 4802663436694671584, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: <SceneId>k__BackingField
       value: 3581901803
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: WasActiveDuringEdit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 4257053559
       objectReference: {fileID: 0}
     - target: {fileID: 5962893270377827923, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6522,6 +6566,14 @@ PrefabInstance:
     - target: {fileID: 4802663436694671584, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: <SceneId>k__BackingField
       value: 4294933251
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: WasActiveDuringEdit
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5416820158580928424, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
+      propertyPath: <SceneId>k__BackingField
+      value: 4117592867
       objectReference: {fileID: 0}
     - target: {fileID: 6124038449474862472, guid: 10d9e3cec153bdc42aa65da0eb4e8b36, type: 3}
       propertyPath: ledgeData
