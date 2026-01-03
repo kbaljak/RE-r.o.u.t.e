@@ -665,9 +665,8 @@ public class PlayerController : NetworkBehaviour
     {
         if (ledge.IsLedgeOiledUp())
         {
-            Debug.LogError($"Player just grabbed a oiled ledge, apply penalty for climbing or something!");
-            //ledge.RemoveOilFromLedge();
-            playerItemInteraction.RequestRemoveOilFromLedge(ledge.GetComponent<NetworkObject>().ObjectId);
+            //Debug.LogError($"Player just grabbed a oiled ledge, apply penalty for climbing or something!");
+            playerItemInteraction.RequestRemoveOilFromLedgeRpc(ledge.GetComponent<NetworkObject>().ObjectId);
         }
 
         charCont.enabled = false;
@@ -695,7 +694,7 @@ public class PlayerController : NetworkBehaviour
         
         // player climbed ledge, player can apply oil to ledge
         int ledgeNetID = ledge.GetComponent<NetworkObject>().ObjectId;
-        Debug.Log("Ledge net id: " + ledgeNetID);
+        //Debug.Log("Ledge net id: " + ledgeNetID);
         playerItemInteraction.StartOilApplicationTimeWindow(ledgeNetID);
 
         charCont.enabled = true;

@@ -47,7 +47,7 @@ public class PlayerItemInteraction : NetworkBehaviour
 
     private void OnHeldItemChanged(int oldVal, int newVal, bool asServer)
     {
-        Debug.Log($"OnHeldItemChanged: {oldVal} -> {newVal}, AsServer: {asServer}, IsOwner: {IsOwner}");
+        //Debug.Log($"OnHeldItemChanged: {oldVal} -> {newVal}, AsServer: {asServer}, IsOwner: {IsOwner}");
 
         if (!asServer && IsOwner)
         {
@@ -63,7 +63,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     heldItemInstance = itemNetObj.gameObject;
                     hasEmptyHand = false;
-                    Debug.Log("Client: SyncVar updated held item to " + heldItemInstance.name);   
+                    //Debug.Log("Client: SyncVar updated held item to " + heldItemInstance.name);   
                 }
             }
         }
@@ -140,10 +140,10 @@ public class PlayerItemInteraction : NetworkBehaviour
         {
             if (hasEmptyHand)
             {
-                Debug.Log("Player picked up " + other.gameObject + "with ID: " + other.GetComponent<NetworkObject>().ObjectId);
+                //Debug.Log("Player picked up " + other.gameObject + "with ID: " + other.GetComponent<NetworkObject>().ObjectId);
                 pickedUpItem = other.gameObject;
             }
-            else { Debug.Log("Would pick up " + other.gameObject + "but hand is full!"); }
+            else { /*Debug.Log("Would pick up " + other.gameObject + "but hand is full!");*/return;}
         }
 
         if(other.gameObject.CompareTag("BananaItem") && other.gameObject.layer == LayerMask.NameToLayer("GroundItem"))
@@ -163,8 +163,8 @@ public class PlayerItemInteraction : NetworkBehaviour
 
         if (canApplyOilToLedge) { HandleOilApplicationToLedge(); }
 
-        //if (!hasEmptyHand && heldItemInstance != null){ HandleThrowBananaAction(); }
-        if (!hasEmptyHand && heldItemInstance.CompareTag("BananaItem")){ HandleThrowBananaAction(); }
+        if (!hasEmptyHand && heldItemInstance != null){ HandleItemInteraction(); }
+        //if (!hasEmptyHand && heldItemInstance.CompareTag("BananaItem")){ HandleItemInteraction(); }
     }
     void PickUp()
     {
@@ -186,7 +186,7 @@ public class PlayerItemInteraction : NetworkBehaviour
 
     void HandleOilApplicationToLedge()
     {
-        Debug.Log("Oil application window started - press E to apply oil!");
+        //Debug.Log("Oil application window started - press E to apply oil!");
         applyOilPrompt.SetActive(true);   
         oilApplicationTimer -= Time.deltaTime;
         if (oilApplicationTimer <= 0f)
@@ -195,13 +195,13 @@ public class PlayerItemInteraction : NetworkBehaviour
             climbedLedgeNetObjId = -1;
             oilApplicationTimer = 0f;
             applyOilPrompt.SetActive(false);
-            Debug.Log("Oil application window expired");
+            //Debug.Log("Oil application window expired");
         }
         else if (applyOilAction.WasPressedThisFrame())
         {
             if (climbedLedgeNetObjId != -1)
             {
-                Debug.Log("Oil applied to ledge(" + climbedLedgeNetObjId + ")!");
+                //Debug.Log("Oil applied to ledge(" + climbedLedgeNetObjId + ")!");
                 RequestApplyOilToLedgeServerRPC(climbedLedgeNetObjId);
                 canApplyOilToLedge = false;
                 climbedLedgeNetObjId = -1;
@@ -210,7 +210,7 @@ public class PlayerItemInteraction : NetworkBehaviour
             oilApplicationTimer = 0f;
         }
     }
-    void HandleThrowBananaAction()
+    void HandleItemInteraction()
     {
         if (throwItemAction.IsPressed())
         {
@@ -219,20 +219,20 @@ public class PlayerItemInteraction : NetworkBehaviour
                 throwChargeMeter.SetActive(true);
                 throwCharge += Time.deltaTime * 10f;
                 throwCharge = Mathf.Clamp(throwCharge, minThrowCharge, maxThrowCharge);
-                Debug.Log("Charging throw: " + throwCharge);
+                //Debug.Log("Charging throw: " + throwCharge);
                 UpdateThrowChargeSlider(throwCharge);
             }
             else if (heldItemInstance.CompareTag("OilCanItem"))
             {
-                // Discard picked up oil can!
-                Debug.Log("This will remove oil can from back and sync with other clients!");
+                //Debug.Log("This will remove oil can from back and sync with other clients!");
+                RequestRemoveOilCanFromBackRpc();
             }
         }
         if (throwItemAction.WasReleasedThisFrame())
         {
             if (heldItemInstance.CompareTag("BananaItem"))
             {
-                Debug.Log($"Client {(IsServerInitialized ? "Host" : "Client")}: Releasing throw with charge: {throwCharge:F1}");
+                //Debug.Log($"Client {(IsServerInitialized ? "Host" : "Client")}: Releasing throw with charge: {throwCharge:F1}");
                 
                 GameObject camera = GameObject.FindWithTag("TPCamera");
                 throwDirection = camera != null ? camera.transform.forward : itemHandHoldPoint.forward;
@@ -257,26 +257,13 @@ public class PlayerItemInteraction : NetworkBehaviour
     {
         if (heldItemInstance != null && heldItemInstance.CompareTag("OilCanItem"))
         {
-            Debug.Log("Player just climbed a ledge(" + ledgeNetObjId + "), there is a " + OIL_APPLICATION_TIME_WINDOW + " window in which he can apply oil to it");
+            //Debug.Log("Player just climbed a ledge(" + ledgeNetObjId + "), there is a " + OIL_APPLICATION_TIME_WINDOW + " window in which he can apply oil to it");
             // set all needed flags
             canApplyOilToLedge = true;
             climbedLedgeNetObjId = ledgeNetObjId;
             oilApplicationTimer = OIL_APPLICATION_TIME_WINDOW;    
-        }else { Debug.Log("Player just climbed a ledge(" + ledgeNetObjId + "), but does not have an oil can!"); }
+        }else { /*Debug.Log("Player just climbed a ledge(" + ledgeNetObjId + "), but does not have an oil can!");*/ return;}
         
-    }
-
-    private void PourOil()
-    {
-        // simulate pouring oil (could be a particle effect or similar)
-        if(heldItemInstance != null)
-        {
-            Debug.Log("Pouring oil...");
-            // After pouring, we can assume the oil can is empty and remove it
-            // Destroy(itemPrefab);
-            // hasEmptyHand = true;
-            // itemPrefab = null;
-        }
     }
 
     // ------------ Networking Section ------------
@@ -307,11 +294,11 @@ public class PlayerItemInteraction : NetworkBehaviour
             NetworkObject heldItemNetObj = heldItem.GetComponent<NetworkObject>();
             if (heldItemNetObj != null)
             {
-                Debug.Log("Spawning " + heldItem + "and the owner is: " + Owner.ClientId);
+                //Debug.Log("Spawning " + heldItem + "and the owner is: " + Owner.ClientId);
                 Spawn(heldItem, Owner);
                 _heldItemObjectId.Value = heldItemNetObj.ObjectId;
                 SetItemInHandObserversRPC(heldItemNetObj.ObjectId, true);
-                Debug.Log($"Server: Player {Owner.ClientId} picked up {pickedUpNetObj.gameObject.name}, ObjectId: {heldItemNetObj.ObjectId}");
+                //Debug.Log($"Server: Player {Owner.ClientId} picked up {pickedUpNetObj.gameObject.name}, ObjectId: {heldItemNetObj.ObjectId}");
             }
         }
     }
@@ -343,7 +330,7 @@ public class PlayerItemInteraction : NetworkBehaviour
     }
 
     [ServerRpc]
-    public void RequestRemoveOilFromLedge(int ledgeNetObjId)
+    public void RequestRemoveOilFromLedgeRpc(int ledgeNetObjId)
     {
         NetworkObject ledgeNetObj;
         if (ServerManager.Objects.Spawned.TryGetValue(ledgeNetObjId, out ledgeNetObj))
@@ -365,7 +352,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         if (ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out heldNetObj))
         {
             GameObject heldItem = heldNetObj.gameObject;
-            Debug.Log($"Server: Player {Owner.ClientId} throwing {heldItem.name} with force {throwForce}");
+            //Debug.Log($"Server: Player {Owner.ClientId} throwing {heldItem.name} with force {throwForce}");
 
             _heldItemObjectId.Value = -1;
 
@@ -375,6 +362,19 @@ public class PlayerItemInteraction : NetworkBehaviour
         else
         {
             Debug.LogError($"Server: Could not find held item with ObjectId {_heldItemObjectId.Value} for player {Owner.ClientId}");
+            _heldItemObjectId.Value = -1;
+        }
+    }
+
+    [ServerRpc]
+    void RequestRemoveOilCanFromBackRpc()
+    {
+        NetworkObject oilCanNetObj;
+        if (ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out oilCanNetObj))
+        {
+            oilCanNetObj.RemoveOwnership();
+            SetItemInHandObserversRPC(oilCanNetObj.ObjectId, false);
+            Despawn(oilCanNetObj.gameObject);
             _heldItemObjectId.Value = -1;
         }
     }
@@ -415,7 +415,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     heldItemInstance = itemInHand;
                     hasEmptyHand = false;
-                    Debug.Log("Host: Now holding " + itemInHand.name);
+                    //Debug.Log("Host: Now holding " + itemInHand.name);
                 }
             }
             else
@@ -426,7 +426,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     heldItemInstance = null;
                     hasEmptyHand = true;
-                    Debug.Log("Host: Released " + itemInHand.name);
+                    //Debug.Log("Host: Released " + itemInHand.name);
                 }
             }
         }
@@ -442,7 +442,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     heldItemInstance = itemInHand;
                     hasEmptyHand = false;
-                    Debug.Log("Host: Now holding " + itemInHand.name);
+                    //Debug.Log("Host: Now holding " + itemInHand.name);
                 }
             }
             else
@@ -453,7 +453,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     heldItemInstance = null;
                     hasEmptyHand = true;
-                    Debug.Log("Host: Released " + itemInHand.name);
+                    //Debug.Log("Host: Released " + itemInHand.name);
                 }
             }
         }
