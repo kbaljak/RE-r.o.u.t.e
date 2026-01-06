@@ -12,6 +12,10 @@ public class NetworkConnectionStarter : MonoBehaviour
 
     private NetworkManager _networkManager;
     private Tugboat _tugboat;
+    private LANBroadcaster _lanBroadcaster;
+
+    private string hostName;
+    private string playerName;
 
     [Header("Connection Mode")]
     [Tooltip("For editor testing: Auto-start as host if main editor, client if virtual player")]
@@ -28,20 +32,23 @@ public class NetworkConnectionStarter : MonoBehaviour
 
         _tugboat = GetComponent<Tugboat>();
         if (_tugboat == null) { Debug.LogError("Could not find Tugboat component!"); }
+
+        _lanBroadcaster = GetComponent<LANBroadcaster>();
+        if (_lanBroadcaster == null) { Debug.LogError("Could not find LANBroadcaster component!"); }
     }
 
     private void Start()
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (autoConnectInEditor) { EditorAutoConnect(); }
-        #endif
+#endif
     }
 
     /// <summary>
     /// Starts connection as HOST (Server + Client)
     /// Called by NetworkLobbyManager when "Host Game" is clicked
     /// </summary>
-    public void StartAsHost()
+    public void StartAsHost(string hostName)
     {
         if (_networkManager == null || _tugboat == null)
         {
@@ -59,13 +66,21 @@ public class NetworkConnectionStarter : MonoBehaviour
         
         _tugboat.StartConnection(true);     // Start server
         _tugboat.StartConnection(false);    // Start client
+        
+        this.hostName = hostName;
+        if (_lanBroadcaster != null) { Invoke(nameof(StartBroadcast), 1.0f); }
+    }
+
+    private void StartBroadcast()
+    {
+        if (_lanBroadcaster != null && _networkManager.IsServerStarted) { _lanBroadcaster.StartBroadcastingGameInfo(hostName); }
     }
 
     /// <summary>
     /// Starts connection as CLIENT only
     /// Called by NetworkLobbyManager when "Join Game" is clicked
     /// </summary>
-    public void StartAsClient()
+    public void StartAsClient(string playerName)
     {
         if (_networkManager == null || _tugboat == null)
         {
@@ -89,18 +104,18 @@ public class NetworkConnectionStarter : MonoBehaviour
     /// </summary>
     private void EditorAutoConnect()
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (CurrentPlayer.IsMainEditor)
         {
             Debug.Log("Editor Auto-Connect: Starting as HOST (Main Editor)");
-            StartAsHost();
+            StartAsHost("Host");
         }
         else
         {
             Debug.Log("Editor Auto-Connect: Starting as CLIENT (Virtual Player)");
-            StartAsClient();
+            StartAsClient("Player");
         }
-        #endif
+#endif
     }
 
     public void StopConnection()
