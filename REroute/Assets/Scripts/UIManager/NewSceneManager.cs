@@ -34,6 +34,13 @@ public class NewSceneManager : MonoBehaviour
 
     public void SwitchToServerDiscoveryScene()
     {
+        TMP_InputField playerNameInputFiled = GameObject.Find("Canvas/PlayerNameInputFiled").GetComponent<TMP_InputField>();
+        if (playerNameInputFiled == null) { Debug.LogError("Could not find TMPro Input Filed!"); }
+
+        string playerName = string.IsNullOrEmpty(playerNameInputFiled.text) ? "Player" : playerNameInputFiled.text;
+
+        NetworkLobbyManager.Instance.SetPlayerName(playerName);
+
         SceneManager.LoadScene("ServerDiscoveryScene");
     }
 
@@ -52,20 +59,22 @@ public class NewSceneManager : MonoBehaviour
 
         //TODO:
         //Using NetworkLobbyManager.Instance start the game as host with host name hostName
-        NetworkLobbyManager.Instance.HostGame(hostName);
+        NetworkLobbyManager.Instance.SetHostName(hostName);
+        NetworkLobbyManager.Instance.HostGame();
 
     }
-    public void JoinGame()
-    {
-        TMP_InputField playerNameInputFiled = GameObject.Find("Canvas/PlayerNameInputFiled").GetComponent<TMP_InputField>();
-        if (playerNameInputFiled == null) { Debug.LogError("Could not find TMPro Input Filed!"); }
+    // public void JoinGame()
+    // {
+    //     TMP_InputField playerNameInputFiled = GameObject.Find("Canvas/PlayerNameInputFiled").GetComponent<TMP_InputField>();
+    //     if (playerNameInputFiled == null) { Debug.LogError("Could not find TMPro Input Filed!"); }
 
-        string playerName = string.IsNullOrEmpty(playerNameInputFiled.text) ? "Player" : playerNameInputFiled.text;
+    //     string playerName = string.IsNullOrEmpty(playerNameInputFiled.text) ? "Player" : playerNameInputFiled.text;
 
-        //TODO:
-        //Using NetworkLobbyManager.Instance start the game as client with player name playerName
-        NetworkLobbyManager.Instance.JoinGame(playerName);
-    }
+    //     //TODO:
+    //     //Using NetworkLobbyManager.Instance start the game as client with player name playerName
+    //     NetworkLobbyManager.Instance.SetPlayerName(playerName);
+    //     //NetworkLobbyManager.Instance.JoinGame();
+    // }
     public void QuitGame()
     {
         //Debug.Log("Quitting game...");

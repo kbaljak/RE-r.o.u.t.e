@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,6 +11,7 @@ public class NetworkLobbyManager : MonoBehaviour
     private string lobbyCode;
     private string hostName;
     private string playerName;
+    private string hostAddress;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -24,23 +24,24 @@ public class NetworkLobbyManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void HostGame(string hostName)
+    public void HostGame()
     {
         shouldStartAsHost = true;
         shouldStartAsClient = false;
 
-        this.hostName = hostName;
+        //this.hostName = hostName;
 
         SceneManager.sceneLoaded += OnLobbySceneLoaded;
         SceneManager.LoadScene(LobbySceneName);
     }
 
-    public void JoinGame(string playerName)
+    public void JoinGame(string hostAddress)
     {
         shouldStartAsClient = true;
         shouldStartAsHost = false;
 
-        this.playerName = playerName;
+        //this.playerName = playerName;
+        this.hostAddress = hostAddress;
 
         SceneManager.sceneLoaded += OnLobbySceneLoaded;
         SceneManager.LoadScene(LobbySceneName);
@@ -67,12 +68,21 @@ public class NetworkLobbyManager : MonoBehaviour
         }
         else if (shouldStartAsClient) 
         {
-            networkConnectionStarter.StartAsClient(playerName); 
+            if (hostAddress == null) { Debug.LogError("Could not join, host address is null!"); return; }
+            networkConnectionStarter.SetServerAddress(hostAddress);
+            networkConnectionStarter.StartAsClient(playerName);
         }
 
         shouldStartAsClient = false;
         shouldStartAsHost = false;
+
+        hostName = null;
+        // playerName = null;
+        hostAddress = null;
     }
+
+    public void SetPlayerName(string playerName) { this.playerName = playerName; }
+    public void SetHostName(string hostName) { this.hostName = hostName; }
 
     private string GenerateLobbyCode()
     {

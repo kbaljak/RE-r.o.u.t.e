@@ -12,6 +12,7 @@ public class LANBroadcaster : MonoBehaviour
     [SerializeField] public int broadcastPort = 42567;
     [SerializeField] public float broadcastInterval = 1f;   // time between broadcasts
     [SerializeField] public int maxPlayers = 4;
+    [SerializeField] public string gameIdentifier = "REroute";
 
     private string hostName;
     private IPAddress hostAddress;
@@ -83,7 +84,7 @@ public class LANBroadcaster : MonoBehaviour
         {
             int playerCount = _networkManager.ServerManager.Clients.Count;
 
-            string broadcastMessage = $"REroute|{hostName}|{hostAddress}|{playerCount}|{maxPlayers}";
+            string broadcastMessage = $"{gameIdentifier}|{hostName}|{hostAddress}|{playerCount}|{maxPlayers}";   // REroute|Bob|192.168.1.105|2|4
             byte[] broadcastData = Encoding.UTF8.GetBytes(broadcastMessage);
 
             Debug.Log($"Broadcasting: {broadcastMessage} => {broadcastData}");
