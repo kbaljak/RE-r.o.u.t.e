@@ -90,15 +90,15 @@ public class PlayerItemInteraction : NetworkBehaviour
         if (ItemSpawner.Instance == null) { Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");}
         else{ Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance"); }
 
-        playerUICanvas = GameObject.Find("PlayerUI");
-        throwChargeMeter = GameObject.Find("ThrowChargeMeter");
+        playerUICanvas = GameObject.Find("PlayerUI/Canvas");
+        throwChargeMeter = GameObject.Find("PlayerUI/Canvas/ThrowChargeMeter");
 
         if(throwChargeMeter == null){ Debug.LogError("Could not find throwChargeMeter slider in scene hierarchy!"); }
-        else { throwChargeMeter.SetActive(false); }
+        //else { throwChargeMeter.SetActive(false); }
 
-        applyOilPrompt = GameObject.Find("ApplyOilPrompt");
+        applyOilPrompt = GameObject.Find("PlayerUI/Canvas/ApplyOilPrompt");
         if(applyOilPrompt == null) {Debug.LogError("Could not find ApplyOilPrompt in scene hierarchy");}
-        else{ applyOilPrompt.SetActive(false); }
+        //else{ applyOilPrompt.SetActive(false); }
 
         itemHandHoldPoint = GameObject.Find("ItemHandHoldPoint").transform;
         if (itemHandHoldPoint == null){Debug.LogError("Could not find item hand hold point on player prefab");}

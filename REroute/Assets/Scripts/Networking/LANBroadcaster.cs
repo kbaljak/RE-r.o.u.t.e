@@ -87,7 +87,7 @@ public class LANBroadcaster : MonoBehaviour
             string broadcastMessage = $"{gameIdentifier}|{hostName}|{hostAddress}|{playerCount}|{maxPlayers}";   // REroute|Bob|192.168.1.105|2|4
             byte[] broadcastData = Encoding.UTF8.GetBytes(broadcastMessage);
 
-            Debug.Log($"Broadcasting: {broadcastMessage} => {broadcastData}");
+            //Debug.Log($"Broadcasting: {broadcastMessage} => {broadcastData}");
 
             udpClient.Send(broadcastData, broadcastData.Length, broadcastEndPoint);
         }
