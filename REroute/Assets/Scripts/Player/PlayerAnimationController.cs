@@ -50,6 +50,7 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (isRoot) { playerCont = GetComponent<PlayerController>(); }
         else { playerCont = transform.parent.GetComponent<PlayerController>(); }
+        //if (!playerCont.IsOwner) { enabled = false; return; }
         baseLocalPosition = transform.localPosition;
         ikTargetParent = rightHandIKTarget.parent;
     }

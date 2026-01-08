@@ -32,8 +32,10 @@ public class PlayerParkourDetection : MonoBehaviour
 
     private void Awake()
     {
-        plCont = transform.parent.GetComponent<PlayerController>();
 
+        plCont = transform.parent.GetComponent<PlayerController>();
+        //if (plCont != null && !plCont.IsOwner) { enabled = false; return; }
+        if (!plCont.IsOwner) {return;}
         // Set up triggers
         // Grab trigger
         BoxCollider grabTriggerCol = grabTrigger.gameObject.GetComponent<BoxCollider>();
@@ -64,7 +66,7 @@ public class PlayerParkourDetection : MonoBehaviour
 
     private void Update()
     {
-        if (!plCont.IsOwner) return;
+        //if (!plCont.IsOwner) return;
         if (checkForClimbable && !holdingLedge) { CheckClimbables(); }
     }
 

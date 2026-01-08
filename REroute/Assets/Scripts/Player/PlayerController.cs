@@ -109,36 +109,35 @@ public class PlayerController : NetworkBehaviour
         base.OnStartClient();
         if (!IsOwner)
         {
-            gameObject.GetComponent<PlayerController>().enabled = false;
-            gameObject.GetComponent<CharacterController>().enabled = false;
+            //gameObject.GetComponent<PlayerController>().enabled = false;
+            //gameObject.GetComponent<CharacterController>().enabled = false;
+            enabled = false;
+            return;
         }
-        else
+        // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
+        var camPoint = GameObject.FindGameObjectWithTag("camPoint");
+        if (camPoint != null)
         {
-            // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
-            var camPoint = GameObject.FindGameObjectWithTag("camPoint");
-            if (camPoint != null)
+            virtualChild = camPoint.GetComponent<VirtualChild>();
+            if (virtualChild != null)
             {
-                virtualChild = camPoint.GetComponent<VirtualChild>();
-                if (virtualChild != null)
-                {
-                    virtualChild.SetVirtualParent(gameObject);
-                    Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
-                }
-
-                // get player camera controller from cameraPoint
-                playerCamera = camPoint.GetComponent<PlayerCameraController>();
-
-                // assign cameraPoint to TPCamera to follow
-                tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
-                CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
-                cineCam.Follow = camPoint.transform;   
+                virtualChild.SetVirtualParent(gameObject);
+                Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
             }
 
-            playerItemInteraction = GetComponent<PlayerItemInteraction>();
-            if (playerItemInteraction == null)
-            {
-                Debug.LogError("PlayerItemInteraction component not found on PlayerController!");
-            }
+            // get player camera controller from cameraPoint
+            playerCamera = camPoint.GetComponent<PlayerCameraController>();
+
+            // assign cameraPoint to TPCamera to follow
+            tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
+            CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
+            cineCam.Follow = camPoint.transform;   
+        }
+
+        playerItemInteraction = GetComponent<PlayerItemInteraction>();
+        if (playerItemInteraction == null)
+        {
+            Debug.LogError("PlayerItemInteraction component not found on PlayerController!");
         }
     }
 
@@ -157,7 +156,7 @@ public class PlayerController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (!IsOwner) return;
+        //if (!IsOwner) return;
         
         if (followCameraRotation && freeLook && MoveSpeedIsZero())
         {
@@ -173,7 +172,7 @@ public class PlayerController : NetworkBehaviour
     //// Update
     private void Update()
     {
-        if (!IsOwner) return;
+        //if (!IsOwner) return;
 
         if (playerCamera != null)
         {

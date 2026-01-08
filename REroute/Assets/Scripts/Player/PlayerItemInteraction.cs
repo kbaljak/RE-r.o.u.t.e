@@ -73,39 +73,38 @@ public class PlayerItemInteraction : NetworkBehaviour
         base.OnStartClient();
         if (!IsOwner)
         {
-           gameObject.GetComponent<PlayerItemInteraction>().enabled = false;
+           // gameObject.GetComponent<PlayerItemInteraction>().enabled = false;
+           enabled = false;
+           return;
         }
-        else
-        {
-            hasEmptyHand = true;
-        
-            throwItemAction = InputSystem.actions.FindAction("Throw");
-            if(throwItemAction != null){ throwItemAction.Enable(); }
-            else{ Debug.LogError("Throw action not found!"); }
+        hasEmptyHand = true;
+    
+        throwItemAction = InputSystem.actions.FindAction("Throw");
+        if(throwItemAction != null){ throwItemAction.Enable(); }
+        else{ Debug.LogError("Throw action not found!"); }
 
-            applyOilAction = InputSystem.actions.FindAction("UseItem");
-            if(applyOilAction != null) { applyOilAction.Enable(); }
-            else {Debug.LogError("UseItem action not found!");}
+        applyOilAction = InputSystem.actions.FindAction("UseItem");
+        if(applyOilAction != null) { applyOilAction.Enable(); }
+        else {Debug.LogError("UseItem action not found!");}
 
-            if (ItemSpawner.Instance == null) { Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");}
-            else{ Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance"); }
+        if (ItemSpawner.Instance == null) { Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");}
+        else{ Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance"); }
 
-            playerUICanvas = GameObject.Find("PlayerUI");
-            throwChargeMeter = GameObject.Find("ThrowChargeMeter");
+        playerUICanvas = GameObject.Find("PlayerUI");
+        throwChargeMeter = GameObject.Find("ThrowChargeMeter");
 
-            if(throwChargeMeter == null){ Debug.LogError("Could not find throwChargeMeter slider in scene hierarchy!"); }
-            else { throwChargeMeter.SetActive(false); }
+        if(throwChargeMeter == null){ Debug.LogError("Could not find throwChargeMeter slider in scene hierarchy!"); }
+        else { throwChargeMeter.SetActive(false); }
 
-            applyOilPrompt = GameObject.Find("ApplyOilPrompt");
-            if(applyOilPrompt == null) {Debug.LogError("Could not find ApplyOilPrompt in scene hierarchy");}
-            else{ applyOilPrompt.SetActive(false); }
+        applyOilPrompt = GameObject.Find("ApplyOilPrompt");
+        if(applyOilPrompt == null) {Debug.LogError("Could not find ApplyOilPrompt in scene hierarchy");}
+        else{ applyOilPrompt.SetActive(false); }
 
-            itemHandHoldPoint = GameObject.Find("ItemHandHoldPoint").transform;
-            if (itemHandHoldPoint == null){Debug.LogError("Could not find item hand hold point on player prefab");}
+        itemHandHoldPoint = GameObject.Find("ItemHandHoldPoint").transform;
+        if (itemHandHoldPoint == null){Debug.LogError("Could not find item hand hold point on player prefab");}
 
-            itemBackHoldPoint = GameObject.Find("ItemBackHoldPoint").transform;
-            if (itemHandHoldPoint == null){Debug.LogError("Could not find item back hold point on player prefab");}
-        }
+        itemBackHoldPoint = GameObject.Find("ItemBackHoldPoint").transform;
+        if (itemHandHoldPoint == null){Debug.LogError("Could not find item back hold point on player prefab");}
     }
 
     private void OnDisable()

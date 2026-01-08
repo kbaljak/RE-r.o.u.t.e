@@ -9,7 +9,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     PlayerParkourDetection playerParkour;
 
     [Header("General")]
-    public string name;
+    new public string name;
     public bool processUpdate = true;
     bool update = false;
     [Header("Root Motion")]
@@ -57,7 +57,10 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     float timer = 0f;
     bool snappedLastFrame = false;
 
-
+    // void Awake()
+    // {
+    //     if (!playerCont.IsOwner) { update = false; return; }
+    // }
 
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

@@ -10,7 +10,7 @@ public class Ledge : NetworkBehaviour, Parkourable
     [SerializeField] private Ledge_Data ledgeData;
 
 #if UNITY_EDITOR
-    private void Reset(){ ledgeData = ScriptableObjectManager.Load<Ledge_Data>(); }
+    new private void Reset(){ ledgeData = ScriptableObjectManager.Load<Ledge_Data>(); }
     //
 #endif
     public bool vaultable = false;
