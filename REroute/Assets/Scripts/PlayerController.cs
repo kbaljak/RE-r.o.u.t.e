@@ -452,11 +452,11 @@ public class PlayerController : NetworkBehaviour
     {
         if (playerParkour.holdingLedge) { isGrounded = false; return; }
         bool value = false;
-        if (charCont.isGrounded) { value = true; }
+        //if (charCont.isGrounded) { value = true; }
         //
         RaycastHit hit;
         bool raycastHit = false;
-        float raycastLength = 0.2f;
+        float raycastLength = 0.25f;
         Debug.DrawRay(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
         if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
         else
@@ -487,8 +487,10 @@ public class PlayerController : NetworkBehaviour
             else { groundFriction = 1f; }
             value = true;
 
+            //Debug.Log("Move direction y: " + moveDirection.y);
+            if (Mathf.Abs(moveDirection.y) < 0.01f) { moveDirection = new Vector3(moveDirection.x, 0, moveDirection.z); }
             // Slide down if downwards slope
-            if (moveDirection.y < 0)
+            if (moveDirection.y < -0.01f)
             {
                 if (!slide && moveSpeed > walkSpeed)
                 {
@@ -500,10 +502,10 @@ public class PlayerController : NetworkBehaviour
                     }
                 }
             }
-            // Otherwise move slower
-            else if (moveDirection.y > 0)
+            // Otherwise move slower (i.e. run up that hill :3)
+            else if (moveDirection.y > 0.01f)
             {
-                frameMoveSpeedFactor = 0.5f;
+                frameMoveSpeedFactor = 0.8f;
             }
         }
         // Is in air (no timer padding; frame important)
@@ -606,7 +608,7 @@ public class PlayerController : NetworkBehaviour
         {
             // Hard landing
             //Debug.Log("Hard landing? " + fallSpeed);
-            Debug.Log("Landing type: " + (hardLanding ? (roll ? "2 (roll)" : "3 (hard)") : "1 (normal)"));
+            //Debug.Log("Landing type: " + (hardLanding ? (roll ? "2 (roll)" : "3 (hard)") : "1 (normal)"));
             if (hardLanding)
             {
                 plAnimCont.anim.SetInteger("landingType", roll ? 2 : 3);
