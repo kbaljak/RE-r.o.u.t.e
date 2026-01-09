@@ -16,7 +16,9 @@ public class Ledge : MonoBehaviour, Parkourable
     private List<float> playerGrabbedDeltaXs = new List<float>();
 
 
-    void Awake() { width = transform.lossyScale.x; }
+    void Awake() {
+        width = GetComponent<BoxCollider>().size.x; //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
+    }
 
     
     public float? PlayerGrabbed(PlayerController playerCont)
