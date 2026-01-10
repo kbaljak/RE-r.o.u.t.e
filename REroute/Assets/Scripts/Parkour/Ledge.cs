@@ -17,7 +17,18 @@ public class Ledge : MonoBehaviour, Parkourable
 
 
     void Awake() {
-        width = GetComponent<BoxCollider>().size.x; //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
+        /*if (GetComponent<Ledge_Editor>()) 
+        {
+            width = GetComponent<Ledge_Editor>().width;
+            Destroy(GetComponent<Ledge_Editor>()); 
+        }
+        else
+        {
+            width = GetComponent<BoxCollider>().size.x; 
+        }*/
+
+        width = GetComponent<BoxCollider>().size.x;  //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
+        if (GetComponent<Ledge_Editor>()) { Destroy(GetComponent<Ledge>()); }
     }
 
     

@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(Ledge))]
 public class Ledge_Editor : MonoBehaviour
 {
+    private bool update = false;
+
     [SerializeField]
     public float width;
     private float lastWidth;
@@ -12,20 +14,29 @@ public class Ledge_Editor : MonoBehaviour
     void Awake()
     {
         float lossyScale = transform.lossyScale.x;
-        if (lossyScale != 1.0f)
+        if (lossyScale > 1.01f || lossyScale < 0.99f)
         {
             transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-            SetWidthCorrectly(lossyScale);
+            SetWidthCorrectly(width); //lossyScale);
         }
-        width = lossyScale; lastWidth = width;
+        //width = lossyScale; lastWidth = width;
     }
 
     void OnValidate()
     {
         if (width != lastWidth)
         {
-            SetWidthCorrectly(width);
+            update = true;
+            //SetWidthCorrectly(width);
             lastWidth = width;
+        }
+    }
+    private void Update()
+    {
+        if (!Application.isPlaying && update) {
+
+            SetWidthCorrectly(width);
+            update = false;
         }
     }
 
