@@ -13,12 +13,12 @@ public class Ledge_Editor : MonoBehaviour
 
     void Awake()
     {
-        float lossyScale = transform.lossyScale.x;
-        if (lossyScale > 1.01f || lossyScale < 0.99f)
-        {
-            transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-            SetWidthCorrectly(width); //lossyScale);
-        }
+        //float lossyScale = transform.lossyScale.x;
+        //if (lossyScale > 1.01f || lossyScale < 0.99f)
+        //{
+        //    transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+            //SetWidthCorrectly(width); //lossyScale);
+        //}
         //width = lossyScale; lastWidth = width;
     }
 
@@ -35,7 +35,9 @@ public class Ledge_Editor : MonoBehaviour
     {
         if (!Application.isPlaying && update) {
 
-            SetWidthCorrectly(width);
+            if (width > 0) { SetWidthCorrectly(width); }
+            else { Debug.LogError("ERROR: Invalid width value set."); }
+            
             update = false;
         }
     }

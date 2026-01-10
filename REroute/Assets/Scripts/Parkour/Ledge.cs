@@ -28,18 +28,23 @@ public class Ledge : MonoBehaviour, Parkourable
         }*/
 
         width = GetComponent<BoxCollider>().size.x;  //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
-        if (GetComponent<Ledge_Editor>()) { Destroy(GetComponent<Ledge>()); }
+        if (GetComponent<Ledge_Editor>()) { Destroy(GetComponent<Ledge_Editor>()); }
     }
 
     
     public float? PlayerGrabbed(PlayerController playerCont)
     {
-        // Calculate grab X delta
+        // Calculate grab delta
         Vector3 localPlayerPos = transform.InverseTransformPoint(playerCont.transform.position);
-        float deltaX = localPlayerPos.x * width;
-        //Debug.Log("deltaX: " + deltaX);
+        float deltaX = localPlayerPos.x;
+        float deltaZ = localPlayerPos.z;
 
-        // Check if can grab
+        Debug.Log(name + "<Ledge>delta: " + localPlayerPos);
+
+        //// Check if can grab
+        // Is in front of ledge?
+        if (deltaZ >= -0.01f) { return null; }
+        // Is inside the width of the ledge?
         float? insideWidthAdj = InsideWidthAdjustment(deltaX);
         if (!insideWidthAdj.HasValue) { return null; }
         if (insideWidthAdj.Value != 0)  // Means we are at an edge
@@ -57,10 +62,10 @@ public class Ledge : MonoBehaviour, Parkourable
     /// <summary>
     /// Has to be called when a parent or indirect parent's local scale has changed!
     /// </summary>
-    public void GlobalScaleChanged()
+    /*public void GlobalScaleChanged()
     {
         width = transform.lossyScale.x;
-    }
+    }*/
 
 
     // Utility

@@ -186,7 +186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0c2edd444441da4799917c5512eb585, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ledge
-  ledgeData: {fileID: 0}
+  ledgeData: {fileID: 11400000, guid: 9e88bded1482c8049be78e000f3d236d, type: 2}
   vaultable: 0
 --- !u!114 &-7496253678981892808
 MonoBehaviour:

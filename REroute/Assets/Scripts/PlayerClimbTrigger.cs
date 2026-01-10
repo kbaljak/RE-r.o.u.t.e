@@ -24,19 +24,29 @@ public class PlayerController_Inspector : Editor
 
         playerClimbTrigger = (PlayerClimbTrigger)target;
 
-        EditorGUILayout.Space();
 
-        if (GUILayout.Button("Dump detected"))
+        if (EditorApplication.isPlaying)
         {
-            string s = name + "<PlayerClimbTrigger>.detected: [";
-            bool first = true;
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Detected [" + playerClimbTrigger.detected.Count + "]:");
+
             foreach (Collider c in playerClimbTrigger.detected)
             {
-                if (first) { first = false; }
-                else { s += ", "; }
-                s += c.name;
+                EditorGUILayout.ObjectField(c.gameObject, typeof(GameObject), true);
             }
-            Debug.Log(s + "]");
+
+            if (GUILayout.Button("Dump detected"))
+            {
+                string s = name + "<PlayerClimbTrigger>.detected: [";
+                bool first = true;
+                foreach (Collider c in playerClimbTrigger.detected)
+                {
+                    if (first) { first = false; }
+                    else { s += ", "; }
+                    s += c.name;
+                }
+                Debug.Log(s + "]");
+            }
         }
     }
 }

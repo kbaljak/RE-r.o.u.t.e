@@ -122,11 +122,11 @@ public class PlayerParkourDetection : MonoBehaviour
         checkForClimbable = false;
 
         //Vault logic
-        if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
+        /*if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
         {
             
             return ParkourInteractType.None;
-        }
+        }*/
 
         // Climb ledge
         if (!GrabLedge(ledge, ledgeLvl)) { return ParkourInteractType.None; }       

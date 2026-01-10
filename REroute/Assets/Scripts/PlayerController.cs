@@ -651,11 +651,11 @@ public class PlayerController : NetworkBehaviour
         //Debug.Log("Jump");
         followRotation = PlayerFollowRotation.MOVEMENT;
 
-        if (isGrounded && playerParkour.TryVaultFromTrigger())
+        /*if (isGrounded && playerParkour.TryVaultFromTrigger())
         {
             playerParkour.checkForClimbable = false;
             return;
-        }
+        }*/
 
         Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
         if (!parkourableDetectedOnJump.Item1)
@@ -864,7 +864,8 @@ public class PlayerController : NetworkBehaviour
         if (!enabled) { accelerationFactor = 1f; }
         applyGravity = !enabled;
         moveCharacter = !enabled || keepMoving;
-        followRotation = PlayerFollowRotation.NONE; //followCameraRotation = !enabled;
+        //followCameraRotation = !enabled;
+        followRotation = enabled ? PlayerFollowRotation.NONE : PlayerFollowRotation.CAMERA;
     }
     public void MovementAnimationSolo(bool enabled)
     {
@@ -873,7 +874,8 @@ public class PlayerController : NetworkBehaviour
         if (!enabled) { accelerationFactor = 1f; }
         //applyGravity = !enabled;
         moveCharacter = true;
-        followRotation = PlayerFollowRotation.NONE; //followCameraRotation = !enabled;
+        //followCameraRotation = !enabled;
+        followRotation = enabled ? PlayerFollowRotation.NONE : PlayerFollowRotation.CAMERA;
         plAnimCont.transform.localEulerAngles = new Vector3(plAnimCont.transform.localEulerAngles.x, 0, plAnimCont.transform.localEulerAngles.z);
     }
 
