@@ -1,12 +1,11 @@
+using FishNet.Object;
 using System;
 using System.Collections;
-using System.Linq;
-using System.Text;
-using FishNet.Object;
 using Unity.Cinemachine;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
+public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
@@ -61,7 +60,8 @@ public class PlayerController : NetworkBehaviour
     public Vector3 moveDirection { get; private set; } = Vector3.forward;
     bool backwardMovement = false;
     public float fallSpeed { get; private set; } = 0f;
-    public bool followCameraRotation = true;
+    //public bool followCameraRotation = true;
+    public PlayerFollowRotation followRotation = PlayerFollowRotation.CAMERA;
 
     // Params
     [Header("Serialized parameters")]
@@ -76,6 +76,8 @@ public class PlayerController : NetworkBehaviour
     float accelerationFactor = 1f;
     [Tooltip("Jump height in meters.")]
     public float jumpHeight = 0.7f;
+    [Tooltip("Is air control enabled?")]
+    public bool airControl = false;
 
     /// Climbing
     //public bool holdingLedge = false;
@@ -152,7 +154,7 @@ public class PlayerController : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (followCameraRotation && freeLook && MoveSpeedIsZero())
+        if (followRotation != PlayerFollowRotation.CAMERA && freeLook && MoveSpeedIsZero())
         {
             float targetYAngle = playerCamera.transform.eulerAngles.y - transform.eulerAngles.y;
             if (targetYAngle > 180f) { targetYAngle = targetYAngle - 360f; }
@@ -190,7 +192,74 @@ public class PlayerController : NetworkBehaviour
     void Update_FaceCamera()
     {
         freeLook = freeLookAction.IsInProgress();
-        if (followCameraRotation)
+
+        
+        // Options: transform towards camera; only head towards camera
+        // Fully rotate transform and body towards camera
+        if (followRotation == PlayerFollowRotation.CAMERA && !freeLook)
+        {
+            Quaternion targetRotation = Quaternion.Euler(new Vector3(transform.eulerAngles.x, playerCamera.transform.eulerAngles.y, transform.eulerAngles.z));
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f * 1.2f * Time.deltaTime);
+
+            plAnimCont.transform.localRotation = Quaternion.identity;
+        }
+        // Rotate body towards movement (free look)
+        else if (followRotation == PlayerFollowRotation.MOVEMENT || (followRotation == PlayerFollowRotation.CAMERA && freeLook))
+        {
+            float targetYAngle;
+            if (followRotation == PlayerFollowRotation.CAMERA) { targetYAngle = playerCamera.transform.eulerAngles.y - transform.eulerAngles.y; }
+            else { targetYAngle = (Mathf.Atan2(moveDirection.x, moveDirection.z) * Mathf.Rad2Deg); }
+
+            if (!MoveSpeedIsZero())
+            {
+                if (followRotation == PlayerFollowRotation.CAMERA)
+                {
+                    if (targetYAngle > 180f) { targetYAngle = targetYAngle - 360f; }
+                    if (targetYAngle < -180f) { targetYAngle = 360f + targetYAngle; }
+                    targetYAngle = Mathf.Clamp(targetYAngle, -90f, 90f);
+                    // If moving rotate whole body
+                    plAnimCont.transform.localEulerAngles = new Vector3(0, targetYAngle, 0); //Vector3.RotateTowards(plAnimCont.transform.localEulerAngles, targetLocalEulAng, 360f * 1.2f * Time.deltaTime, 0);
+                }
+                else
+                {
+                    plAnimCont.transform.eulerAngles = new Vector3(0, targetYAngle, 0);
+                }
+            }
+            else
+            {
+                // Otherwise rotate only head
+                plAnimCont.transform.localEulerAngles = Vector3.zero;
+            }
+        }
+        // Don't rotate at all
+        else {}
+
+        // Look animator params
+        if (followRotation != PlayerFollowRotation.NONE && !MoveSpeedIsZero())
+        {
+            float lookAngleSign;
+            if (Mathf.Abs(lookAngleSigned) < 0.1f) { lookAngleSign = 0; }
+            else { lookAngleSign = Mathf.Sign(lookAngleSigned); }
+            if (lookAngleSign != 0)
+            {
+                lookAngleSignedAnim = lookAngleSign;
+            }
+            else
+            {
+                lookAngleSignedAnim = Mathf.Lerp(lookAngleSignedAnim, 0, 2f * Time.deltaTime);
+            }
+            plAnimCont.anim.SetFloat("lookAngleSign", lookAngleSignedAnim);
+            plAnimCont.anim.SetFloat("moveAngle", moveAngle);
+        }
+        else
+        {
+            plAnimCont.anim.SetFloat("lookAngleSign", 0);
+            plAnimCont.anim.SetFloat("moveAngle", 0);
+        }
+
+
+
+        /*if (followRotation == PlayerFollowRotation.CAMERA)
         {
             // Gameobject rotation
             if (freeLook)
@@ -203,7 +272,6 @@ public class PlayerController : NetworkBehaviour
                 if (!MoveSpeedIsZero())
                 {
                     // If moving rotate whole body
-                    //Debug.Log(playerCamera.transform.eulerAngles.y + " - " + transform.eulerAngles.y + " = " + targetYAngle);
                     Vector3 targetLocalEulAng = new Vector3(0, targetYAngle, 0);
                     plAnimCont.transform.localEulerAngles = targetLocalEulAng; //Vector3.RotateTowards(plAnimCont.transform.localEulerAngles, targetLocalEulAng, 360f * 1.2f * Time.deltaTime, 0);
                 }
@@ -212,7 +280,7 @@ public class PlayerController : NetworkBehaviour
                     // Otherwise rotate only head
                     plAnimCont.transform.localEulerAngles = Vector3.zero;
                 }
-                
+
             }
             else
             {
@@ -249,7 +317,7 @@ public class PlayerController : NetworkBehaviour
         {
             plAnimCont.anim.SetFloat("lookAngleSign", 0);
             plAnimCont.anim.SetFloat("moveAngle", 0);
-        }
+        }*/
     }
     void Update_Movement()
     {
@@ -263,12 +331,12 @@ public class PlayerController : NetworkBehaviour
                 Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
                 Vector2 input = moveAction.ReadValue<Vector2>();
                 Vector3 frameMoveDir;
-                if (!followCameraRotation || freeLook)
+                if (followRotation != PlayerFollowRotation.CAMERA || freeLook)  // Body is facing in a different direction than camera
                 {
                     Vector3 transformRight = Vector3.ProjectOnPlane(new Vector3(transform.right.x, 0, transform.right.z), groundSlopeNormal);
                     frameMoveDir = (transformRight * input.x) + (transformForward * input.y).normalized;
                 }
-                else
+                else  // Body forward is camera forward
                 {
                     Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
                     // Get forward and right direction for movement
@@ -370,6 +438,23 @@ public class PlayerController : NetworkBehaviour
 
                     // Jump
                     if (jumpAction.WasPerformedThisFrame()) { Jump(); }
+                }
+                else  // If in air
+                {
+                    if (input != Vector2.zero)
+                    {
+                        float moveStrength = 10.0f * Time.deltaTime;
+
+                        // Change speed slightly
+                        float angle = Vector3.SignedAngle(moveDirection, frameMoveDir, Vector3.up);
+                        float angleFactor = Mathf.Cos(angle * Mathf.Deg2Rad);
+                        //moveSpeed = Mathf.Clamp(moveSpeed + (angleFactor * moveStrength), 0, runStartSpeed);
+
+                        // Update direction
+                        float resultantDirAngle = Mathf.Atan2((moveSpeed * moveDirection.z) + (moveStrength * frameMoveDir.z), (moveSpeed * moveDirection.x) + (moveStrength * frameMoveDir.x));
+                        //                      Mathf.Atan2((moveDirection.z) + (frameMoveDir.z), (moveDirection.x) + (frameMoveDir.x));
+                        moveDirection = new Vector3(Mathf.Cos(resultantDirAngle), moveDirection.y, Mathf.Sin(resultantDirAngle));
+                    }
                 }
             }
             else
@@ -534,7 +619,7 @@ public class PlayerController : NetworkBehaviour
                         groundedPadTimer -= Time.deltaTime;
                     }
                 }
-                if (!value) { followCameraRotation = false; }
+                if (!value) { followRotation = PlayerFollowRotation.MOVEMENT; }
             }
         }
         isGrounded = value;
@@ -563,15 +648,14 @@ public class PlayerController : NetworkBehaviour
     // Vertical movement actions
     void Jump()
     {
-        Debug.Log("Jump");
-        followCameraRotation = false;
+        //Debug.Log("Jump");
+        followRotation = PlayerFollowRotation.MOVEMENT;
 
         if (isGrounded && playerParkour.TryVaultFromTrigger())
         {
             playerParkour.checkForClimbable = false;
             return;
         }
-            
 
         Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
         if (!parkourableDetectedOnJump.Item1)
@@ -628,7 +712,8 @@ public class PlayerController : NetworkBehaviour
                 plAnimCont.anim.SetInteger("landingType", 1);
             }
         }
-        followCameraRotation = !hardLanding; //if (!hardLanding) { followCameraRotation = true; }
+        if (hardLanding) { followRotation = PlayerFollowRotation.MOVEMENT; }
+        else {  followRotation = PlayerFollowRotation.CAMERA; }
         roll = false;
         groundPredicted = false;
         landingPass = false;
@@ -664,7 +749,7 @@ public class PlayerController : NetworkBehaviour
         moveSpeed = 0; //fallSpeed = 0;
         moveDirection = Vector3.zero;
         // Camera
-        followCameraRotation = false;
+        followRotation = PlayerFollowRotation.NONE;
         transform.LookAt(new Vector3(transform.position.x + ledge.transform.forward.x, transform.position.y, transform.position.z + ledge.transform.forward.z));
     }
     void DropOffLedge()
@@ -729,7 +814,7 @@ public class PlayerController : NetworkBehaviour
 
         isVaulting = true;
 
-        followCameraRotation = false;
+        followRotation = PlayerFollowRotation.NONE;
         transform.LookAt(new Vector3(
             transform.position.x + ledge.transform.forward.x,
             transform.position.y,
@@ -752,7 +837,7 @@ public class PlayerController : NetworkBehaviour
         isGroundedAnimBlock = true;
         landingPass = true;
         AnimationSolo(false);
-        followCameraRotation = true;
+        followRotation = PlayerFollowRotation.CAMERA;
 
         //experimental
         if (moveAction.ReadValue<Vector2>().y > 0)
@@ -768,6 +853,10 @@ public class PlayerController : NetworkBehaviour
         totalVelocity += fallSpeed * -Vector3.up;
         return totalVelocity;
     }
+
+
+
+    //// Animation
     public void AnimationSolo(bool enabled, bool keepMoving = false)
     {
         GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
@@ -775,7 +864,7 @@ public class PlayerController : NetworkBehaviour
         if (!enabled) { accelerationFactor = 1f; }
         applyGravity = !enabled;
         moveCharacter = !enabled || keepMoving;
-        followCameraRotation = !enabled;
+        followRotation = PlayerFollowRotation.NONE; //followCameraRotation = !enabled;
     }
     public void MovementAnimationSolo(bool enabled)
     {
@@ -784,7 +873,7 @@ public class PlayerController : NetworkBehaviour
         if (!enabled) { accelerationFactor = 1f; }
         //applyGravity = !enabled;
         moveCharacter = true;
-        followCameraRotation = !enabled;
+        followRotation = PlayerFollowRotation.NONE; //followCameraRotation = !enabled;
         plAnimCont.transform.localEulerAngles = new Vector3(plAnimCont.transform.localEulerAngles.x, 0, plAnimCont.transform.localEulerAngles.z);
     }
 
@@ -870,6 +959,12 @@ public class PlayerController : NetworkBehaviour
         applyGravity = !enabled;
         moveCharacter = !enabled || keepMoving;
     }*/
+
+
+
+
+
+
 
 
     //// Smooth transition functions

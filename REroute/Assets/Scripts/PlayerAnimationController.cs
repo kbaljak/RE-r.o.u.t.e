@@ -208,7 +208,7 @@ public class PlayerAnimationController : MonoBehaviour
     IEnumerator LandingAnimationDoneRootMotionSync()
     {
         yield return new WaitUntil(() => !anim.applyRootMotion);
-        playerCont.followCameraRotation = true;
+        playerCont.followRotation = PlayerFollowRotation.CAMERA;
     }
 
 

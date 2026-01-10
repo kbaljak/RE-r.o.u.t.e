@@ -2646,6 +2646,7 @@ MonoBehaviour:
   slideDecelAmount: 4
   slideAccelAmount: 10
   jumpHeight: 1.2
+  airControl: 1
   hardLandingVelThreshold: 10
   smooth_roll_targetSpeedDiff: 4
   smooth_roll_duration: 0.15
