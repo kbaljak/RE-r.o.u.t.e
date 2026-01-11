@@ -59,14 +59,6 @@ public class Ledge : MonoBehaviour, Parkourable
         return deltaX + playerAdj.Value;
     }
 
-    /// <summary>
-    /// Has to be called when a parent or indirect parent's local scale has changed!
-    /// </summary>
-    /*public void GlobalScaleChanged()
-    {
-        width = transform.lossyScale.x;
-    }*/
-
 
     // Utility
     Tuple<int, int> IndecesOfPlayersOnEachSide(float deltaX)

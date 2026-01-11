@@ -750,7 +750,14 @@ public class PlayerController : NetworkBehaviour
         moveDirection = Vector3.zero;
         // Camera
         followRotation = PlayerFollowRotation.NONE;
-        transform.LookAt(new Vector3(transform.position.x + ledge.transform.forward.x, transform.position.y, transform.position.z + ledge.transform.forward.z));
+        Vector3 ledgeForward = ledge.transform.forward * (ledge.transform.lossyScale.z < -0.01f ? -1 : 1);
+        Vector3 lookAtVec = new Vector3(transform.position.x + ledgeForward.x, transform.position.y, transform.position.z + ledgeForward.z);
+        transform.LookAt(lookAtVec);
+
+        // TEMP
+        GameObject temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        temp.transform.position = lookAtVec;
+        temp.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f); temp.GetComponent<BoxCollider>().enabled = false;
     }
     void DropOffLedge()
     {
@@ -822,14 +829,12 @@ public class PlayerController : NetworkBehaviour
 
         plAnimCont.StartVault(vaultType);
     }
-
     public void VaultStart()
     {
         Debug.Log("VaultStart()");
         playerParkour.checkForClimbable = false;
         AnimationSolo(true, false);
     }
-
     public void VaultEnd()
     {
         Debug.Log("VaultEnd()");

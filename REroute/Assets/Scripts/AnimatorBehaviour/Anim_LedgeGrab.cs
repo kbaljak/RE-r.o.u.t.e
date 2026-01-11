@@ -92,7 +92,8 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 
         // Calculate snap target position from ledge
         targetGrabPoint = targetLedge.transform.position + (targetLedge.transform.right * targetGrabXDelta);
-        snapTargetPosition = targetGrabPoint + (targetLedge.transform.rotation * snapTargetAdjustment);    // targetLedge.transform.position + ...
+        snapTargetPosition = targetGrabPoint + targetLedge.transform.TransformVector(snapTargetAdjustment);
+        //(targetLedge.transform.rotation * snapTargetAdjustment);    // targetLedge.transform.position + ...
         deltaToSnapTargetPosition = snapTargetPosition - playerCont.transform.position;
 
         if (snapDurationPerAxis != Vector3.zero) { maxSnapDuration = Mathf.Max(snapDurationPerAxis.x, snapDurationPerAxis.y, snapDurationPerAxis.z); }
@@ -131,7 +132,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
         Debug.Log(name + ".OnStateExitInTransition()");
         if (disableIkOnEnd) { plAnimCont.ResetHandIKWeights(); }
         if (enableSnapAtEnd) { playerCont.transform.position = snapTargetPosition; snappedLastFrame = true; }
-        if (climbing) 
+        if (climbing)
         {
             plAnimCont.DisableRootMotion();
             playerCont.ClimbedLedge(targetLedge, climbingSnap, speedAfterClimb);
@@ -206,8 +207,8 @@ public class Anim_LedgeGrab : StateMachineBehaviour
             }
 
             //animator.ApplyBuiltinRootMotion();
-            playerCont.transform.position += playerCont.transform.rotation * rootMotionFrameDeltaPosition;
-            if (deltaToRootPosition != Vector3.zero) { playerCont.transform.position += deltaToRootPosition * Time.deltaTime; }
+            playerCont.transform.position += rootMotionFrameDeltaPosition;
+            //if (deltaToRootPosition != Vector3.zero) { playerCont.transform.position += deltaToRootPosition * Time.deltaTime; }
             //playerCont.transform.rotation *= animator.deltaRotation;
             animator.transform.localPosition = new Vector3(0, 0, 0);
         }

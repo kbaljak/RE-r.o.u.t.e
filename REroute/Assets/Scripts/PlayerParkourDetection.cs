@@ -100,7 +100,7 @@ public class PlayerParkourDetection : MonoBehaviour
                 { Debug.LogError("ERROR: No 'Ledge' object found on a GO in 'Climbable' layer and marked as 'Ledge'."); }
                 return InteractLedge(col.GetComponent<Ledge>());
             default:  // wall
-                Debug.Log("Wall");
+                //Debug.Log("Wall");
                 return ParkourInteractType.Wall;
         }
         //return ParkourInteractType.None;
