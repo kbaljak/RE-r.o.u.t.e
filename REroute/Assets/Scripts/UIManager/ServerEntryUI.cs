@@ -4,15 +4,21 @@ using UnityEngine.UI;
 
 public class ServerEntryUI : MonoBehaviour
 {
+    public static ServerEntryUI Instance {get; private set;}
     [SerializeField] Transform serverName;
     [SerializeField] Transform playerCount;
-    [SerializeField] GameObject joinButton;
+    [SerializeField] GameObject joinButton;    
 
+    private GameObject codeInput;
     private TextMeshProUGUI serverNameText;
     private TextMeshProUGUI serverPlayerCountText;
-
     private DiscoveredServer serverInfo;
 
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
     private void Start()
     {
         if (joinButton != null) { joinButton.GetComponent<Button>().onClick.AddListener(OnJoinButtonClicked); }
@@ -22,6 +28,24 @@ public class ServerEntryUI : MonoBehaviour
 
         if (playerCount != null) {serverPlayerCountText = playerCount.GetComponent<TextMeshProUGUI>(); }
         else { Debug.LogWarning($"Could not find Text Mesh Pro component on object: {playerCount}"); }
+    }
+    private void OnJoinButtonClicked()
+    {
+        if (serverInfo == null) {Debug.LogError("No server info avaliable!"); }
+        
+        codeInput = GameObject.Find("Canvas/CodeInput");
+        if (codeInput == null) { Debug.LogError("Could not find GameObject CodeInput!"); }
+
+        CodeInputDialogController codeInputDialogController = codeInput.GetComponent<CodeInputDialogController>();
+        if (codeInputDialogController != null) { codeInputDialogController.ShowCodeInputDialog(true); }
+        else { Debug.LogError("Could not find component CodeInputDialogController"); }
+    }
+    private void OnDestroy()
+    {
+        if (joinButton != null)
+        {
+            joinButton.GetComponent<Button>().onClick.RemoveListener(OnJoinButtonClicked);
+        }
     }
     public void PopulateFileds(DiscoveredServer server)
     {
@@ -42,22 +66,8 @@ public class ServerEntryUI : MonoBehaviour
         }
     }
 
-    private void OnJoinButtonClicked()
+    public DiscoveredServer getDiscoveredServerInfo()
     {
-        if (serverInfo == null) {Debug.LogError("No server info avaliable!"); }
-
-        Debug.Log($"Joining server: {serverInfo.hostAddress}");
-
-        //TODO:
-        // create code input popup for authentication
-
-        NetworkLobbyManager.Instance.JoinGame(serverInfo.hostAddress);
-    }
-    private void OnDestroy()
-    {
-        if (joinButton != null)
-        {
-            joinButton.GetComponent<Button>().onClick.RemoveListener(OnJoinButtonClicked);
-        }
+        return serverInfo;
     }
 }
