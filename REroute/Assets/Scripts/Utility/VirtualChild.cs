@@ -23,7 +23,7 @@ public class VirtualChild : MonoBehaviour
         //baseLocalRotation = transform.localRotation;
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (applyPosition && virtualParent != null)
         {

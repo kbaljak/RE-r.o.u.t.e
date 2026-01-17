@@ -15,6 +15,7 @@ public class PlayerParkourDetection : MonoBehaviour
     public float hangingHeight = 2.2f;
     public float bracedHangHeight = 2f;
     public float lowHeight = 1.4f;
+    public float minHeight;
     //public float vaultHeight = 1f;
 
     public bool holdingLedge = false;
@@ -91,6 +92,16 @@ public class PlayerParkourDetection : MonoBehaviour
         }
         return false;
     }
+    public bool CheckVaultables()
+    {
+        //Debug.Log("CheckVaultables() [" + vaultTrigger.detected.Count + "]");
+        foreach (Collider collider in vaultTrigger.detected)
+        {
+            ParkourInteractType typeDetected = CheckForInteraction(collider);
+            if (typeDetected == ParkourInteractType.Vault) { return true; }
+        }
+        return false;
+    }
     ParkourInteractType CheckForInteraction(Collider col)
     {
         switch (col.tag)
@@ -122,11 +133,11 @@ public class PlayerParkourDetection : MonoBehaviour
         checkForClimbable = false;
 
         //Vault logic
-        /*if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
+        if (ledgeLvl == LedgeLevel.Low)             // Vault possibility
         {
-            
+            if (ledge.vaultable) { return ParkourInteractType.Vault; }
             return ParkourInteractType.None;
-        }*/
+        }
 
         // Climb ledge
         if (!GrabLedge(ledge, ledgeLvl)) { return ParkourInteractType.None; }       
@@ -172,7 +183,7 @@ public class PlayerParkourDetection : MonoBehaviour
             if (col == null || !col.CompareTag("Ledge")) continue;
 
             var ledge = col.GetComponent<Ledge>();
-            if (ledge == null) continue;
+            if (ledge == null || !ledge.vaultable) continue;
 
             float ledgeHeight = ledge.transform.position.y - plCont.transform.position.y;
             var lvl = GetLedgeLevel(ledgeHeight);
@@ -214,6 +225,6 @@ public class PlayerParkourDetection : MonoBehaviour
 }
 
 
-public enum LedgeLevel { Low, BracedHang, Hang, OutOfReach }
+public enum LedgeLevel { Bump, Low, BracedHang, Hang, OutOfReach }
 // Prioritised by 1 = least, inf = most
 enum ParkourInteractType { None = -1, Wall, Ledge, Vault, Swing }

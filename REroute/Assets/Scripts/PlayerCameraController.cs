@@ -1,11 +1,13 @@
 using System.Collections;
 using Unity.Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(VirtualChild))]
+//[RequireComponent(typeof(VirtualChild))]
 public class PlayerCameraController : MonoBehaviour
 {
+    public Transform target;
     VirtualChild virtualChildComp;
     Vector3 virtualChildBaseLocalPosition;
     public CinemachineCamera tpvCamera;
@@ -26,10 +28,10 @@ public class PlayerCameraController : MonoBehaviour
     private void Awake()
     {
         virtualChildComp = GetComponent<VirtualChild>();
-        virtualChildBaseLocalPosition = virtualChildComp.virtualLocalPosition;
+        if (virtualChildComp) { virtualChildBaseLocalPosition = virtualChildComp.virtualLocalPosition; }
 
-        if (thirdPersonView) { }
-        else { }
+        //if (thirdPersonView) { }
+        //else { }
     }
 
     void Start()
@@ -49,12 +51,15 @@ public class PlayerCameraController : MonoBehaviour
             var yQuat = Quaternion.AngleAxis(rotation.y, Vector3.left);
             transform.rotation = xQuat * yQuat;
         }
+        //var xQuat = Quaternion.AngleAxis(rotation.x, Vector3.up);
+        //var yQuat = Quaternion.AngleAxis(rotation.y, Vector3.left);
+        //target.rotation = xQuat * yQuat;
 
         // Update local z position based on vertical angle
         float factor = (rotation.y / maxVertAngle);
         float posDelta = (factor > 0 ? (lookUpPosDelta) : (-lookDownPosDelta)) * factor;
-        if (GetComponent<VirtualChild>()) { GetComponent<VirtualChild>().virtualLocalPosition.z = posDelta; }
-        else { transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, posDelta); }
+        //if (virtualChildComp) { GetComponent<VirtualChild>().virtualLocalPosition.z = posDelta; }
+        //else { transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, posDelta); }
     }
 
 
@@ -78,7 +83,7 @@ public class PlayerCameraController : MonoBehaviour
             float timeDelta = Time.deltaTime;
             timer -= timeDelta;
             if (timer < 0f) { timeDelta += timer; }
-            virtualChildComp.virtualLocalPosition = Vector3.Slerp(target, virtualChildBaseLocalPosition, (timer / duration));  //virtualChildComp.virtualLocalPosition += delta * Time.deltaTime;
+            if (virtualChildComp) { virtualChildComp.virtualLocalPosition = Vector3.Slerp(target, virtualChildBaseLocalPosition, (timer / duration)); }  //virtualChildComp.virtualLocalPosition += delta * Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
         // Return
@@ -89,7 +94,7 @@ public class PlayerCameraController : MonoBehaviour
             float timeDelta = Time.deltaTime;
             timer -= timeDelta;
             if (timer < 0f) { timeDelta += timer; }
-            virtualChildComp.virtualLocalPosition = Vector3.Slerp(virtualChildBaseLocalPosition, target, (timer / duration));  //virtualChildComp.virtualLocalPosition -= delta * Time.deltaTime;
+            if (virtualChildComp) { virtualChildComp.virtualLocalPosition = Vector3.Slerp(virtualChildBaseLocalPosition, target, (timer / duration)); }  //virtualChildComp.virtualLocalPosition -= delta * Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
     }

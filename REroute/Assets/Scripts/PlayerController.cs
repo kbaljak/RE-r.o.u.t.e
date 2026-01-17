@@ -19,6 +19,7 @@ public class PlayerController : NetworkBehaviour
     public Transform climbTriggersT;
     private VirtualChild virtualChild;
     private GameObject tpCamera;
+    [SerializeField] private GameObject rollMarker;
 
     // Input
     InputAction freeLookAction;
@@ -48,6 +49,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float predictionTime = 0.1f;
     bool roll = false;
     bool slide = false; bool currentlySliding = false;
+    
 
     Vector3 groundSlopeNormal = Vector3.up;
     float groundFriction = 1f;
@@ -124,8 +126,8 @@ public class PlayerController : NetworkBehaviour
                 virtualChild = camPoint.GetComponent<VirtualChild>();
                 if (virtualChild != null)
                 {
-                    virtualChild.SetVirtualParent(gameObject);
-                    Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
+                   virtualChild.SetVirtualParent(gameObject);
+                    Debug.Log("Assigned player prefab as virtual parent to CameraPoint");
                 }
 
                 // get player camera controller from cameraPoint
@@ -136,6 +138,9 @@ public class PlayerController : NetworkBehaviour
                 CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
                 cineCam.Follow = camPoint.transform;   
             }
+
+            // initialize UI
+            UI.InitializePlayerController(this);
         }
     }
 
@@ -535,6 +540,9 @@ public class PlayerController : NetworkBehaviour
     }
     void Update_Grounded()
     {
+        // Do each frame
+        rollMarker.SetActive(false);
+
         if (playerParkour.holdingLedge) { isGrounded = false; return; }
         bool value = false;
         //if (charCont.isGrounded) { value = true; }
@@ -542,20 +550,21 @@ public class PlayerController : NetworkBehaviour
         RaycastHit hit;
         bool raycastHit = false;
         float raycastLength = 0.25f;
-        Debug.DrawRay(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-        if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+        float raycastRadius = 0.2f;
+        Debug.DrawRay(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
+        if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
         else
         {
-            Debug.DrawRay(groundRaycastPoint.position - (transform.forward * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-            if (Physics.Raycast(groundRaycastPoint.position - (transform.forward * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+            Debug.DrawRay(groundRaycastPoint.position - (transform.forward * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
+            if (Physics.Raycast(groundRaycastPoint.position - (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
             else
             {
-                Debug.DrawRay(groundRaycastPoint.position + (transform.right * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-                if (Physics.Raycast(groundRaycastPoint.position + (transform.right * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+                Debug.DrawRay(groundRaycastPoint.position + (transform.right * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
+                if (Physics.Raycast(groundRaycastPoint.position + (transform.right * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
                 else
                 {
-                    Debug.DrawRay(groundRaycastPoint.position - (transform.right * 0.1f), Vector3.down * 0.2f, Color.sandyBrown);
-                    if (Physics.Raycast(groundRaycastPoint.position - (transform.right * 0.1f), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+                    Debug.DrawRay(groundRaycastPoint.position - (transform.right * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
+                    if (Physics.Raycast(groundRaycastPoint.position - (transform.right * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
                 }
             }
         }
@@ -627,8 +636,10 @@ public class PlayerController : NetworkBehaviour
         // If is in air (incl timer padding)
         if (!isGrounded)
         {
+            float threshold = hardLandingVelThreshold - (0.3f * -Physics.gravity.y);
+            
             // Predict where player will land
-            if (!groundPredicted && fallSpeed >= 1f)
+            if (fallSpeed >= threshold)  //&& !groundPredicted
             {
                 Vector3 predVector = GetCurrentVelocity();
                 Vector3 predDirection = predVector.normalized;
@@ -639,6 +650,22 @@ public class PlayerController : NetworkBehaviour
                 {
                     groundPredicted = true;
                     StartCoroutine(RollInputInterval());
+
+                    // Show with marker
+                    bool showMarker = true;
+                    // If currently not hard landing threshold check if it will be by time we hit the ground
+                    if (fallSpeed < hardLandingVelThreshold)
+                    {
+                        //s = ut + 0.5 * (a * t^2)
+                        float distanceNeeded = predDistance * 0.3f + (0.5f * (-Physics.gravity.y * 0.09f));
+                        
+                        showMarker = hit.distance >= distanceNeeded;
+                    }
+                    if (showMarker)  //fallSpeed >= hardLandingVelThreshold - 0.01f)
+                    {
+                        rollMarker.SetActive(true);
+                        rollMarker.transform.position = hit.point + (Vector3.up * 0.1f) + (transform.forward * 0.05f);
+                    }
                 }
             }
         }
@@ -651,11 +678,11 @@ public class PlayerController : NetworkBehaviour
         //Debug.Log("Jump");
         followRotation = PlayerFollowRotation.MOVEMENT;
 
-        /*if (isGrounded && playerParkour.TryVaultFromTrigger())
+        if (isGrounded && playerParkour.TryVaultFromTrigger())
         {
             playerParkour.checkForClimbable = false;
             return;
-        }*/
+        }
 
         Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
         if (!parkourableDetectedOnJump.Item1)
@@ -753,11 +780,6 @@ public class PlayerController : NetworkBehaviour
         Vector3 ledgeForward = ledge.transform.forward * (ledge.transform.lossyScale.z < -0.01f ? -1 : 1);
         Vector3 lookAtVec = new Vector3(transform.position.x + ledgeForward.x, transform.position.y, transform.position.z + ledgeForward.z);
         transform.LookAt(lookAtVec);
-
-        // TEMP
-        GameObject temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        temp.transform.position = lookAtVec;
-        temp.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f); temp.GetComponent<BoxCollider>().enabled = false;
     }
     void DropOffLedge()
     {

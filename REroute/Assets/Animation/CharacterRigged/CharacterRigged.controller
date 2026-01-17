@@ -1514,7 +1514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c41ef89aed56f664ea7e39bc44acacb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anim_Rolling
-  continuallyApplyRootPos: 1
+  continuallyApplyRootPos: 0
   callDisableRootOnExit: 0
   callLandingAnimDoneOnExit: 0
 --- !u!1109 &-1412616840491660614
