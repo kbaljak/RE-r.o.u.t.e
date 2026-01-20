@@ -226,6 +226,7 @@ public class PlayerController : NetworkBehaviour
         gameObject.SetActive(true);
         canControlMove = true;
     }
+    public void SetRespawnPoint(Vector3 pos) { currentRespawnPoint = pos; }
 
     //// Update
     private void Update()
@@ -768,10 +769,11 @@ public class PlayerController : NetworkBehaviour
                     moveSpeed *= factor; //playerVelocity.x *= factor; playerVelocity.z *= factor;
                 }
                 plAnimCont.anim.SetInteger("landingType", 1);
+                followRotation = PlayerFollowRotation.CAMERA;
             }
         }
-        if (hardLanding) { followRotation = PlayerFollowRotation.MOVEMENT; }
-        else {  followRotation = PlayerFollowRotation.CAMERA; }
+        //if (hardLanding) { followRotation = PlayerFollowRotation.MOVEMENT; }
+        //else {  followRotation = PlayerFollowRotation.CAMERA; }
         roll = false;
         groundPredicted = false;
         landingPass = false;
@@ -1061,6 +1063,7 @@ public class PlayerController : NetworkBehaviour
                 yield return new WaitForEndOfFrame();
                 frameAccelerationFactor = smooth_hardlanding_accelFactor;
                 timer += Time.deltaTime;
+                if (MoveSpeedIsZero()) { timer += Time.deltaTime; }
             }
         }
 
@@ -1071,6 +1074,7 @@ public class PlayerController : NetworkBehaviour
             yield return new WaitForEndOfFrame();
             frameAccelerationFactor = smooth_hardlanding_accelFactor + ((timer / smooth_hardlanding_accelIncreaseTime) * (1f - smooth_hardlanding_accelFactor));
             timer += Time.deltaTime;
+            if (MoveSpeedIsZero()) { timer += Time.deltaTime; }
         }
     }
     IEnumerator SlideDecellerationStart_Smooth()

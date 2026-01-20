@@ -11,9 +11,9 @@ public class RespawnPoint : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.GetComponent<PlayerController>())
+        if (other.GetComponent<PlayerController>() is PlayerController playerCont)
         {
-
+            playerCont.SetRespawnPoint(respawnPoint.position);
         }
     }
 }
