@@ -55,15 +55,19 @@ public class PlayerController : NetworkBehaviour
     float groundFriction = 1f;
     // Player velocities
     public float moveSpeed { get; private set; } = 0f;
-    float frameMoveSpeedFactor = 1f;
     bool MoveSpeedIsZero() => moveSpeed < 0.001f && moveSpeed > -0.001f;
     /// <summary>false = linear; true = quadratic</summary>
     [SerializeField] private bool linearOrQuadraticRunAccel = false;
     public Vector3 moveDirection { get; private set; } = Vector3.forward;
     bool backwardMovement = false;
+    float slopeAngle = 0f;
+    float slopeAccFactor = 1f;
     public float fallSpeed { get; private set; } = 0f;
     //public bool followCameraRotation = true;
     public PlayerFollowRotation followRotation = PlayerFollowRotation.CAMERA;
+
+    // Game
+    Vector3 currentRespawnPoint;
 
     // Params
     [Header("Serialized parameters")]
@@ -75,7 +79,7 @@ public class PlayerController : NetworkBehaviour
     public float fullDecelTime = 1f;
     public float slideDecelAmount = 4f;
     public float slideAccelAmount = 10f;
-    float accelerationFactor = 1f;
+    float frameAccelerationFactor = 1f;
     [Tooltip("Jump height in meters.")]
     public float jumpHeight = 0.7f;
     [Tooltip("Is air control enabled?")]
@@ -98,6 +102,8 @@ public class PlayerController : NetworkBehaviour
     public float smooth_hardlanding_startDelay;
     public float smooth_hardlanding_accelFactor;
     public float smooth_hardlanding_startSpeed = 0f;
+    public float smooth_hardlanding_accelKeepTime = 1.2f;
+    public float smooth_hardlanding_accelIncreaseTime = 1f;
     // Braced hang drop
     public float smooth_bracedHand_dropDelay;
 
@@ -144,6 +150,32 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    void EnablePlayer(bool value)
+    {
+        if (!IsOwner) { return; }
+
+        moveCharacter = value;
+        applyGravity = value;
+        canControlMove = value;
+    }
+    private void ResetVars()
+    {
+        isGrounded = false;
+
+        moveSpeed = 0f;
+        moveDirection = Vector3.zero;
+        fallSpeed = 0f;
+
+        slide = false;
+        currentlySliding = false;
+        isVaulting = false;
+
+        moveSpeedSigned = 0f;
+        moveAngle = 0f;
+        lookAngleSigned = 0f;
+        lookAngleSignedAnim = 0f;
+    }
+
     private void Start()
     {
         charCont = GetComponent<CharacterController>();
@@ -155,6 +187,7 @@ public class PlayerController : NetworkBehaviour
         slideAction = InputSystem.actions.FindAction("Slide");
         // Other
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
+        currentRespawnPoint = transform.position;
     }
 
     private void LateUpdate()
@@ -168,6 +201,30 @@ public class PlayerController : NetworkBehaviour
             head.transform.localEulerAngles = new Vector3(0, targetYAngle, 0);
         }
         else { head.transform.localEulerAngles = Vector3.zero; }
+    }
+
+    public void Respawn()
+    {
+        if (!IsOwner) { return; }
+
+        // Disable player
+        //enabled = false;
+        gameObject.SetActive(false);
+        canControlMove = false;
+
+        // Reset vars
+        ResetVars();
+
+        // Move to respawn point
+        transform.position = currentRespawnPoint;
+
+        // Reset animator
+        plAnimCont.anim.Rebind();
+        plAnimCont.anim.Update(0f);
+
+        // Enable player
+        gameObject.SetActive(true);
+        canControlMove = true;
     }
 
     //// Update
@@ -261,68 +318,6 @@ public class PlayerController : NetworkBehaviour
             plAnimCont.anim.SetFloat("lookAngleSign", 0);
             plAnimCont.anim.SetFloat("moveAngle", 0);
         }
-
-
-
-        /*if (followRotation == PlayerFollowRotation.CAMERA)
-        {
-            // Gameobject rotation
-            if (freeLook)
-            {
-                float targetYAngle = playerCamera.transform.eulerAngles.y - transform.eulerAngles.y;
-                if (targetYAngle > 180f) { targetYAngle = targetYAngle - 360f; }
-                if (targetYAngle < -180f) { targetYAngle = 360f + targetYAngle; }
-                targetYAngle = Mathf.Clamp(targetYAngle, -90f, 90f);
-                // Rotate to camera look
-                if (!MoveSpeedIsZero())
-                {
-                    // If moving rotate whole body
-                    Vector3 targetLocalEulAng = new Vector3(0, targetYAngle, 0);
-                    plAnimCont.transform.localEulerAngles = targetLocalEulAng; //Vector3.RotateTowards(plAnimCont.transform.localEulerAngles, targetLocalEulAng, 360f * 1.2f * Time.deltaTime, 0);
-                }
-                else
-                {
-                    // Otherwise rotate only head
-                    plAnimCont.transform.localEulerAngles = Vector3.zero;
-                }
-
-            }
-            else
-            {
-                Quaternion targetRotation = Quaternion.Euler(new Vector3(transform.eulerAngles.x, playerCamera.transform.eulerAngles.y, transform.eulerAngles.z));
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f * 1.2f * Time.deltaTime);
-
-                plAnimCont.transform.localRotation = Quaternion.identity;
-            }
-
-            // Look animator parameter
-            if (freeLook && MoveSpeedIsZero())
-            {
-                plAnimCont.anim.SetFloat("lookAngleSign", 0);
-                plAnimCont.anim.SetFloat("moveAngle", 0);
-            }
-            else
-            {
-                float lookAngleSign;
-                if (Mathf.Abs(lookAngleSigned) < 0.1f) { lookAngleSign = 0; }
-                else { lookAngleSign = Mathf.Sign(lookAngleSigned); }
-                if (lookAngleSign != 0)
-                {
-                    lookAngleSignedAnim = lookAngleSign;
-                }
-                else
-                {
-                    lookAngleSignedAnim = Mathf.Lerp(lookAngleSignedAnim, 0, 2f * Time.deltaTime);
-                }
-                plAnimCont.anim.SetFloat("lookAngleSign", lookAngleSignedAnim);
-                plAnimCont.anim.SetFloat("moveAngle", moveAngle);
-            }
-        }
-        else
-        {
-            plAnimCont.anim.SetFloat("lookAngleSign", 0);
-            plAnimCont.anim.SetFloat("moveAngle", 0);
-        }*/
     }
     void Update_Movement()
     {
@@ -333,6 +328,9 @@ public class PlayerController : NetworkBehaviour
         {
             if (canControlMove)
             {
+                //float frameAcceleration = 0f;
+                //float frameSpeedLimit = Mathf.Infinity;
+
                 Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
                 Vector2 input = moveAction.ReadValue<Vector2>();
                 Vector3 frameMoveDir;
@@ -362,7 +360,7 @@ public class PlayerController : NetworkBehaviour
                         if (moveSpeed > 0)
                         {
                             float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime * (1.0f / 0.25f)) * groundFriction;
-                            moveSpeed = Mathf.Clamp(moveSpeed - factor, 0f, Mathf.Infinity); //Mathf.Lerp(moveSpeed, 0f, factor);
+                            moveSpeed = Mathf.Clamp(moveSpeed - factor, 0f, Mathf.Infinity);
                         }
                     }
                     // otherwise -> accelerate
@@ -384,8 +382,8 @@ public class PlayerController : NetworkBehaviour
                             else 
                             {
                                 moveDirection = frameMoveDir;
-                                if (accelerationFactor == 1) { moveSpeed = walkSpeed; }
-                                else { moveSpeed = Mathf.Clamp(moveSpeed + (walkSpeed * Time.deltaTime * accelerationFactor), 0, walkSpeed); }
+                                if (frameAccelerationFactor == 1f) { moveSpeed = walkSpeed; }
+                                else { moveSpeed = Mathf.Clamp(moveSpeed + (walkSpeed * Time.deltaTime * frameAccelerationFactor), 0, walkSpeed); }
                             }
                         }
                         // if sprinting -> accelerate
@@ -401,13 +399,13 @@ public class PlayerController : NetworkBehaviour
                             {
                                 moveDirection = frameMoveDir;
                                 if (moveSpeed < runStartSpeed)
-                                { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime) * accelerationFactor), 0, curMaxSpeed); }
+                                { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime) * frameAccelerationFactor), 0, curMaxSpeed); }
                                 else
                                 {
                                     float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
                                     // Acceleration function
                                     float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
-                                    moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed) * accelerationFactor), 0, curMaxSpeed);
+                                    moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed) * frameAccelerationFactor), 0, curMaxSpeed);
                                     //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
                                 }
                             }
@@ -486,8 +484,10 @@ public class PlayerController : NetworkBehaviour
             Vector3 frameVelocity = Vector3.zero;
             frameVelocity += moveDirection * moveSpeed;
             if (applyGravity) { frameVelocity += fallSpeed * -Vector3.up; }
-            charCont.Move(frameVelocity * Time.deltaTime * frameMoveSpeedFactor);
-            frameMoveSpeedFactor = 1f;
+            charCont.Move(frameVelocity * Time.deltaTime); //* frameMoveSpeedFactor);
+            
+            // Reset frame vars
+            frameAccelerationFactor = 1f;
         }
 
         // Update stats
@@ -573,34 +573,65 @@ public class PlayerController : NetworkBehaviour
             Vector3 hitNormalDir = hit.normal.normalized;
             if (groundSlopeNormal != hitNormalDir)
             {
+                //string debug = moveDirection.ToString();
+
+                Vector3 newMoveDir = Vector3.ProjectOnPlane(moveDirection, Vector3.up).normalized; 
+                newMoveDir = Vector3.ProjectOnPlane(newMoveDir, hitNormalDir).normalized;
+
+                Debug.Log(newMoveDir + " -> " + Mathf.Abs(Mathf.Atan2(newMoveDir.y, new Vector3(newMoveDir.x, 0, newMoveDir.z).magnitude) * Mathf.Rad2Deg));
+                // If slope is less than 45 apply it
+                float limit = Mathf.Sin(45f * Mathf.Deg2Rad);
+                if (Mathf.Abs(newMoveDir.y) < limit)
+                {
+                    moveDirection = newMoveDir;
+                    groundSlopeNormal = hitNormalDir;
+                    slopeAngle = Mathf.Abs(Mathf.Atan2(newMoveDir.y, new Vector3(newMoveDir.x, 0, newMoveDir.z).magnitude)) * Mathf.Rad2Deg;
+                    slopeAccFactor = 0.5f + (Mathf.Clamp(45f - slopeAngle, 0f, 45f) / 90f);
+                }
+
                 // Update move direction
-                moveDirection = Vector3.ProjectOnPlane(moveDirection, hitNormalDir);
-                groundSlopeNormal = hitNormalDir;
+                //moveDirection = Vector3.ProjectOnPlane(moveDirection, Vector3.up);
+                //moveDirection = Vector3.ProjectOnPlane(moveDirection, hitNormalDir);
+                
+
+                //Debug.DrawRay(hit.point, moveDirection * 2f, Color.purple, 10f, false);
+                //Debug.DrawRay(hit.point, hitNormalDir * 2f, Color.orange, 10f, false);
+                //Debug.Log("moveDirection update: " + debug + " | " + hitNormalDir + " -> " + moveDirection);
+                //Debug.Break();
             }
+            
             if (hit.collider.material != null) { groundFriction = hit.collider.material.dynamicFriction; }
             else { groundFriction = 1f; }
             value = true;
 
             //Debug.Log("Move direction y: " + moveDirection.y);
-            if (Mathf.Abs(moveDirection.y) < 0.01f) { moveDirection = new Vector3(moveDirection.x, 0, moveDirection.z); }
-            // Slide down if downwards slope
-            if (moveDirection.y < -0.01f)
+            if (Mathf.Abs(moveDirection.y) <= 0.01f) { moveDirection = new Vector3(moveDirection.x, 0, moveDirection.z); }
+            else
             {
-                if (!slide && moveSpeed > walkSpeed)
+                Vector3 localMoveDir = Quaternion.Euler(0.0f, transform.eulerAngles.y, 0.0f) * moveDirection;
+                //float slopeAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, localMoveDir.z)) * Mathf.Rad2Deg;
+                //if (slopeAngle > 90f) { slopeAngle = 180f - slopeAngle; }
+                //Debug.Log(localMoveDir + "  -> slopeAngle: " + (slopeAngle));
+                // Slide down if downwards slope
+                if (moveDirection.y < -0.01f)
                 {
-                    float downwardsAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude) * Mathf.Rad2Deg);
-                    if (downwardsAngle > 29f)
-                    { 
-                        Slide();
-                        plAnimCont.transform.localEulerAngles = new Vector3(downwardsAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
+                    if (!slide && moveSpeed > walkSpeed)
+                    {
+                        //float downwardsAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude) * Mathf.Rad2Deg);
+                        if (slopeAngle > 9f)
+                        {
+                            Slide();
+                            plAnimCont.transform.localEulerAngles = new Vector3(slopeAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
+                        }
                     }
                 }
+                // Otherwise move slower (i.e. run up that hill :3)
+                else if (moveDirection.y > 0.01f)
+                {
+                    //frameMoveSpeedFactor = 0.5f + (Mathf.Clamp(45f - slopeAngle, 0f, 45f) / 90f); //0.8f;
+                }
             }
-            // Otherwise move slower (i.e. run up that hill :3)
-            else if (moveDirection.y > 0.01f)
-            {
-                frameMoveSpeedFactor = 0.8f;
-            }
+            
         }
         // Is in air (no timer padding; frame important)
         else //if (!value)
@@ -888,7 +919,7 @@ public class PlayerController : NetworkBehaviour
     {
         GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
         canControlMove = !enabled;
-        if (!enabled) { accelerationFactor = 1f; }
+        //if (!enabled) { accelerationFactor = 1f; }
         applyGravity = !enabled;
         moveCharacter = !enabled || keepMoving;
         //followCameraRotation = !enabled;
@@ -898,7 +929,7 @@ public class PlayerController : NetworkBehaviour
     {
         //GetComponent<CharacterController>().detectCollisions = !enabled;
         canControlMove = !enabled;
-        if (!enabled) { accelerationFactor = 1f; }
+        //if (!enabled) { accelerationFactor = 1f; }
         //applyGravity = !enabled;
         moveCharacter = true;
         //followCameraRotation = !enabled;
@@ -980,15 +1011,6 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    //// External utility
-    /*public void RootMotionMovement(bool enabled, bool keepMoving = false)
-    {
-        GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
-        canControlMove = !enabled;
-        applyGravity = !enabled;
-        moveCharacter = !enabled || keepMoving;
-    }*/
-
 
 
 
@@ -1024,11 +1046,32 @@ public class PlayerController : NetworkBehaviour
     }
     IEnumerator HardLandingAcceleration_Smooth()
     {
+        // Delay from start of animation
         float startDelay = smooth_hardlanding_startDelay;
         if (startDelay > 0) { yield return new WaitForSeconds(startDelay); }
 
-        accelerationFactor = smooth_hardlanding_accelFactor;
+        // Reduce acceleration a lot, [optional] increase it slowly
+        frameAccelerationFactor = smooth_hardlanding_accelFactor;
         canControlMove = true;
+        float timer = 0f;
+        if (smooth_hardlanding_accelKeepTime > 0f)
+        {
+            while (timer < smooth_hardlanding_accelKeepTime)
+            {
+                yield return new WaitForEndOfFrame();
+                frameAccelerationFactor = smooth_hardlanding_accelFactor;
+                timer += Time.deltaTime;
+            }
+        }
+
+        // Increase it slowly
+        timer = 0f;
+        while (timer < smooth_hardlanding_accelIncreaseTime)
+        {
+            yield return new WaitForEndOfFrame();
+            frameAccelerationFactor = smooth_hardlanding_accelFactor + ((timer / smooth_hardlanding_accelIncreaseTime) * (1f - smooth_hardlanding_accelFactor));
+            timer += Time.deltaTime;
+        }
     }
     IEnumerator SlideDecellerationStart_Smooth()
     {
@@ -1040,7 +1083,6 @@ public class PlayerController : NetworkBehaviour
 }
 
 enum LedgeHoldType { BracedHang, Hang, Freehang };
-
 
 
 /*[CustomEditor(typeof(PlayerController))]

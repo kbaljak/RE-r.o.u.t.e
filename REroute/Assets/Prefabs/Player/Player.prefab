@@ -3369,7 +3369,7 @@ MonoBehaviour:
   linearOrQuadraticRunAccel: 0
   followRotation: 1
   walkSpeed: 2.5
-  runStartSpeed: 6.5
+  runStartSpeed: 7
   runMaxSpeed: 12
   runStartAccelTime: 0.5
   runAccelTime: 6
@@ -3382,9 +3382,11 @@ MonoBehaviour:
   smooth_roll_targetSpeedDiff: 4
   smooth_roll_duration: 0.15
   smooth_roll_startDelay: 0.4
-  smooth_hardlanding_startDelay: 0.2
-  smooth_hardlanding_accelFactor: 0.2
-  smooth_hardlanding_startSpeed: 1
+  smooth_hardlanding_startDelay: 0.1
+  smooth_hardlanding_accelFactor: 0.1
+  smooth_hardlanding_startSpeed: 0.5
+  smooth_hardlanding_accelKeepTime: 1.2
+  smooth_hardlanding_accelIncreaseTime: 2
   smooth_bracedHand_dropDelay: 0.25
   moveSpeedSigned: 0
   moveAngle: 0

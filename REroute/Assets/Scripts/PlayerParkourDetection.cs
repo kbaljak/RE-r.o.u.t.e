@@ -140,7 +140,7 @@ public class PlayerParkourDetection : MonoBehaviour
         }
 
         // Climb ledge
-        if (!GrabLedge(ledge, ledgeLvl)) { return ParkourInteractType.None; }       
+        if (!GrabLedge(ledge, ledgeLvl)) { return ParkourInteractType.None; }
         return ParkourInteractType.Ledge;
     }
 
