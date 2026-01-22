@@ -20,7 +20,10 @@ public class UI : MonoBehaviour
         GetComponent<Canvas>().enabled = false; enabled = false; 
     }
     public static void InitializePlayerController(PlayerController target)
-    { Instance.InitializePlayerController_Local(target); }
+    { 
+        if (Instance != null) { Instance.InitializePlayerController_Local(target); }
+        else { Debug.LogWarning("No existing UI GameObject or Instance set to late."); }
+    }
     void InitializePlayerController_Local(PlayerController target)
     {
         playerCont = target;

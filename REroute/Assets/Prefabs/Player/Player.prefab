@@ -430,7 +430,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1298945495513252920
 Transform:
   m_ObjectHideFlags: 0
@@ -3382,11 +3382,11 @@ MonoBehaviour:
   smooth_roll_targetSpeedDiff: 4
   smooth_roll_duration: 0.15
   smooth_roll_startDelay: 0.4
-  smooth_hardlanding_startDelay: 0.1
+  smooth_hardlanding_startDelay: 1
   smooth_hardlanding_accelFactor: 0.1
-  smooth_hardlanding_startSpeed: 0.5
-  smooth_hardlanding_accelKeepTime: 1.2
-  smooth_hardlanding_accelIncreaseTime: 2
+  smooth_hardlanding_startSpeed: 1
+  smooth_hardlanding_accelKeepTime: 0.2
+  smooth_hardlanding_accelIncreaseTime: 0.2
   smooth_bracedHand_dropDelay: 0.25
   moveSpeedSigned: 0
   moveAngle: 0

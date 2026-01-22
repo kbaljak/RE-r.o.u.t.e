@@ -4,6 +4,7 @@ using System.Collections;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Splines;
 
 public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 
@@ -49,9 +50,11 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float predictionTime = 0.1f;
     bool roll = false;
     bool slide = false; bool currentlySliding = false;
+    bool slopeSliding = false;
     
 
     Vector3 groundSlopeNormal = Vector3.up;
+    Collider groundCollider = null;
     float groundFriction = 1f;
     // Player velocities
     public float moveSpeed { get; private set; } = 0f;
@@ -60,8 +63,11 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private bool linearOrQuadraticRunAccel = false;
     public Vector3 moveDirection { get; private set; } = Vector3.forward;
     bool backwardMovement = false;
+    // Slope
     float slopeAngle = 0f;
     float slopeAccFactor = 1f;
+    bool groundIsSlope = false;
+    Vector3 slopeDirection;
     public float fallSpeed { get; private set; } = 0f;
     //public bool followCameraRotation = true;
     public PlayerFollowRotation followRotation = PlayerFollowRotation.CAMERA;
@@ -246,12 +252,32 @@ public class PlayerController : NetworkBehaviour
         // Check if grounded no matter if we can move
         Update_Grounded();
 
-        Update_Movement();
         Update_Sliding();
+        Update_Movement();
 
         Update_ForwardPosDelta();
         Update_AnimatorParams();
     }
+    Vector2 GetMoveInput() { return moveAction.ReadValue<Vector2>(); }
+    Vector3 GetCameraForward() { return Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal); }
+    Vector3 GetTransformForward() { return Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal); }
+    Vector3 GetFrameMovementDirection(Vector3 cameraForward, Vector2 input, Vector3 transformForward)
+    {
+        Vector3 frameMoveDir;
+        if (followRotation != PlayerFollowRotation.CAMERA || freeLook)  // Body is facing in a different direction than camera
+        {
+            Vector3 transformRight = Vector3.ProjectOnPlane(new Vector3(transform.right.x, 0, transform.right.z), groundSlopeNormal);
+            frameMoveDir = (transformRight * input.x) + (transformForward * input.y).normalized;
+        }
+        else  // Body forward is camera forward
+        {
+            Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
+            // Get forward and right direction for movement
+            frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
+        }
+        return frameMoveDir;
+    }
+    // Main update
     void Update_FaceCamera()
     {
         freeLook = freeLookAction.IsInProgress();
@@ -322,162 +348,17 @@ public class PlayerController : NetworkBehaviour
     }
     void Update_Movement()
     {
-        //// Movement
         // Get relevant orientation vectors on the plane we are standing on
         Vector3 cameraForward = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal);
+
         if (moveCharacter && !playerParkour.holdingLedge)
         {
-            if (canControlMove)
-            {
-                //float frameAcceleration = 0f;
-                //float frameSpeedLimit = Mathf.Infinity;
+            // Fall speed correction
+            if (isGroundedFrame && fallSpeed > 0) { fallSpeed = 0.1f; }
 
-                Vector3 transformForward = Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal);
-                Vector2 input = moveAction.ReadValue<Vector2>();
-                Vector3 frameMoveDir;
-                if (followRotation != PlayerFollowRotation.CAMERA || freeLook)  // Body is facing in a different direction than camera
-                {
-                    Vector3 transformRight = Vector3.ProjectOnPlane(new Vector3(transform.right.x, 0, transform.right.z), groundSlopeNormal);
-                    frameMoveDir = (transformRight * input.x) + (transformForward * input.y).normalized;
-                }
-                else  // Body forward is camera forward
-                {
-                    Vector3 cameraRight = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.right.x, 0, playerCamera.transform.right.z), groundSlopeNormal);
-                    // Get forward and right direction for movement
-                    frameMoveDir = (cameraRight * input.x) + (cameraForward * input.y).normalized;
-                }
-                // Get angles
-                float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
-                lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
+            if (currentlySliding) { Update_Movement_Slope(cameraForward); }
+            else { Update_Movement_Normal(cameraForward); }
 
-                // Fall speed correction
-                if (isGroundedFrame && fallSpeed > 0) { fallSpeed = 0.1f; }
-
-                if (isGrounded && fallSpeed >= 0)  // = if we are grounded and our current vertical direction is downward or zero/none (otherwise we are going up)
-                {
-                    // no input -> slow down to stand still
-                    if (input == Vector2.zero)
-                    {
-                        if (moveSpeed > 0)
-                        {
-                            float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime * (1.0f / 0.25f)) * groundFriction;
-                            moveSpeed = Mathf.Clamp(moveSpeed - factor, 0f, Mathf.Infinity);
-                        }
-                    }
-                    // otherwise -> accelerate
-                    else
-                    {
-                        // Movement start -> check direction
-                        backwardMovement = input.y < 0;
-
-                        bool sprinting = sprintAction.IsInProgress();
-
-                        // if walking -> walk speed + directly apply direction
-                        if (!sprinting)
-                        {
-                            if (moveSpeed > walkSpeed)
-                            {
-                                float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
-                                moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
-                            }
-                            else 
-                            {
-                                moveDirection = frameMoveDir;
-                                if (frameAccelerationFactor == 1f) { moveSpeed = walkSpeed; }
-                                else { moveSpeed = Mathf.Clamp(moveSpeed + (walkSpeed * Time.deltaTime * frameAccelerationFactor), 0, walkSpeed); }
-                            }
-                        }
-                        // if sprinting -> accelerate
-                        else
-                        {
-                            float angleToVelFactor = Mathf.Clamp(angleMoveToVel / 90f, 0f, 1f);
-                            float curMaxSpeed = input.y > 0 ? runMaxSpeed : runStartSpeed;
-
-                            //Debug.Log(moveSpeed + " + " + accelFactor + " -> " + Mathf.Clamp(moveSpeed + accelFactor * Time.deltaTime, 0, curMaxSpeed) + " / " + curMaxSpeed);
-
-                            // Just redirect speed
-                            if (angleMoveToVel < 4f)
-                            {
-                                moveDirection = frameMoveDir;
-                                if (moveSpeed < runStartSpeed)
-                                { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime) * frameAccelerationFactor), 0, curMaxSpeed); }
-                                else
-                                {
-                                    float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
-                                    // Acceleration function
-                                    float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
-                                    moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed) * frameAccelerationFactor), 0, curMaxSpeed);
-                                    //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
-                                }
-                            }
-                            // Slow down speed depending on angle and smoothly change direction
-                            else if (angleMoveToVel < 90f)
-                            {
-                                // Slow down
-                                if (moveSpeed > runStartSpeed)
-                                { moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); } //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
-                                // Change direction
-                                //     runstartspeed -> 0.2f, maxspeed -> 0.8f, < run start speed -< 0.05f
-                                float timeToTurn;
-                                if (moveSpeed < runStartSpeed) { timeToTurn = 0.05f; }
-                                else { timeToTurn = 0.1f + (((moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed)) * 0.3f); }
-                                moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
-                                    (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
-                            }
-                            // Quick brake
-                            else
-                            {
-                                // Brake
-                                moveSpeed = Mathf.Lerp(moveSpeed, 0f, 6f * Time.deltaTime);
-                                // Change direction only if speed low enough
-                                if (moveSpeed <= walkSpeed)
-                                {
-                                    float timeToTurn = 0.1f * (moveSpeed / runStartSpeed);
-                                    moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
-                                        (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
-                                }
-                            }
-                        }
-                    }
-
-                    // Jump
-                    if (jumpAction.WasPerformedThisFrame()) { Jump(); }
-                }
-                else  // If in air
-                {
-                    if (input != Vector2.zero)
-                    {
-                        float moveStrength = 10.0f * Time.deltaTime;
-
-                        // Change speed slightly
-                        float angle = Vector3.SignedAngle(moveDirection, frameMoveDir, Vector3.up);
-                        float angleFactor = Mathf.Cos(angle * Mathf.Deg2Rad);
-                        //moveSpeed = Mathf.Clamp(moveSpeed + (angleFactor * moveStrength), 0, runStartSpeed);
-
-                        // Update direction
-                        float resultantDirAngle = Mathf.Atan2((moveSpeed * moveDirection.z) + (moveStrength * frameMoveDir.z), (moveSpeed * moveDirection.x) + (moveStrength * frameMoveDir.x));
-                        //                      Mathf.Atan2((moveDirection.z) + (frameMoveDir.z), (moveDirection.x) + (frameMoveDir.x));
-                        moveDirection = new Vector3(Mathf.Cos(resultantDirAngle), moveDirection.y, Mathf.Sin(resultantDirAngle));
-                    }
-                }
-            }
-            else
-            {
-                if (currentlySliding)
-                {
-                    if (moveDirection.y > -0.1f) {
-                        moveSpeed = Mathf.Clamp(moveSpeed - (slideDecelAmount * groundFriction * Time.deltaTime), 0, Mathf.Infinity);
-                        if (moveSpeed < 0.1f) { SlideStop(); }
-                    }
-                    else
-                    {
-                        moveSpeed = Mathf.Clamp(moveSpeed + (slideAccelAmount * groundFriction * Time.deltaTime), 0, runMaxSpeed);
-
-                        //float downwardsAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude) * Mathf.Rad2Deg);
-                        //plAnimCont.transform.localEulerAngles = new Vector3(downwardsAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
-                    }
-                }
-            }
             // Gravity
             if (applyGravity) { fallSpeed -= Physics.gravity.y * Time.deltaTime; }
 
@@ -486,7 +367,7 @@ public class PlayerController : NetworkBehaviour
             frameVelocity += moveDirection * moveSpeed;
             if (applyGravity) { frameVelocity += fallSpeed * -Vector3.up; }
             charCont.Move(frameVelocity * Time.deltaTime); //* frameMoveSpeedFactor);
-            
+
             // Reset frame vars
             frameAccelerationFactor = 1f;
         }
@@ -497,6 +378,162 @@ public class PlayerController : NetworkBehaviour
         moveAngle = Vector3.SignedAngle(cameraForward, moveDirection, groundSlopeNormal);
         if (backwardMovement) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
     }
+    void Update_Movement_Normal(Vector3 cameraForward)
+    {
+        if (canControlMove)
+        {
+            // Input to movement direction
+            Vector2 input = GetMoveInput(); Vector3 transformForward = GetTransformForward();
+            Vector3 frameMoveDir = GetFrameMovementDirection(cameraForward, input, transformForward);
+
+            // Get angles
+            float angleMoveToVel = Vector3.Angle(frameMoveDir, moveDirection);
+            lookAngleSigned = Vector3.SignedAngle(cameraForward, transformForward, groundSlopeNormal);
+
+            if (isGrounded && fallSpeed >= 0)  // = if we are grounded and our current vertical direction is downward or zero/none (otherwise we are going up)
+            {
+                // no input -> slow down to stand still
+                if (input == Vector2.zero)
+                {
+                    if (moveSpeed > 0)
+                    {
+                        float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime * (1.0f / 0.25f)) * groundFriction;
+                        moveSpeed = Mathf.Clamp(moveSpeed - factor, 0f, Mathf.Infinity);
+                    }
+                }
+                // otherwise -> accelerate
+                else
+                {
+                    // Movement start -> check direction
+                    backwardMovement = input.y < 0;
+
+                    bool sprinting = sprintAction.IsInProgress();
+
+                    // if walking -> walk speed + directly apply direction
+                    if (!sprinting)
+                    {
+                        if (moveSpeed > walkSpeed)
+                        {
+                            float factor = ((runMaxSpeed / fullDecelTime) * Time.deltaTime) * groundFriction;
+                            moveSpeed = Mathf.Lerp(moveSpeed, 0f, factor);
+                        }
+                        else
+                        {
+                            moveDirection = frameMoveDir;
+                            if (frameAccelerationFactor == 1f) { moveSpeed = walkSpeed; }
+                            else { moveSpeed = Mathf.Clamp(moveSpeed + (walkSpeed * Time.deltaTime * frameAccelerationFactor), 0, walkSpeed); }
+                        }
+                    }
+                    // if sprinting -> accelerate
+                    else
+                    {
+                        float angleToVelFactor = Mathf.Clamp(angleMoveToVel / 90f, 0f, 1f);
+                        float curMaxSpeed = input.y > 0 ? runMaxSpeed : runStartSpeed;
+
+                        //Debug.Log(moveSpeed + " + " + accelFactor + " -> " + Mathf.Clamp(moveSpeed + accelFactor * Time.deltaTime, 0, curMaxSpeed) + " / " + curMaxSpeed);
+
+                        // Just redirect speed
+                        if (angleMoveToVel < 4f)
+                        {
+                            moveDirection = frameMoveDir;
+                            if (moveSpeed < runStartSpeed)
+                            { moveSpeed = Mathf.Clamp(moveSpeed + (runStartSpeed * (Time.deltaTime / runStartAccelTime) * frameAccelerationFactor), 0, curMaxSpeed); }
+                            else
+                            {
+                                float t = (moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed);
+                                // Acceleration function
+                                float c = linearOrQuadraticRunAccel ? (2.0f * (1.0f - t)) : (1.0f);
+                                moveSpeed = Mathf.Clamp(moveSpeed + ((Time.deltaTime / runAccelTime) * c * (runMaxSpeed - runStartSpeed) * frameAccelerationFactor), 0, curMaxSpeed);
+                                //moveSpeed = runStartSpeed + (c * (runMaxSpeed - runStartSpeed));
+                            }
+                        }
+                        // Slow down speed depending on angle and smoothly change direction
+                        else if (angleMoveToVel < 90f)
+                        {
+                            // Slow down
+                            if (moveSpeed > runStartSpeed)
+                            { moveSpeed = Mathf.Clamp(moveSpeed - (angleToVelFactor * Time.deltaTime), runStartSpeed, runMaxSpeed); } //Mathf.Lerp(moveSpeed, runStartSpeed, angleToVelFactor * Time.deltaTime);
+                                                                                                                                      // Change direction
+                                                                                                                                      //     runstartspeed -> 0.2f, maxspeed -> 0.8f, < run start speed -< 0.05f
+                            float timeToTurn;
+                            if (moveSpeed < runStartSpeed) { timeToTurn = 0.05f; }
+                            else { timeToTurn = 0.1f + (((moveSpeed - runStartSpeed) / (runMaxSpeed - runStartSpeed)) * 0.3f); }
+                            moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
+                                (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
+                        }
+                        // Quick brake
+                        else
+                        {
+                            // Brake
+                            moveSpeed = Mathf.Lerp(moveSpeed, 0f, 6f * Time.deltaTime);
+                            // Change direction only if speed low enough
+                            if (moveSpeed <= walkSpeed)
+                            {
+                                float timeToTurn = 0.1f * (moveSpeed / runStartSpeed);
+                                moveDirection = Vector3.RotateTowards(moveDirection, frameMoveDir,
+                                    (Mathf.Deg2Rad * angleMoveToVel) * Time.deltaTime * (1f / timeToTurn), 0f).normalized;
+                            }
+                        }
+                    }
+                }
+
+                // Jump
+                if (jumpAction.WasPerformedThisFrame()) { Jump(); }
+            }
+            else  // If in air
+            {
+                if (input != Vector2.zero)
+                {
+                    float moveStrength = 10.0f * Time.deltaTime;
+
+                    // Change speed slightly
+                    float angle = Vector3.SignedAngle(moveDirection, frameMoveDir, Vector3.up);
+                    float angleFactor = Mathf.Cos(angle * Mathf.Deg2Rad);
+                    //moveSpeed = Mathf.Clamp(moveSpeed + (angleFactor * moveStrength), 0, runStartSpeed);
+
+                    // Update direction
+                    float resultantDirAngle = Mathf.Atan2((moveSpeed * moveDirection.z) + (moveStrength * frameMoveDir.z), (moveSpeed * moveDirection.x) + (moveStrength * frameMoveDir.x));
+                    //                      Mathf.Atan2((moveDirection.z) + (frameMoveDir.z), (moveDirection.x) + (frameMoveDir.x));
+                    moveDirection = new Vector3(Mathf.Cos(resultantDirAngle), moveDirection.y, Mathf.Sin(resultantDirAngle));
+                }
+            }
+        }
+    }
+    void Update_Movement_Slope(Vector3 cameraForward)
+    {
+        // Climbing slope (Sisyphus)
+        if (moveDirection.y > -0.01f)
+        {
+            moveSpeed = Mathf.Clamp(moveSpeed - ((slideDecelAmount * groundFriction * Time.deltaTime) * (2f - slopeAccFactor)), 0, Mathf.Infinity);
+            if (!slideAction.IsPressed() && moveSpeed < runStartSpeed) { SlideStop(); }
+        }
+        // Going down slope
+        else
+        {
+            float slideAccelFactor = 1f;
+            if (slopeSliding && canControlMove)
+            {
+                float moveToSlopeAngle = Vector3.SignedAngle(slopeDirection, moveDirection, groundSlopeNormal);
+                Vector2 input = GetMoveInput();
+                if (input.x != 0f)
+                {
+                    float turnStrength = 45f * Time.deltaTime * (1 - ((moveSpeed / runMaxSpeed) * 0.4f));
+                    float turnDelta = turnStrength * input.x;
+                    moveToSlopeAngle = Mathf.Clamp(moveToSlopeAngle + turnDelta, -Slope.horizontalAngleLimit, Slope.horizontalAngleLimit);
+                }
+                else
+                {
+                    float recenterStrength = 20f * Time.deltaTime;
+                    moveToSlopeAngle = Mathf.Sign(moveToSlopeAngle) * Mathf.Clamp(Mathf.Abs(moveToSlopeAngle) - recenterStrength, 0f, Slope.horizontalAngleLimit);
+                    //moveDirection = Vector3.RotateTowards(moveDirection, slopeDirection, recenterStrength, 0f);
+                }
+                moveDirection = Quaternion.AngleAxis(moveToSlopeAngle, groundSlopeNormal) * slopeDirection;
+                slideAccelFactor = 0.6f + ((Mathf.Clamp(moveToSlopeAngle, 0f, 45f) / 45f) * 0.4f);
+            }
+
+            moveSpeed = Mathf.Clamp(moveSpeed + ((slideAccelAmount * groundFriction * Time.deltaTime) * slideAccelFactor), 0, runMaxSpeed);
+        }
+    }
     void Update_ForwardPosDelta()
     {
         Vector3 headLocalPos = transform.InverseTransformPoint(head.position);
@@ -506,14 +543,29 @@ public class PlayerController : NetworkBehaviour
     }
     void Update_Sliding()
     {
-        // Sliding
+        // Not sliding
         if (!slide && !currentlySliding && isGrounded && canControlMove && !backwardMovement)
         {
-            if (slideAction.WasPressedThisFrame()) { Slide(); }
+            if (slideAction.WasPressedThisFrame()) { Slide(false); }
         }
+        // Sliding
         else if (slide && currentlySliding)
         {
-            if (moveDirection.y > -0.1f) { if (!slideAction.IsPressed()) { SlideStop(); } }
+            if (moveDirection.y > -0.01f)
+            {
+                if (!slideAction.IsPressed()) { SlideStop(); }
+                if (slopeSliding) { Slide(false); }
+            }
+            // Sliding on slope
+            else
+            {
+                if (!slopeSliding)
+                {
+                    if (groundIsSlope) { Slide(true); }
+                    // Stop so weird behaviour doesn't happen
+                    else { SlideStop(); }
+                }
+            }
         }
     }
     void Update_ClimbableDetect()
@@ -574,12 +626,9 @@ public class PlayerController : NetworkBehaviour
             Vector3 hitNormalDir = hit.normal.normalized;
             if (groundSlopeNormal != hitNormalDir)
             {
-                //string debug = moveDirection.ToString();
-
                 Vector3 newMoveDir = Vector3.ProjectOnPlane(moveDirection, Vector3.up).normalized; 
                 newMoveDir = Vector3.ProjectOnPlane(newMoveDir, hitNormalDir).normalized;
 
-                Debug.Log(newMoveDir + " -> " + Mathf.Abs(Mathf.Atan2(newMoveDir.y, new Vector3(newMoveDir.x, 0, newMoveDir.z).magnitude) * Mathf.Rad2Deg));
                 // If slope is less than 45 apply it
                 float limit = Mathf.Sin(45f * Mathf.Deg2Rad);
                 if (Mathf.Abs(newMoveDir.y) < limit)
@@ -588,17 +637,12 @@ public class PlayerController : NetworkBehaviour
                     groundSlopeNormal = hitNormalDir;
                     slopeAngle = Mathf.Abs(Mathf.Atan2(newMoveDir.y, new Vector3(newMoveDir.x, 0, newMoveDir.z).magnitude)) * Mathf.Rad2Deg;
                     slopeAccFactor = 0.5f + (Mathf.Clamp(45f - slopeAngle, 0f, 45f) / 90f);
+                    if (hit.collider.GetComponent<Slope>() is Slope slope)
+                    {
+                        groundIsSlope = true;
+                        slopeDirection = hit.collider.GetComponent<Slope>().direction;
+                    }
                 }
-
-                // Update move direction
-                //moveDirection = Vector3.ProjectOnPlane(moveDirection, Vector3.up);
-                //moveDirection = Vector3.ProjectOnPlane(moveDirection, hitNormalDir);
-                
-
-                //Debug.DrawRay(hit.point, moveDirection * 2f, Color.purple, 10f, false);
-                //Debug.DrawRay(hit.point, hitNormalDir * 2f, Color.orange, 10f, false);
-                //Debug.Log("moveDirection update: " + debug + " | " + hitNormalDir + " -> " + moveDirection);
-                //Debug.Break();
             }
             
             if (hit.collider.material != null) { groundFriction = hit.collider.material.dynamicFriction; }
@@ -610,26 +654,24 @@ public class PlayerController : NetworkBehaviour
             else
             {
                 Vector3 localMoveDir = Quaternion.Euler(0.0f, transform.eulerAngles.y, 0.0f) * moveDirection;
-                //float slopeAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, localMoveDir.z)) * Mathf.Rad2Deg;
-                //if (slopeAngle > 90f) { slopeAngle = 180f - slopeAngle; }
-                //Debug.Log(localMoveDir + "  -> slopeAngle: " + (slopeAngle));
                 // Slide down if downwards slope
                 if (moveDirection.y < -0.01f)
                 {
-                    if (!slide && moveSpeed > walkSpeed)
+                    if (!slide && !backwardMovement && groundIsSlope)  //slopeAngle > 9f
                     {
-                        //float downwardsAngle = Mathf.Abs(Mathf.Atan2(moveDirection.y, new Vector3(moveDirection.x, 0, moveDirection.z).magnitude) * Mathf.Rad2Deg);
-                        if (slopeAngle > 9f)
+                        if (moveSpeed > walkSpeed && Slope.SlideCheck(slopeDirection, moveDirection))
                         {
-                            Slide();
+                            Slide(true);
                             plAnimCont.transform.localEulerAngles = new Vector3(slopeAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
                         }
                     }
+                    
                 }
                 // Otherwise move slower (i.e. run up that hill :3)
                 else if (moveDirection.y > 0.01f)
                 {
                     //frameMoveSpeedFactor = 0.5f + (Mathf.Clamp(45f - slopeAngle, 0f, 45f) / 90f); //0.8f;
+                    frameAccelerationFactor *= slopeAccFactor;
                 }
             }
             
@@ -779,10 +821,12 @@ public class PlayerController : NetworkBehaviour
         landingPass = false;
     }
     // Sliding
-    void Slide()
+    void Slide(bool slopeSlide)
     {
         if (moveSpeed < walkSpeed) { return; }
-        MovementAnimationSolo(true);
+        slopeSliding = slopeSlide;
+        if (slopeSlide) { canControlMove = true; followRotation = PlayerFollowRotation.MOVEMENT; }
+        else { MovementAnimationSolo(true); }
         plAnimCont.anim.SetBool("sliding", true);
         slide = true;
     }
@@ -799,6 +843,7 @@ public class PlayerController : NetworkBehaviour
     public void SlideEnd()
     {
         currentlySliding = false;
+        slopeSliding = false;
         MovementAnimationSolo(false);
         SetSmallCollider(false);
     }
@@ -1050,12 +1095,25 @@ public class PlayerController : NetworkBehaviour
     {
         // Delay from start of animation
         float startDelay = smooth_hardlanding_startDelay;
-        if (startDelay > 0) { yield return new WaitForSeconds(startDelay); }
+        float timer = 0f;
+        if (startDelay > 0f)
+        {
+            while (timer < startDelay)
+            {
+                yield return new WaitForEndOfFrame();
+                //frameAccelerationFactor = 0f;
+                moveSpeed = Mathf.Lerp(smooth_hardlanding_startSpeed, 0f, timer / startDelay);
+                timer += Time.deltaTime;
+                if (MoveSpeedIsZero()) { timer += Time.deltaTime; }
+            }
+        }
+        //if (startDelay > 0) { yield return new WaitForSeconds(startDelay); }
 
         // Reduce acceleration a lot, [optional] increase it slowly
         frameAccelerationFactor = smooth_hardlanding_accelFactor;
         canControlMove = true;
-        float timer = 0f;
+        moveSpeed = 0f; //smooth_hardlanding_startSpeed;
+        timer = 0f;
         if (smooth_hardlanding_accelKeepTime > 0f)
         {
             while (timer < smooth_hardlanding_accelKeepTime)
