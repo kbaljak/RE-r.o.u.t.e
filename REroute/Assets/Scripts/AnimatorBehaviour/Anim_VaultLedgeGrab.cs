@@ -1,10 +1,12 @@
+using NUnit.Framework.Constraints;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-public class Anim_LedgeGrab : StateMachineBehaviour
+public class Anim_VaultLedgeGrab : StateMachineBehaviour
 {
     PlayerAnimationController plAnimCont;
     PlayerController playerCont;
@@ -16,17 +18,16 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     bool update = false;
     [Header("Root Motion")]
     public bool enableRootMotion = false;
+    public bool keepMovement = false;
     public bool applyRootMotion = false;
     public bool callDisableRootMotionOnEnd = false;
     [Space(10)]
     [Header("Snapping")]
-    public bool enableSnapping = false;
-    public bool enableSnapAtEnd = false;
-    Vector3? endSnapStartPosition = null;
     public Vector3 snapTargetAdjustment = Vector3.zero;
     public float snapStartDelay = 0f;
-    public float snapDuration = 0.1f;
     public Vector3 snapDurationPerAxis = Vector3.zero; float maxSnapDuration = 0;
+    public bool enableSnapAtEnd = false;
+    Vector3? endSnapStartPosition = null;
     bool endSnapped = false;
     [Space(10)]
     [Header("Hand Inverse Kinematics")]
@@ -41,11 +42,6 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     public bool enableHandIkRotation = false;
     public Vector3 handIkRotation = Vector3.zero;
     public bool disableIkOnEnd = false;
-    [Space(10)]
-    [Header("Climbing")]
-    public bool climbing = false;
-    public bool climbingSnap = false;
-    public float speedAfterClimb = 0f;
     [Space(10)]
     [Header("Transitions")]
     public float transitionExitNormalizedTime = Mathf.Infinity;
@@ -65,7 +61,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        //Debug.Log(name + ".OnStateEnter()");
+        Debug.Log(name + ".OnStateEnter()");
 
         // Get main references
         if (plAnimCont == null)
@@ -77,18 +73,14 @@ public class Anim_LedgeGrab : StateMachineBehaviour
         }
         if (!playerCont.IsOwner) { update = false; return; }
 
+        Debug.Log(name + ".OnStateEnter() | moveSpeed = " + playerCont.moveSpeed);
+
         // Get other references
         targetLedge = playerParkour.targetLedge;
         float targetGrabXDelta = playerParkour.targetGrabXDelta.Value;
 
         // 
-        if (enableRootMotion) { plAnimCont.EnableRootMotion(false); }
-        /*if (enableHandIK)
-        {
-            plAnimCont.SetHandIKPosition(new Vector3(0, targetLedge.transform.position.y - snapTargetPosition.y, 0) + new Vector3(0, handIKAdjustment_During.y, handIKAdjustment_During.z), true);
-            plAnimCont.SetHandIKPositionDeltaX(handIKAdjustment_During.x);
-            if (enableHandIkRotation) { plAnimCont.SetHandIkRotation(handIkRotation); }
-        }*/
+        if (enableRootMotion) { plAnimCont.EnableRootMotion(keepMovement); }
         else { plAnimCont.ResetHandIKWeights(); }
 
         // Calculate snap target position from ledge
@@ -119,24 +111,18 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 
 
     // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
-    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    /*override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         if (!playerCont.IsOwner) { return; }
-
-
         //Debug.Log(name + ".OnStateExit()");
-        if (callDisableRootMotionOnEnd && !climbing) { plAnimCont.DisableRootMotion(); }
-    }
+        if (callDisableRootMotionOnEnd) { plAnimCont.DisableRootMotion(); }
+        playerCont.VaultedLedge();
+    }*/
     void OnStateExitInTransition()
     {
         //Debug.Log(name + ".OnStateExitInTransition()");
         if (disableIkOnEnd) { plAnimCont.ResetHandIKWeights(); }
         if (enableSnapAtEnd) { playerCont.transform.position = snapTargetPosition; snappedLastFrame = true; }
-        if (climbing)
-        {
-            plAnimCont.DisableRootMotion();
-            playerCont.ClimbedLedge(targetLedge, climbingSnap, speedAfterClimb);
-        }
     }
 
 
@@ -155,49 +141,30 @@ public class Anim_LedgeGrab : StateMachineBehaviour
         
 
         // Snapping
-        if (enableSnapping)
+        if (timer >= snapStartDelay)
         {
-            if (timer >= snapStartDelay)
+            float deltaTime = Time.deltaTime;
+            float snapTimer = timer - snapStartDelay;
+
+            if (snapTimer < deltaTime) { deltaTime = snapTimer; }
+
+            if (!endSnapped)
             {
-                float deltaTime = Time.deltaTime;
-                float snapTimer = timer - snapStartDelay;
-
-                if (snapTimer < deltaTime) { deltaTime = snapTimer; }
-
-                if (snapDurationPerAxis != Vector3.zero)
+                if (snapTimer >= maxSnapDuration)
                 {
-                    if (!endSnapped)
-                    {
-                        if (snapTimer >= maxSnapDuration)
-                        {
-                            //playerCont.transform.position = snapTargetPosition;
-                            //if (applyRootMotion) { snappedLastFrame = true; }
-                            endSnapped = true;
-                        }
-                        else
-                        {
-                            for (int a = 0; a < 3; ++a)
-                            {
-                                if (snapTimer < snapDurationPerAxis[a])
-                                {
-                                    Vector3 axis = Vector3.zero; axis[a] = 1;
-                                    playerCont.transform.position += axis * deltaToSnapTargetPosition[a] * (deltaTime / snapDurationPerAxis[a]);
-                                }
-                            }
-                        }
-                    }
+                    //playerCont.transform.position = snapTargetPosition;
+                    //if (applyRootMotion) { snappedLastFrame = true; }
+                    endSnapped = true;
                 }
                 else
                 {
-                    if (snapTimer < snapDuration)
+                    for (int a = 0; a < 3; ++a)
                     {
-                        playerCont.transform.position += deltaToSnapTargetPosition * (deltaTime / snapDuration);
-                    }
-                    else if (!endSnapped)
-                    {
-                        playerCont.transform.position = snapTargetPosition;
-                        if (applyRootMotion) { snappedLastFrame = true; }
-                        endSnapped = true;
+                        if (snapDurationPerAxis[a] > 0f && snapTimer < snapDurationPerAxis[a])
+                        {
+                            Vector3 axis = Vector3.zero; axis[a] = 1;
+                            playerCont.transform.position += axis * deltaToSnapTargetPosition[a] * (deltaTime / snapDurationPerAxis[a]);
+                        }
                     }
                 }
             }
@@ -265,10 +232,10 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 }
 
 
-[CustomEditor(typeof(Anim_LedgeGrab))]
-public class Anim_LedgeGrab_Inspector : Editor
+[CustomEditor(typeof(Anim_VaultLedgeGrab))]
+public class Anim_VaultLedgeGrab_Inspector : Editor
 {
-    Anim_LedgeGrab ledgeGrab;
+    Anim_VaultLedgeGrab ledgeGrab;
 
     UnityEditor.Animations.StateMachineBehaviourContext[] context;
     float clipLength = 0f;
@@ -299,7 +266,7 @@ public class Anim_LedgeGrab_Inspector : Editor
     {
         base.OnInspectorGUI();
 
-        ledgeGrab = (Anim_LedgeGrab)target;
+        ledgeGrab = (Anim_VaultLedgeGrab)target;
 
         EditorGUILayout.Space(10);
         EditorGUILayout.LabelField("---- State info");

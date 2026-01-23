@@ -93,7 +93,7 @@ public class PlayerController : NetworkBehaviour
 
     /// Climbing
     //public bool holdingLedge = false;
-    bool tryGrabLedge = true;
+    //bool tryGrabLedge = true;
     public float hardLandingVelThreshold = 2f;
 
     float climbTriggersBaseLocalPosZ;
@@ -241,14 +241,7 @@ public class PlayerController : NetworkBehaviour
 
         Update_FaceCamera();
 
-        if (playerParkour.holdingLedge)
-        {
-            
-        }
-        else
-        {
-            Update_ClimbableDetect();
-        }
+        Update_ClimbableDetect();
         // Check if grounded no matter if we can move
         Update_Grounded();
 
@@ -349,9 +342,9 @@ public class PlayerController : NetworkBehaviour
     void Update_Movement()
     {
         // Get relevant orientation vectors on the plane we are standing on
-        Vector3 cameraForward = Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal);
+        Vector3 cameraForward = GetCameraForward();
 
-        if (moveCharacter && !playerParkour.holdingLedge)
+        if (moveCharacter && !playerParkour.holdingLedge && !playerParkour.isVaulting)
         {
             // Fall speed correction
             if (isGroundedFrame && fallSpeed > 0) { fallSpeed = 0.1f; }
@@ -366,7 +359,7 @@ public class PlayerController : NetworkBehaviour
             Vector3 frameVelocity = Vector3.zero;
             frameVelocity += moveDirection * moveSpeed;
             if (applyGravity) { frameVelocity += fallSpeed * -Vector3.up; }
-            charCont.Move(frameVelocity * Time.deltaTime); //* frameMoveSpeedFactor);
+            if (!playerParkour.holdingLedge && !playerParkour.isVaulting) { charCont.Move(frameVelocity * Time.deltaTime); } //* frameMoveSpeedFactor);
 
             // Reset frame vars
             frameAccelerationFactor = 1f;
@@ -570,10 +563,7 @@ public class PlayerController : NetworkBehaviour
     }
     void Update_ClimbableDetect()
     {
-        //bool jumpPressed = jumpAction.IsInProgress();
-        if (!tryGrabLedge) { tryGrabLedge = true; }  //if (!tryGrabLedge && jumpPressed)
-        bool detectLedge = tryGrabLedge && !isGrounded; //(jumpPressed || !isGrounded);
-        playerParkour.checkForClimbable = detectLedge;
+        playerParkour.checkForClimbable = !isGrounded && !playerParkour.holdingLedge && !playerParkour.isVaulting;
     }
     void Update_AnimatorParams()
     {
@@ -750,30 +740,28 @@ public class PlayerController : NetworkBehaviour
     void Jump()
     {
         //Debug.Log("Jump");
-        followRotation = PlayerFollowRotation.MOVEMENT;
+        //followRotation = PlayerFollowRotation.MOVEMENT;
 
-        if (isGrounded && playerParkour.TryVaultFromTrigger())
-        {
-            playerParkour.checkForClimbable = false;
-            return;
-        }
+        bool parkourableDetectedOnJump = playerParkour.CheckVaultables();
+        if (!parkourableDetectedOnJump) { parkourableDetectedOnJump = playerParkour.CheckJumpReachClimbables(); }
 
-        Tuple<bool, bool> parkourableDetectedOnJump = playerParkour.CheckClimbables();  // Item1 -> in ground trigger, Item2 -> in jump trigger
-        if (!parkourableDetectedOnJump.Item1)
+        // No vault or jump climbable -> jump normally
+        if (!parkourableDetectedOnJump)
         {
+            followRotation = PlayerFollowRotation.MOVEMENT;
             groundPredicted = false;
+
+            // Jumping in the normal of the slope - nah
             //if (groundSlopeNormal == Vector3.up || groundSlopeNormal == null) { playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y); }
             //else { playerVelocity += Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y) * groundSlopeNormal; Debug.Log("Slope jump!"); }
+
             fallSpeed = -Mathf.Sqrt(jumpHeight * -2.0f * Physics.gravity.y);
 
             plAnimCont.anim.SetTrigger("jump");
             //Debug.Log("Normal jump");
         }
-        else
-        {
-            Debug.Log("Ledge jump, isGrounded: " + isGrounded);
-            //Debug.Break();
-        }
+        // Vault / Jump climb (for now nothing special to do)
+        else { playerParkour.checkForClimbable = false; }
     }
     IEnumerator RollInputInterval()
     {
@@ -848,11 +836,14 @@ public class PlayerController : NetworkBehaviour
         SetSmallCollider(false);
     }
     // Ledges
-    public void GrabbedLedge(Ledge ledge)
+    public void GrabbedLedge(Ledge ledge, bool resetSpeed = true)
     {
-        charCont.enabled = false;
-        moveSpeed = 0; //fallSpeed = 0;
-        moveDirection = Vector3.zero;
+        if (resetSpeed) 
+        {
+            charCont.enabled = false;
+            moveSpeed = 0; //fallSpeed = 0;
+            moveDirection = Vector3.zero;
+        }
         // Camera
         followRotation = PlayerFollowRotation.NONE;
         Vector3 ledgeForward = ledge.transform.forward * (ledge.transform.lossyScale.z < -0.01f ? -1 : 1);
@@ -872,7 +863,7 @@ public class PlayerController : NetworkBehaviour
 
         fallSpeed = 0;
         // Enable
-        tryGrabLedge = false;
+        //tryGrabLedge = false;
         playerParkour.holdingLedge = false;
         charCont.enabled = true;
         isGroundedAnimBlock = true; isGrounded = false;
@@ -899,7 +890,6 @@ public class PlayerController : NetworkBehaviour
         //if (moveAction.ReadValue<Vector2>().y <= 0) { moveSpeed = 0; }
     }
 
-
     IEnumerator SnapToGroundSmooth(Transform ledge)
     {
         Vector3 startPosition = transform.position;
@@ -915,40 +905,23 @@ public class PlayerController : NetworkBehaviour
     }
 
     // Vaults
-    public void StartVault(Ledge ledge, int vaultType)
+    public void VaultedLedge()
     {
-        Debug.Log("StartVault() type: " + vaultType);
-
-        isVaulting = true;
-
-        followRotation = PlayerFollowRotation.NONE;
-        transform.LookAt(new Vector3(
-            transform.position.x + ledge.transform.forward.x,
-            transform.position.y,
-            transform.position.z + ledge.transform.forward.z));
-
-        plAnimCont.StartVault(vaultType);
-    }
-    public void VaultStart()
-    {
-        Debug.Log("VaultStart()");
-        playerParkour.checkForClimbable = false;
-        AnimationSolo(true, false);
-    }
-    public void VaultEnd()
-    {
-        Debug.Log("VaultEnd()");
-        isVaulting = false;
+        Debug.Log("VaultedLedge()");
+        playerParkour.isVaulting = false;
         isGroundedAnimBlock = true;
         landingPass = true;
+        //charCont.enabled = true;
         AnimationSolo(false);
         followRotation = PlayerFollowRotation.CAMERA;
 
+        //SimulateFall();
+
         //experimental
-        if (moveAction.ReadValue<Vector2>().y > 0)
+        /*if (moveAction.ReadValue<Vector2>().y > 0)
         {
             moveSpeed = walkSpeed;
-        }
+        }*/
     }
 
     //// Common
@@ -1086,7 +1059,7 @@ public class PlayerController : NetworkBehaviour
     IEnumerator DropOffBracedHang_Smooth()
     {
         yield return new WaitForSeconds(smooth_bracedHand_dropDelay);
-        tryGrabLedge = false;
+        //tryGrabLedge = false;
         playerParkour.holdingLedge = false;
         moveSpeed = 0f; fallSpeed = 0f;
         charCont.enabled = true;

@@ -184,6 +184,18 @@ public class PlayerAnimationController : MonoBehaviour
         playerVelocityOnLedgeGrab = Vector3.zero;
         hipsDeltaPos = Vector3.zero;
     }
+    public void VaultOverLedge(int vaultType)
+    {
+        Debug.Log("PlayerAnimationController.VaultOverLedge()");
+
+        // Set IK
+        rightHandIKTarget.localPosition = new Vector3(rightHandIKTarget.localPosition.x, 0, 0);
+        leftHandIKTarget.localPosition = new Vector3(leftHandIKTarget.localPosition.x, 0, 0);
+
+        // Set animator parameters
+        anim.SetInteger("vaultType", vaultType);
+        anim.SetTrigger("vault");
+    }
 
 
     //// External animation behviour
@@ -249,25 +261,21 @@ public class PlayerAnimationController : MonoBehaviour
 
         playerCont.ClimbedLedge();
     }
-    public void StartVault(int vaultType)
+    /*public void StartVault(int vaultType)
     {
         anim.SetInteger("vaultType", vaultType);
         anim.SetTrigger("vault");
-    }
+    }*/
     public void SlideStart_AnimEvent() { playerCont.SlideStart(); }
     public void SlideEnd_AnimEvent() { playerCont.SlideEnd(); }
     public void VaultStart_AnimEvent() {
         Debug.Log("VaultStart event");
-        playerCont.charCont.enabled = false;
-        //EnableRootMotion(false);
-        playerCont.VaultStart(); 
+        //playerCont.charCont.enabled = false;
     }
     public void VaultEnd_AnimEvent() {
         Debug.Log("VaultEnd event");
-        playerCont.charCont.enabled = true;
-        //DisableRootMotion(true);
-        playerCont.VaultEnd();
-        anim.SetBool("vaulting", false);
+        //playerCont.charCont.enabled = true;
+        playerCont.VaultedLedge();
     }
 
 }

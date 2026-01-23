@@ -114,6 +114,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
+  snapStartDelay: 0
   snapDuration: 0.075
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
@@ -324,12 +325,12 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Vault Normal
-  m_Speed: 1
+  m_Speed: 1.2
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -5183725349767759810}
   m_StateMachineBehaviours:
-  - {fileID: 3863686125063951130}
+  - {fileID: -3584455459216314466}
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
   m_WriteDefaultValues: 1
@@ -582,7 +583,7 @@ AnimatorStateTransition:
   m_Mute: 0
   m_IsExit: 0
   serializedVersion: 3
-  m_TransitionDuration: 0.25
+  m_TransitionDuration: 0.2
   m_TransitionOffset: 0
   m_ExitTime: 0.75
   m_HasExitTime: 1
@@ -686,7 +687,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
-  name: Stand
+  name: Stand Braced Hang
   processUpdate: 1
   enableRootMotion: 1
   applyRootMotion: 1
@@ -694,14 +695,51 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
+  snapStartDelay: 0
   snapDuration: 0.5
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
   staticIkWeights: 1
-  useCurveForIkWeights: 0
+  useCurveForIkWeights: 1
   handIKWeightCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.65
+      value: 0
+      inSlope: Infinity
+      outSlope: 19.999996
+      tangentMode: 65
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7
+      value: 1
+      inSlope: 19.999996
+      outSlope: Infinity
+      tangentMode: 101
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -957,6 +995,44 @@ AnimatorState:
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
   m_TimeParameter: 
+--- !u!114 &-3584455459216314466
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3dc0b9d3d7bbc2742a3c86b153ad7372, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Anim_VaultLedgeGrab
+  name: Vault
+  processUpdate: 1
+  enableRootMotion: 1
+  keepMovement: 1
+  applyRootMotion: 1
+  callDisableRootMotionOnEnd: 0
+  snapTargetAdjustment: {x: 0, y: -0.8, z: -1.8}
+  snapStartDelay: 0
+  snapDurationPerAxis: {x: 0, y: 0.2, z: 0.4}
+  enableSnapAtEnd: 0
+  enableHandIK: 0
+  staticIkWeights: 1
+  useCurveForIkWeights: 0
+  handIKWeightCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  handIKAdjustment_During: {x: 0, y: 0, z: 0}
+  handIKAdjustment_End: {x: 0, y: 0, z: 0}
+  continuallyAlignHandIkToEdge: 0
+  enableHandIkRotation: 0
+  handIkRotation: {x: 0, y: 0, z: 0}
+  disableIkOnEnd: 0
+  transitionExitNormalizedTime: 0.75
 --- !u!1102 &-3562109661580938298
 AnimatorState:
   serializedVersion: 6
@@ -1083,6 +1159,7 @@ MonoBehaviour:
   enableSnapping: 0
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: 0, z: 0}
+  snapStartDelay: 0
   snapDuration: 0
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 0
@@ -1225,6 +1302,7 @@ MonoBehaviour:
   continuallyApplyRootPos: 1
   callOnExit: 1
   positionAdjustment: {x: 0, y: 0, z: 0}
+  keepMovement: 0
   adjustToTargetPosition: 0
   adjustToTargetPositionDuration: 1
   endRootLocalPosition: {x: 0, y: 0, z: 0}
@@ -1303,6 +1381,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -2.45, z: -0.15}
+  snapStartDelay: 0
   snapDuration: 0.1
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
@@ -1530,7 +1609,7 @@ AnimatorTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 6
     m_ConditionEvent: holdLedgeLevel
-    m_EventTreshold: 2
+    m_EventTreshold: 4
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 4013592783134844979}
   m_Solo: 0
@@ -1554,28 +1633,6 @@ AnimatorStateTransition:
   m_TransitionDuration: 0.25
   m_TransitionOffset: 0.05
   m_ExitTime: 0.02
-  m_HasExitTime: 1
-  m_HasFixedDuration: 1
-  m_InterruptionSource: 0
-  m_OrderedInterruption: 1
-  m_CanTransitionToSelf: 1
---- !u!1101 &-1239711824087648761
-AnimatorStateTransition:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions: []
-  m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: -5130826940061610521}
-  m_Solo: 0
-  m_Mute: 0
-  m_IsExit: 0
-  serializedVersion: 3
-  m_TransitionDuration: 0.25
-  m_TransitionOffset: 0
-  m_ExitTime: 0.7
   m_HasExitTime: 1
   m_HasFixedDuration: 1
   m_InterruptionSource: 0
@@ -1785,12 +1842,6 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: vaulting
-    m_Type: 4
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -1816,7 +1867,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
-  name: Climb
+  name: Hang Climb
   processUpdate: 1
   enableRootMotion: 1
   applyRootMotion: 1
@@ -1824,6 +1875,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -2, z: -0.25}
+  snapStartDelay: 0
   snapDuration: 0.2
   snapDurationPerAxis: {x: 0, y: 0.3, z: 0.1}
   enableHandIK: 1
@@ -1929,6 +1981,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -2.05, z: -0.65}
+  snapStartDelay: 0
   snapDuration: 0.1
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
@@ -2074,6 +2127,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -2.05, z: -0.65}
+  snapStartDelay: 0
   snapDuration: 0.01
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
@@ -2118,6 +2172,28 @@ AnimatorStateTransition:
   m_HasExitTime: 0
   m_HasFixedDuration: 1
   m_InterruptionSource: 2
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1
+--- !u!1101 &1849223473524408089
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 8530066424802533394}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 0
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.7
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
 --- !u!1101 &2229058040505567084
@@ -2432,24 +2508,6 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
---- !u!114 &3863686125063951130
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c149a1d1a258fe145907c6d6a0048eb6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Anim_RootMotion
-  continuallyApplyRootPos: 1
-  callOnExit: 1
-  positionAdjustment: {x: 0, y: 0, z: 0}
-  adjustToTargetPosition: 0
-  adjustToTargetPositionDuration: 1
-  endRootLocalPosition: {x: 0, y: 0, z: 0}
 --- !u!1102 &4013592783134844979
 AnimatorState:
   serializedVersion: 6
@@ -2461,7 +2519,7 @@ AnimatorState:
   m_Speed: 1.4
   m_CycleOffset: 0
   m_Transitions:
-  - {fileID: -1239711824087648761}
+  - {fileID: 1849223473524408089}
   m_StateMachineBehaviours:
   - {fileID: -5128792365260641112}
   m_Position: {x: 50, y: 50, z: 0}
@@ -2538,6 +2596,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.65, z: -0.3}
+  snapStartDelay: 0
   snapDuration: 0.1
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
@@ -2717,7 +2776,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2028e8010acb59547a19753d4594fe40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anim_LedgeGrab
-  name: Stand
+  name: Stand Hang
   processUpdate: 1
   enableRootMotion: 1
   applyRootMotion: 1
@@ -2725,7 +2784,8 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: -0.1630123, y: -2.66, z: -0.5495252}
-  snapDuration: 0.25
+  snapStartDelay: 0.3
+  snapDuration: 0.1
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
   staticIkWeights: 1
@@ -2939,6 +2999,7 @@ MonoBehaviour:
   enableSnapping: 1
   enableSnapAtEnd: 0
   snapTargetAdjustment: {x: 0, y: -1.6, z: -0.4}
+  snapStartDelay: 0
   snapDuration: 0
   snapDurationPerAxis: {x: 0, y: 0, z: 0}
   enableHandIK: 1
@@ -3236,7 +3297,7 @@ AnimatorTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 6
     m_ConditionEvent: holdLedgeLevel
-    m_EventTreshold: 3
+    m_EventTreshold: 5
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 3104600697225692590}
   m_Solo: 0
