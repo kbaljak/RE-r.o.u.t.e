@@ -2299,6 +2299,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Join
       objectReference: {fileID: 0}
+    - target: {fileID: 226517678171052203, guid: adfccfa4c11f4454b84b06241dd032c0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1120690911125894848, guid: adfccfa4c11f4454b84b06241dd032c0, type: 3}
       propertyPath: m_Sprite
       value: 

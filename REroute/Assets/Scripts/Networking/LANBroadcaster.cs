@@ -10,15 +10,19 @@ public class LANBroadcaster : MonoBehaviour
 {
     [Header("Broadcast Settings")]
     [SerializeField] public int broadcastPort = 42567;
-    [SerializeField] public float broadcastInterval = 1f;   // time between broadcasts
+    [SerializeField] public int authorizationPort = 42568;
+    [SerializeField] public float broadcastInterval = 2f;   // time between broadcasts
     [SerializeField] public int maxPlayers = 4;
     [SerializeField] public string gameIdentifier = "REroute";
 
     private string hostName;
     private IPAddress hostAddress;
     private UdpClient udpClient;
+    private UdpClient authUdpClient;
     private IPEndPoint broadcastEndPoint;
     private bool isBroadcasting = false;
+    private bool isListeningForAuth = false;
+    private Coroutine authListenerCoroutine;
     private Coroutine broadcastCorutine;
 
     private NetworkManager _networkManager;
@@ -67,6 +71,73 @@ public class LANBroadcaster : MonoBehaviour
         Debug.Log("Stopped broadcasting game info!");
     }
 
+    public void StartAuthorizationListener()
+    {
+        if (isListeningForAuth) 
+        { 
+            Debug.Log("Already listening for authorization requests!"); 
+            return; 
+        }
+
+        try
+        {
+            authUdpClient = new UdpClient(authorizationPort);
+            isListeningForAuth = true;
+            authListenerCoroutine = StartCoroutine(AuthorizationListenerCoroutine());
+            
+            Debug.Log($"Started listening for authorization on port {authorizationPort}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to start authorization listener: {e.Message}");
+        }
+    }
+
+    public void StopAuthorizationListener()
+    {
+        if (!isListeningForAuth) { return; }
+        
+        isListeningForAuth = false;
+        
+        if (authListenerCoroutine != null) 
+        { 
+            StopCoroutine(authListenerCoroutine); 
+            authListenerCoroutine = null; 
+        }
+        
+        if (authUdpClient != null) 
+        { 
+            authUdpClient.Close(); 
+            authUdpClient = null; 
+        }
+        
+        Debug.Log("Stopped authorization listener!");
+    }
+
+    private IEnumerator AuthorizationListenerCoroutine()
+    {
+        while (isListeningForAuth)
+        {
+            if (authUdpClient != null && authUdpClient.Available > 0)
+            {
+                try
+                {
+                    IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                    byte[] receivedData = authUdpClient.Receive(ref clientEndPoint);
+                    string receivedMessage = Encoding.UTF8.GetString(receivedData);
+                    
+                    HandleAuthorizationRequest(receivedMessage, clientEndPoint);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error receiving authorization request: {e.Message}");
+                }
+            }
+            
+            yield return null;
+        }
+    }
+
     private IEnumerator BroadcastCorutine()
     {
         while (isBroadcasting)
@@ -76,6 +147,28 @@ public class LANBroadcaster : MonoBehaviour
         }
     }
 
+    private void HandleAuthorizationRequest(string message, IPEndPoint clientEndPoint)
+    {
+        string[] parts = message.Split('|');
+        
+        if (parts.Length == 3)
+        {
+            if (message.StartsWith($"{gameIdentifier}|Code"))
+            {
+                string receivedCode = parts[2];
+                string correctCode = NetworkLobbyManager.Instance.GetLobbyCode();
+                bool isAuthorized = receivedCode == correctCode;
+
+                Debug.Log($"Authorization request from {clientEndPoint.Address}: Code={receivedCode}, Valid={isAuthorized}");
+
+                SendAuthorizationResponse(clientEndPoint, isAuthorized);
+            }
+        }
+        else
+        {
+            SendAuthorizationResponse(clientEndPoint, false);
+        }
+    }
     private void BroadcastGameInfo()
     {
         if (udpClient == null && _networkManager == null) { return; }
@@ -97,6 +190,22 @@ public class LANBroadcaster : MonoBehaviour
         }
     }
 
+    private void SendAuthorizationResponse(IPEndPoint clientEndPoint, bool isAuthorized)
+    {
+        try
+        {
+            string response = $"{gameIdentifier}|Correct|{isAuthorized}";
+            byte[] responseData = Encoding.UTF8.GetBytes(response);
+            
+            authUdpClient.Send(responseData, responseData.Length, clientEndPoint);
+            
+            Debug.Log($"Sent authorization response to {clientEndPoint.Address}: {isAuthorized}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Failed to send authorization response: {e.Message}");
+        }
+    }
     private IPAddress GetLocalIPAddress()
     {
         try
@@ -119,9 +228,11 @@ public class LANBroadcaster : MonoBehaviour
     private void OnDestroy()
     {
         StopBroadcastingGameInfo();
+        StopAuthorizationListener();
     }
     private void OnApplicationQuit()
     {
         StopBroadcastingGameInfo();
+        StopAuthorizationListener();
     }
 }

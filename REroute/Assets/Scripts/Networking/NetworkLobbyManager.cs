@@ -62,9 +62,6 @@ public class NetworkLobbyManager : MonoBehaviour
 
             lobbyCode = GenerateLobbyCode();
             Debug.Log($"Host: Starting lobby with code: {lobbyCode}");
-
-            //TODO:
-            // start broadcasting on LAN server name, server address, number of current players
         }
         else if (shouldStartAsClient) 
         {
@@ -83,6 +80,7 @@ public class NetworkLobbyManager : MonoBehaviour
 
     public void SetPlayerName(string playerName) { this.playerName = playerName; }
     public void SetHostName(string hostName) { this.hostName = hostName; }
+    public string GetLobbyCode() { return lobbyCode; }
 
     private string GenerateLobbyCode()
     {

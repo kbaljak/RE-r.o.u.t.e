@@ -68,7 +68,9 @@ public class NetworkConnectionStarter : MonoBehaviour
         _tugboat.StartConnection(false);    // Start client
         
         this.hostName = hostName;
+
         if (_lanBroadcaster != null) { Invoke(nameof(StartBroadcast), 1.0f); }
+        if (_lanBroadcaster != null) { _lanBroadcaster.StartAuthorizationListener(); }
     }
 
     private void StartBroadcast()

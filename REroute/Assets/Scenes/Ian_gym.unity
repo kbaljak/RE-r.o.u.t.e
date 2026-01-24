@@ -368,7 +368,7 @@ Canvas:
   m_GameObject: {fileID: 115462175}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 1
+  m_RenderMode: 0
   m_Camera: {fileID: 1865823332}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
@@ -3545,7 +3545,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LANBroadcaster
   broadcastPort: 42567
-  broadcastInterval: 1
+  authorizationPort: 42568
+  broadcastInterval: 2
   maxPlayers: 4
   gameIdentifier: REroute
 --- !u!1 &1372757845
@@ -5652,7 +5653,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 65, y: 0, z: 90}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -102.600006}
+  m_AnchoredPosition: {x: 0, y: -100}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1886923651
