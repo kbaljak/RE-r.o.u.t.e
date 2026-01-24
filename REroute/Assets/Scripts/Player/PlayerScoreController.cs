@@ -63,6 +63,21 @@ public class PlayerScoreController : NetworkBehaviour
         }
         return currentScore;
     }
+
+    public void OnPlayerCrossedFinishLine()
+    {
+        if (!IsOwner) return;
+        
+        if (RaceTimeManager.Instance != null)
+        {
+            RaceTimeManager.Instance.OnPlayerFinishRace();
+        }
+        else
+        {
+            Debug.LogError("RaceScoreManager not found!");
+        }
+    }
+
     public int GetDisplayedScore()
     {
         return displayedScore;
