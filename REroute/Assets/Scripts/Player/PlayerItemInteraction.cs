@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class PlayerItemInteraction : NetworkBehaviour
 {
+    private PlayerScoreController plScoreCont;
     [SerializeField] Transform itemHandHoldPoint;
     [SerializeField] Transform itemBackHoldPoint;
     [SerializeField] List<GameObject> itemPrefabs;
@@ -78,6 +79,9 @@ public class PlayerItemInteraction : NetworkBehaviour
            return;
         }
         hasEmptyHand = true;
+
+        plScoreCont = GetComponent<PlayerScoreController>();
+        if (plScoreCont == null) { Debug.LogError("Could now find PlayerScoreController!"); }
     
         throwItemAction = InputSystem.actions.FindAction("Throw");
         if(throwItemAction != null){ throwItemAction.Enable(); }
@@ -207,6 +211,8 @@ public class PlayerItemInteraction : NetworkBehaviour
                 applyOilPrompt.SetActive(false);
             }
             oilApplicationTimer = 0f;
+
+            plScoreCont.OnOilAppliedScore();
         }
     }
     void HandleItemInteraction()
@@ -240,6 +246,8 @@ public class PlayerItemInteraction : NetworkBehaviour
                 throwCharge = 0f;
                 throwChargeMeter.SetActive(false);
                 UpdateThrowChargeSlider(throwCharge);
+
+                plScoreCont.OnBananaThrownScore();
             }
         }
     }

@@ -15,6 +15,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerParkourDetection playerParkour;
     public PlayerCameraController playerCamera;
     private PlayerItemInteraction playerItemInteraction;
+    private PlayerScoreController plScoreCont;
     public Transform head;
     public Transform climbTriggersT;
     private VirtualChild virtualChild;
@@ -135,6 +136,9 @@ public class PlayerController : NetworkBehaviour
             CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
             cineCam.Follow = camPoint.transform;   
         }
+
+        plScoreCont = GetComponent<PlayerScoreController>();
+        if (plScoreCont == null) { Debug.LogError("Coudl not find Player Score Controller!"); }
 
         playerItemInteraction = GetComponent<PlayerItemInteraction>();
         if (playerItemInteraction == null)

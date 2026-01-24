@@ -2809,6 +2809,7 @@ GameObject:
   - component: {fileID: 1792036367656086916}
   - component: {fileID: 1897457646274550055}
   - component: {fileID: 7592093966784826543}
+  - component: {fileID: 7053530580125167638}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -2956,7 +2957,7 @@ MonoBehaviour:
   _spectatorInterpolation: 2
   _enableTeleport: 0
   _teleportThreshold: 1
-  <PrefabId>k__BackingField: 3
+  <PrefabId>k__BackingField: 4
   <SpawnableCollectionId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 5306845881338098766
   <SceneId>k__BackingField: 0
@@ -3073,6 +3074,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerNameTag
   playerName: {fileID: 6442868763671875060}
   playerNameTagCanvas: {fileID: 3394629800472222742}
+--- !u!114 &7053530580125167638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7815874160605487132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a829f02f038f0d4dac0ac4b1bfe8316, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerScoreController
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: -8763808860493201350}
+  _networkObjectCache: {fileID: 0}
+  vaultPoints: 10
+  combatRollPoints: 5
+  oilApplicationPoints: 2
+  bananThrownPoints: 1
 --- !u!1 &7866691907284274524
 GameObject:
   m_ObjectHideFlags: 0
