@@ -21,7 +21,6 @@ public class PointToGoal : MonoBehaviour
     private void Start()
     {
         originalRot = rectTransform.rotation;
-        //originalRot = transform.rotation;
     }
 
     void Update()
@@ -38,6 +37,5 @@ public class PointToGoal : MonoBehaviour
         float angle = Vector3.SignedAngle(fw, directionToBeacon, Vector3.up);
 
         rectTransform.localRotation = Quaternion.Euler(originalRot.eulerAngles.x, originalRot.eulerAngles.y, originalRot.eulerAngles.z - angle);
-        //transform.localRotation = Quaternion.Euler(originalRot.eulerAngles.x, originalRot.eulerAngles.y - angle, originalRot.eulerAngles.z);
     }
 }

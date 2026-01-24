@@ -79,6 +79,7 @@ public class NetworkLobbyManager : MonoBehaviour
     }
 
     public void SetPlayerName(string playerName) { this.playerName = playerName; }
+    //public string GetPlayerName() { return playerName; }
     public void SetHostName(string hostName) { this.hostName = hostName; }
     public string GetLobbyCode() { return lobbyCode; }
 

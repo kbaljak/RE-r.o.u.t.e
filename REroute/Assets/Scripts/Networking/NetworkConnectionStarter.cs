@@ -1,3 +1,4 @@
+using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing;
 using FishNet.Transporting.Tugboat;
 using Unity.Multiplayer.Playmode;
@@ -98,6 +99,7 @@ public class NetworkConnectionStarter : MonoBehaviour
 
         //Debug.Log($"Starting as CLIENT - Connecting to {serverAddress}:{serverPort}");
         
+        this.playerName = playerName;
         _tugboat.StartConnection(false);        // Start client
     }
 
@@ -143,5 +145,7 @@ public class NetworkConnectionStarter : MonoBehaviour
         }
     }
 
+    public string GetPlayerName() { return playerName; }
+    public string GetHostName() { return hostName; }
     private void OnDestroy() { StopConnection(); }
 }

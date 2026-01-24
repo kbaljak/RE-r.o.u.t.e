@@ -5645,7 +5645,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1886923649}
   m_LocalRotation: {x: 0.3799282, y: -0.3799282, z: 0.59636784, w: 0.59636784}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 233}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5653,7 +5653,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 65, y: 0, z: 90}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -100}
+  m_AnchoredPosition: {x: 10, y: -85}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1886923651
@@ -5708,7 +5708,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   beacon: {fileID: 100798887}
   playerCamera: {fileID: 169578589}
-  ignoreVertical: 0
+  ignoreVertical: 1
 --- !u!1001 &1911674124
 PrefabInstance:
   m_ObjectHideFlags: 0

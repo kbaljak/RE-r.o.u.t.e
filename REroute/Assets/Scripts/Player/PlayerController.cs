@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -103,6 +104,7 @@ public class PlayerController : NetworkBehaviour
     public float lookAngleSigned = 0f;
     public float lookAngleSignedAnim = 0f;
 
+    private readonly SyncVar<string> playerNameTag = new SyncVar<string>();
 
     public override void OnStartClient()
     {
@@ -139,6 +141,24 @@ public class PlayerController : NetworkBehaviour
         {
             Debug.LogError("PlayerItemInteraction component not found on PlayerController!");
         }
+
+        string myName;
+        if (IsHostStarted) { myName = NetworkConnectionStarter.Instance.GetHostName(); }
+        else { myName = NetworkConnectionStarter.Instance.GetPlayerName(); }
+
+        SetPlayerNameServerRPC(myName);
+        
+    }
+
+    [ServerRpc]
+    private void SetPlayerNameServerRPC(string name)
+    {
+        playerNameTag.Value = name;
+    }
+
+    public string GetPlayerName()
+    {
+        return playerNameTag.Value;
     }
 
     private void Start()
