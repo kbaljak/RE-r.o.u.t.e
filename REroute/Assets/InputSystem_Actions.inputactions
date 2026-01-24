@@ -122,6 +122,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "OpenLobbyBoard",
+                    "type": "Button",
+                    "id": "ae124e48-71ba-4c66-8a04-e62d154d515c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -573,6 +582,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "OpenEscapeMenu",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9971b81a-2e35-4bbe-bff1-caf3cafd0fd4",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "OpenLobbyBoard",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

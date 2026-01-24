@@ -68,14 +68,7 @@ public class PlayerScoreController : NetworkBehaviour
     {
         if (!IsOwner) return;
         
-        if (RaceTimeManager.Instance != null)
-        {
-            RaceTimeManager.Instance.OnPlayerFinishRace();
-        }
-        else
-        {
-            Debug.LogError("RaceScoreManager not found!");
-        }
+        ServerNotifyFinishLine();
     }
 
     public int GetDisplayedScore()
@@ -107,6 +100,19 @@ public class PlayerScoreController : NetworkBehaviour
     {
         AddScore(oilApplicationPoints, "Oil Applied");
     }
+    
+    [ServerRpc]
+    private void ServerNotifyFinishLine()
+    {
+        if (RaceTimeManager.Instance != null)
+        {
+            RaceTimeManager.Instance.ServerPlayerFinished(Owner);
+        }
+        else
+        {
+            Debug.LogError("[Server] RaceScoreManager not found!");
+        }
+    }
 
     [TargetRpc]
     private void TargetUpdateScore(NetworkConnection connection, int totalScore, int pointsAdded)
@@ -120,6 +126,27 @@ public class PlayerScoreController : NetworkBehaviour
         }
     }
 
+    [TargetRpc]
+    public void TargetNotifyFinished(NetworkConnection connection, int position, float time)
+    {
+        Debug.Log($"[Client] You finished in position {position} with time {time:F2}s!");
+        //TODO:
+        // Maybe some UI to show you finished, some text or something, idk
+    }
+
+    [TargetRpc]
+    public void TargetShowFinalScores(NetworkConnection connection, PlayerFinalScore[] scores)
+    {
+        Debug.Log("=== FINAL RACE RESULTS ===");
+        foreach (var score in scores)
+        {
+            Debug.Log($"Position {score.finishPosition}: {score.playerName}");
+            Debug.Log($"  Time: {score.raceTime:F2}s | Action Score: {score.actionScore} | Time Penalty: -{score.timePenalty} | Final: {score.finalScore}");
+        }
+        
+        //TODO:
+        // Maybe trigger a UI to show each player their score
+    }
     private void AddScore(int points, string action)
     {
         if (!IsServerStarted) return;

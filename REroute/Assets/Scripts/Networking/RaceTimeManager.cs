@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using FishNet.Connection;
-using FishNet.Object;
+using FishNet.Managing;
 using UnityEngine;
 
-public class RaceTimeManager : NetworkBehaviour
+public class RaceTimeManager : MonoBehaviour
 {
     public static RaceTimeManager Instance { get; private set; }
 
@@ -18,6 +18,8 @@ public class RaceTimeManager : NetworkBehaviour
     private float bestFinishTime = float.MaxValue;
     private int finishedPlayerCount = 0;
 
+    private NetworkManager _networkManager;
+
     private Dictionary<NetworkConnection, PlayerRaceData> playerRaceData = new Dictionary<NetworkConnection, PlayerRaceData>();
 
     private List<PlayerFinalScore> finalScores = new List<PlayerFinalScore>();
@@ -30,14 +32,17 @@ public class RaceTimeManager : NetworkBehaviour
             return;
         }
         Instance = this;
+
+        _networkManager = GetComponent<NetworkManager>();
+        if (_networkManager == null) { Debug.LogError("Could not find Network Manager");}
     }
 
-    /// <summary>
+/// <summary>
     /// Starts the race - call this when all players are ready (Server only)
     /// </summary>
     public void StartRace()
     {
-        if (!IsServerStarted) return;
+        if (!IsServer()) return;
         if (raceStarted) { Debug.LogWarning("Race already started!"); return; }
 
         raceStarted = true;
@@ -48,6 +53,9 @@ public class RaceTimeManager : NetworkBehaviour
         finalScores.Clear();
 
         Debug.Log($"[Server] Race started at {raceStartTime}");
+        
+        // Notify all clients that race has started
+        BroadcastRaceStarted();
     }
 
     /// <summary>
@@ -56,7 +64,7 @@ public class RaceTimeManager : NetworkBehaviour
     /// </summary>
     public void RegisterPlayer(NetworkConnection connection, string playerName)
     {
-        if (!IsServerStarted) return;
+        if (!IsServer()) return;
 
         if (!playerRaceData.ContainsKey(connection))
         {
@@ -77,28 +85,20 @@ public class RaceTimeManager : NetworkBehaviour
     }
 
     /// <summary>
-    /// Player calls this when they cross the finish line
+    /// Server receives notification that a player finished
+    /// Called via PlayerScoreController's ServerRPC
     /// </summary>
-    public void OnPlayerFinishRace()
+    public void ServerPlayerFinished(NetworkConnection connection)
     {
-        if (!IsOwner) return;
-        if (!raceStarted) { Debug.LogWarning("Race hasn't started yet!"); return; }
-
-        // Request server to record finish time
-        ServerPlayerFinishedRPC();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void ServerPlayerFinishedRPC(NetworkConnection sender = null)
-    {
+        if (!IsServer()) return;
         if (!raceStarted) return;
-        if (!playerRaceData.ContainsKey(sender)) 
+        if (!playerRaceData.ContainsKey(connection)) 
         {
             Debug.LogError($"[Server] Unknown player tried to finish race!");
             return;
         }
 
-        PlayerRaceData data = playerRaceData[sender];
+        PlayerRaceData data = playerRaceData[connection];
         
         if (data.hasFinished)
         {
@@ -106,6 +106,7 @@ public class RaceTimeManager : NetworkBehaviour
             return;
         }
 
+        // Record finish time
         float currentTime = Time.time;
         float raceTime = currentTime - raceStartTime;
         data.finishTime = raceTime;
@@ -113,6 +114,7 @@ public class RaceTimeManager : NetworkBehaviour
         finishedPlayerCount++;
         data.finishPosition = finishedPlayerCount;
 
+        // Update best time if this is the first finisher or faster
         if (raceTime < bestFinishTime)
         {
             bestFinishTime = raceTime;
@@ -121,45 +123,75 @@ public class RaceTimeManager : NetworkBehaviour
 
         Debug.Log($"[Server] Player {data.playerName} finished in position {data.finishPosition} with time {raceTime:F2}s");
 
-        PlayerScoreController scoreController = sender.FirstObject?.GetComponent<PlayerScoreController>();
-        if (scoreController != null)
+        // Get action score from PlayerScoreController
+        if (connection.FirstObject != null)
         {
-            data.actionScore = scoreController.GetTotalScore();
+            PlayerScoreController scoreController = connection.FirstObject.GetComponent<PlayerScoreController>();
+            if (scoreController != null)
+            {
+                data.actionScore = scoreController.GetTotalScore();
+            }
         }
 
-        TargetNotifyPlayerFinished(sender, data.finishPosition, raceTime);
+        // Notify this player that they finished
+        NotifyPlayerFinished(connection, data.finishPosition, raceTime);
 
+        // Check if all players finished
         if (finishedPlayerCount >= playerRaceData.Count)
         {
             EndRace();
         }
     }
 
-    [TargetRpc]
-    private void TargetNotifyPlayerFinished(NetworkConnection connection, int position, float time)
+
+    private void BroadcastRaceStarted()
     {
-        Debug.Log($"[Client] You finished in position {position} with time {time:F2}s!");
-        //TODO:
-        // Maybe add a UI element notifying player he finihsed the race
+        if (!IsServer()) return;
+
+        // You can implement client notification here if needed
+        // For now, clients will know race started when they can earn points
+        Debug.Log("[Server] Broadcasting race start to all clients");
     }
 
-    [ObserversRpc]
-    private void ObserversShowFinalScores(PlayerFinalScore[] scores)
+    private void NotifyPlayerFinished(NetworkConnection connection, int position, float time)
     {
-        Debug.Log("=== FINAL RACE RESULTS ===");
-        foreach (var score in scores)
+        if (!IsServer()) return;
+
+        // Find the player's PlayerScoreController and notify them
+        if (connection.FirstObject != null)
         {
-            Debug.Log($"Position {score.finishPosition}: {score.playerName}");
-            Debug.Log($"  Time: {score.raceTime:F2}s | Action Score: {score.actionScore} | Time Penalty: -{score.timePenalty} | Final: {score.finalScore}");
+            PlayerScoreController scoreController = connection.FirstObject.GetComponent<PlayerScoreController>();
+            if (scoreController != null)
+            {
+                scoreController.TargetNotifyFinished(connection, position, time);
+            }
         }
-        
-        //TODO:
-        // Notify each player to activate their UI element showing them their score
     }
 
+    private void BroadcastFinalScores(PlayerFinalScore[] scores)
+    {
+        if (!IsServer()) return;
+
+        // Send to all connected clients
+        foreach (NetworkConnection conn in _networkManager.ServerManager.Clients.Values)
+        {
+            if (conn.FirstObject != null)
+            {
+                PlayerScoreController scoreController = conn.FirstObject.GetComponent<PlayerScoreController>();
+                if (scoreController != null)
+                {
+                    scoreController.TargetShowFinalScores(conn, scores);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Called when all players have finished - calculates final scores (Server only)
+    /// </summary>
     private void EndRace()
     {
-        if (!IsServerStarted) return;
+        if (!IsServer()) return;
 
         Debug.Log("[Server] All players finished! Calculating final scores...");
 
@@ -176,7 +208,8 @@ public class RaceTimeManager : NetworkBehaviour
             float timeDelta = data.finishTime - bestFinishTime;
             int timePenalty = useTimePenalty ? Mathf.RoundToInt(timeDelta * pointsLostPerSecond) : 0;
 
-            data.finalScore = Mathf.Max(0, data.actionScore - timePenalty);
+            // Final score = action score - time penalty
+            data.finalScore = Mathf.Max(0, data.actionScore - timePenalty); // Don't go below 0
 
             PlayerFinalScore finalScore = new PlayerFinalScore(
                 data.playerName,
@@ -190,10 +223,12 @@ public class RaceTimeManager : NetworkBehaviour
             finalScores.Add(finalScore);
         }
 
+        // Sort by final score (highest first), then by position if tied
         finalScores = finalScores.OrderByDescending(s => s.finalScore)
                                  .ThenBy(s => s.finishPosition)
                                  .ToList();
 
+        // Log final results
         Debug.Log("=== FINAL SCORES (Server) ===");
         Debug.Log($"Best Time: {bestFinishTime:F2}s");
         foreach (var score in finalScores)
@@ -202,19 +237,39 @@ public class RaceTimeManager : NetworkBehaviour
                      $"(Time: {score.raceTime:F2}s, Actions: {score.actionScore}, Penalty: -{score.timePenalty})");
         }
 
-        ObserversShowFinalScores(finalScores.ToArray());
+        // Send results to all clients
+        BroadcastFinalScores(finalScores.ToArray());
     }
 
+    /// <summary>
+    /// Gets the final scores after race completion
+    /// </summary>
     public List<PlayerFinalScore> GetFinalScores()
     {
         return new List<PlayerFinalScore>(finalScores);
     }
+
+    /// <summary>
+    /// Checks if the race is currently active
+    /// </summary>
     public bool IsRaceActive()
     {
         return raceStarted;
     }
+
+    /// <summary>
+    /// Gets the best finish time
+    /// </summary>
     public float GetBestTime()
     {
         return bestFinishTime;
+    }
+
+    /// <summary>
+    /// Helper to check if this is the server
+    /// </summary>
+    private bool IsServer()
+    {
+        return _networkManager != null && _networkManager.IsServerStarted;
     }
 }
