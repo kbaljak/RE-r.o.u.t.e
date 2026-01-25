@@ -121,6 +121,7 @@ public class PlayerParkourDetection : MonoBehaviour
                 { Debug.LogError("ERROR: No 'Ledge' object found on a GO in 'Climbable' layer and marked as 'Ledge'."); }
                 return InteractLedge(col.GetComponent<Ledge>(), onGround);
             default:  // Wall
+                Debug.Log("CheckForInteraction() => Collided with: " + col.gameObject.name);
                 return ParkourInteractType.Wall;
         }
         //return ParkourInteractType.None;
@@ -191,7 +192,11 @@ public class PlayerParkourDetection : MonoBehaviour
         float? deltaX = ledge.PlayerGrabbed(plCont);
         if (!deltaX.HasValue) { return false; }
         targetGrabXDelta = deltaX;
+
+        holdingLedge = true;
         plCont.GrabbedLedge(ledge);
+        plCont.plAnimCont.GrabOntoLedge(ledge, ledgeLvl);
+        return true;
     }
     bool VaultLedge(Ledge ledge)
     {

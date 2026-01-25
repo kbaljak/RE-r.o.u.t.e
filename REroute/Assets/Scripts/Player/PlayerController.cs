@@ -1,12 +1,9 @@
 using FishNet.Object;
-using System;
 using System.Collections;
-using FishNet.Object;
 using FishNet.Object.Synchronizing;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Splines;
 
 public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 
@@ -885,10 +882,6 @@ public class PlayerController : NetworkBehaviour
             //Debug.LogError($"Player just grabbed a oiled ledge, apply penalty for climbing or something!");
             playerItemInteraction.RequestRemoveOilFromLedgeRpc(ledge.GetComponent<NetworkObject>().ObjectId);
         }
-
-        charCont.enabled = false;
-        moveSpeed = 0; //fallSpeed = 0;
-        moveDirection = Vector3.zero;
         // Camera
         followRotation = PlayerFollowRotation.NONE;
         Vector3 ledgeForward = ledge.transform.forward * (ledge.transform.lossyScale.z < -0.01f ? -1 : 1);

@@ -1,4 +1,3 @@
-using FishNet.Demo.AdditiveScenes;
 using FishNet.Managing;
 using FishNet.Transporting.Tugboat;
 using Unity.Multiplayer.Playmode;

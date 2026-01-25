@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class NetworkLobbyManager : MonoBehaviour
 {
     public static NetworkLobbyManager Instance { get; private set; }
-    [SerializeField] string LobbySceneName = "Ian_gym";
+    [SerializeField] string LobbySceneName = "Pipe_gym";
 
     private bool shouldStartAsHost = false;
     private bool shouldStartAsClient = false;

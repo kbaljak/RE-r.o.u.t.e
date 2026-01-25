@@ -266,51 +266,51 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 }
 
 
-#if UNITY_EDITOR
-[CustomEditor(typeof(Anim_LedgeGrab))]
-public class Anim_LedgeGrab_Inspector : Editor
-{
-    Anim_LedgeGrab ledgeGrab;
+// #if UNITY_EDITOR
+// [CustomEditor(typeof(Anim_LedgeGrab))]
+// public class Anim_LedgeGrab_Inspector : Editor
+// {
+//     Anim_LedgeGrab ledgeGrab;
 
-    UnityEditor.Animations.StateMachineBehaviourContext[] context;
-    float clipLength = 0f;
-    List<UnityEditor.Animations.AnimatorStateTransition> transitions = new List<UnityEditor.Animations.AnimatorStateTransition>();
+//     UnityEditor.Animations.StateMachineBehaviourContext[] context;
+//     float clipLength = 0f;
+//     List<UnityEditor.Animations.AnimatorStateTransition> transitions = new List<UnityEditor.Animations.AnimatorStateTransition>();
 
-    public void OnEnable()
-    {
-        context = UnityEditor.Animations.AnimatorController.FindStateMachineBehaviourContext(target as StateMachineBehaviour);
+//     public void OnEnable()
+//     {
+//         context = UnityEditor.Animations.AnimatorController.FindStateMachineBehaviourContext(target as StateMachineBehaviour);
 
-        if (context != null)
-        {
-            if (context.Length > 0)
-            {
-                // animatorObject can be an AnimatorState or AnimatorStateMachine
-                UnityEditor.Animations.AnimatorState state = context[0].animatorObject as UnityEditor.Animations.AnimatorState;
-                if (state != null)
-                {
-                    Anim_LedgeGrab behaviour = target as Anim_LedgeGrab;
-                    clipLength = state.motion.averageDuration / state.speed;
-                    foreach (AnimatorStateTransition t in state.transitions)
-                    { transitions.Add(t); }
-                }
-            }
-        }
-    }
+//         if (context != null)
+//         {
+//             if (context.Length > 0)
+//             {
+//                 // animatorObject can be an AnimatorState or AnimatorStateMachine
+//                 UnityEditor.Animations.AnimatorState state = context[0].animatorObject as UnityEditor.Animations.AnimatorState;
+//                 if (state != null)
+//                 {
+//                     Anim_LedgeGrab behaviour = target as Anim_LedgeGrab;
+//                     clipLength = state.motion.averageDuration / state.speed;
+//                     foreach (AnimatorStateTransition t in state.transitions)
+//                     { transitions.Add(t); }
+//                 }
+//             }
+//         }
+//     }
 
-    public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
+//     public override void OnInspectorGUI()
+//     {
+//         base.OnInspectorGUI();
 
-        ledgeGrab = (Anim_LedgeGrab)target;
+//         ledgeGrab = (Anim_LedgeGrab)target;
 
-        EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("---- State info");
-        EditorGUILayout.LabelField("Motion length:", clipLength.ToString());
-        for (int i = 0; i < transitions.Count; i++)
-        {
-            EditorGUILayout.LabelField("#" + i.ToString() + "\ttransition end time:", (clipLength * transitions[i].exitTime).ToString());
-        }
+//         EditorGUILayout.Space(10);
+//         EditorGUILayout.LabelField("---- State info");
+//         EditorGUILayout.LabelField("Motion length:", clipLength.ToString());
+//         for (int i = 0; i < transitions.Count; i++)
+//         {
+//             EditorGUILayout.LabelField("#" + i.ToString() + "\ttransition end time:", (clipLength * transitions[i].exitTime).ToString());
+//         }
         
-    }
-}
-#endif
+//     }
+// }
+// #endif
