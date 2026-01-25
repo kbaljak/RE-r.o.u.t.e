@@ -227,6 +227,7 @@ MonoBehaviour:
   playerEntryList: {fileID: 1999807126198338357}
   playerEntryPrefab: {fileID: 1662689260991494985, guid: 3b4552c06f0bea04dacd68fe52a7dede, type: 3}
   codeText: {fileID: 6447455824595716774}
+  codeString: {fileID: 2839274145287188767}
 --- !u!1 &3950172960801474594
 GameObject:
   m_ObjectHideFlags: 0

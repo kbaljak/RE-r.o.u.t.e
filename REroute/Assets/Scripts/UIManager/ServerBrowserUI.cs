@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class ServerBrowserUI : MonoBehaviour
@@ -6,12 +7,19 @@ public class ServerBrowserUI : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Transform serverListPanel;
     [SerializeField] private GameObject serverEntryPrefab;
+    [SerializeField] private TextMeshProUGUI playerNameText;
 
     private LANDiscovery lanDiscovery;
     private Dictionary<string, GameObject> serverEntries = new Dictionary<string, GameObject>();
+    private NetworkLobbyManager networkLobbyManager;
 
     private void Start()
     {
+        if (playerNameText == null) {Debug.LogError( "Could not find PlayerName in hirerchy, did you forget to assign it in the editro?"); }
+
+        networkLobbyManager = GameObject.Find("NetworkLobbyManager").GetComponent<NetworkLobbyManager>();
+        if (networkLobbyManager == null) { Debug.LogError("Could not find Network Lobby Manager in hierearchy!"); }
+
         lanDiscovery = GetComponent<LANDiscovery>();
         if (lanDiscovery == null) { Debug.LogError("Could not find component LANDiscovery!"); }
 
@@ -19,18 +27,14 @@ public class ServerBrowserUI : MonoBehaviour
         lanDiscovery.OnServerLost += OnServerLost;
 
         lanDiscovery.StartListeningForBroadcast();
+
+        playerNameText.text = networkLobbyManager.GetPlayerName();
     }
 
     private void OnServerDiscovered(DiscoveredServer server)
     {
-        if (serverEntries.ContainsKey(server.hostAddress))
-        {
-            UpdateServerEntry(server);
-        }
-        else
-        {
-            CreateServerEntry(server);
-        }
+        if (serverEntries.ContainsKey(server.hostAddress)) { UpdateServerEntry(server); }
+        else { CreateServerEntry(server); }
     }
 
     private void OnServerLost(string serverAddress)
@@ -44,7 +48,6 @@ public class ServerBrowserUI : MonoBehaviour
 
     private void CreateServerEntry(DiscoveredServer server)
     {
-        //Debug.Log("CreateServerEntry()");
         Debug.Log($"Server info => {server}");
         if (serverEntryPrefab == null || serverListPanel == null) { Debug.LogError("ServerEntry prefab or ServerList panel not assigned!"); return; }
 
@@ -58,7 +61,6 @@ public class ServerBrowserUI : MonoBehaviour
 
     private void UpdateServerEntry(DiscoveredServer server)
     {
-        //Debug.Log("UpdateServerEntry()");
         Debug.Log($"Server info => {server}");
         if (serverEntries.TryGetValue(server.hostAddress, out GameObject serverEntryObj))
         {

@@ -758,6 +758,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ServerBrowserUI
   serverListPanel: {fileID: 1015026282}
   serverEntryPrefab: {fileID: 3932542419961692125, guid: f69237bcaa8f09c9caf0088147ea58c8, type: 3}
+  playerNameText: {fileID: 1110220038}
 --- !u!1 &679384749
 GameObject:
   m_ObjectHideFlags: 0
@@ -811,6 +812,7 @@ MonoBehaviour:
   codeInputField: {fileID: 836171095}
   joinButton: {fileID: 1798340701}
   backButton: {fileID: 19432241}
+  authPort: 42568
 --- !u!1001 &781313780
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1339,7 +1341,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0.42745098}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

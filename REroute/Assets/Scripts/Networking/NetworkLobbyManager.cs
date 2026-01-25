@@ -29,8 +29,6 @@ public class NetworkLobbyManager : MonoBehaviour
         shouldStartAsHost = true;
         shouldStartAsClient = false;
 
-        //this.hostName = hostName;
-
         SceneManager.sceneLoaded += OnLobbySceneLoaded;
         SceneManager.LoadScene(LobbySceneName);
     }
@@ -40,7 +38,6 @@ public class NetworkLobbyManager : MonoBehaviour
         shouldStartAsClient = true;
         shouldStartAsHost = false;
 
-        //this.playerName = playerName;
         this.hostAddress = hostAddress;
 
         SceneManager.sceneLoaded += OnLobbySceneLoaded;
@@ -61,7 +58,7 @@ public class NetworkLobbyManager : MonoBehaviour
             networkConnectionStarter.StartAsHost(hostName);
 
             lobbyCode = GenerateLobbyCode();
-            Debug.Log($"Host: Starting lobby with code: {lobbyCode}");
+            Debug.LogWarning($"Host: Starting lobby with code: {lobbyCode}");
         }
         else if (shouldStartAsClient) 
         {
@@ -79,7 +76,7 @@ public class NetworkLobbyManager : MonoBehaviour
     }
 
     public void SetPlayerName(string playerName) { this.playerName = playerName; }
-    //public string GetPlayerName() { return playerName; }
+    public string GetPlayerName() { return playerName; }
     public void SetHostName(string hostName) { this.hostName = hostName; }
     public string GetLobbyCode() { return lobbyCode; }
 

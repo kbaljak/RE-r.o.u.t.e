@@ -64,6 +64,7 @@ public class ServerEntryUI : MonoBehaviour
         {
             if (serverPlayerCountText != null) { serverPlayerCountText.text = $"{server.connectedPlayerCount}/{server.maxPlayerCount}"; }
         }
+        if (serverName != null && playerCount != null) { joinButton.SetActive(true); }
     }
 
     public DiscoveredServer getDiscoveredServerInfo()

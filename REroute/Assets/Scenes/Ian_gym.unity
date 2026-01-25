@@ -5994,9 +5994,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5747603514976981141, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 150
+      objectReference: {fileID: 0}
     - target: {fileID: 6027909641215926557, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6451489667924677111, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
+      propertyPath: m_text
+      value: E to apply oil
+      objectReference: {fileID: 0}
+    - target: {fileID: 6451489667924677111, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
+      propertyPath: m_fontSize
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6451489667924677111, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
+      propertyPath: m_fontStyle
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6451489667924677111, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 8087371645777270792, guid: 30b7fc38231c1834ba062513ede063fe, type: 3}
       propertyPath: m_AnchorMax.x
@@ -6203,7 +6223,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[0].position.y
-      value: 1.5
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[0].rotation.w
@@ -6211,11 +6231,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[0].rotation.x
-      value: 0.000000021855694
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[0].rotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[1].position.x
@@ -6223,7 +6243,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[1].position.y
-      value: 1.5
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 8855168868757556879, guid: 484967ab15009b44bbeda1881b5db339, type: 3}
       propertyPath: spawnPoints.Array.data[1].rotation.w
