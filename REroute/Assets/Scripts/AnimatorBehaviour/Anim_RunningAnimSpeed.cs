@@ -1,4 +1,3 @@
-using System.Numerics;
 using UnityEngine;
 
 public class Anim_RunningAnimSpeed : StateMachineBehaviour
@@ -6,6 +5,10 @@ public class Anim_RunningAnimSpeed : StateMachineBehaviour
     public float speedFactor = 0.2f;
     PlayerController playerController;
 
+    // void Awake()
+    // {
+    //     if (!playerController.IsOwner) { return; }
+    // }
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {

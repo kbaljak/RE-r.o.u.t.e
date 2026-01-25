@@ -1,37 +1,85 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UnityEngine;
 
-public class Ledge : MonoBehaviour, Parkourable
+public class Ledge : NetworkBehaviour, Parkourable
 {
     // Scriptable data
     [SerializeField] private Ledge_Data ledgeData;
-    private void Reset(){ ledgeData = ScriptableObjectManager.Load<Ledge_Data>(); }
+
+#if UNITY_EDITOR
+    new private void Reset(){ ledgeData = ScriptableObjectManager.Load<Ledge_Data>(); }
     //
-
+#endif
     public bool vaultable = false;
-
     private float width;
     private List<float> playerGrabbedDeltaXs = new List<float>();
 
+    public Color32 defaultLedgeColor;
+    public Color32 oiledUpLedgeColor;
+    private readonly SyncVar<bool> _isOiledUp = new SyncVar<bool>(false);
+    private List<SpriteRenderer> ledgeVisuals = new List<SpriteRenderer>();
+    public override void OnStartNetwork()
+    {
+        base.OnStartNetwork();
 
-    void Awake() {
-        /*if (GetComponent<Ledge_Editor>()) 
+        foreach(Transform ledgeVisual in transform.Find("Visual"))
         {
-            width = GetComponent<Ledge_Editor>().width;
-            Destroy(GetComponent<Ledge_Editor>()); 
+            SpriteRenderer ledgeVisualSpriteRenderer = ledgeVisual.GetComponent<SpriteRenderer>();
+            if (ledgeVisualSpriteRenderer != null) {ledgeVisuals.Add(ledgeVisualSpriteRenderer); }
+        }
+    }
+
+    void Awake()
+    {
+        width = GetComponent<BoxCollider>().size.x;  //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
+        if (GetComponent<Ledge_Editor>()) { Destroy(GetComponent<Ledge_Editor>()); }
+        _isOiledUp.OnChange += OnOiledStateChange;
+    }
+
+    private void OnOiledStateChange(bool prev, bool next, bool asServer)
+    {
+        Debug.Log($"Ledge oiled state changed: {prev} -> {next}");
+        UpdateLedgeVisuals(next);
+    }
+
+    private void UpdateLedgeVisuals(bool isOiled)
+    {
+        Debug.Log("UpdateLedgeVisuals()");
+        if (isOiled)
+        {
+            foreach(SpriteRenderer ledgeVisual in ledgeVisuals)
+            {
+                ledgeVisual.color = oiledUpLedgeColor;
+            }
         }
         else
         {
-            width = GetComponent<BoxCollider>().size.x; 
-        }*/
-
-        width = GetComponent<BoxCollider>().size.x;  //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
-        if (GetComponent<Ledge_Editor>()) { Destroy(GetComponent<Ledge_Editor>()); }
+            foreach(SpriteRenderer ledgeVisual in ledgeVisuals)
+            {
+                ledgeVisual.color = defaultLedgeColor;
+            }  
+        }
     }
 
+    public void ApplyOilToLedge()
+    {
+        Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") has been oiled up!");
+        _isOiledUp.Value = true;
+    }
+
+    public void RemoveOilFromLedge()
+    {
+        Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") oil should be removed!");
+        _isOiledUp.Value = false;
+    }
     
+    public bool IsLedgeOiledUp()
+    {
+        return _isOiledUp.Value;
+    }
     public float? PlayerGrabbed(PlayerController playerCont)
     {
         // Calculate grab delta
@@ -58,7 +106,6 @@ public class Ledge : MonoBehaviour, Parkourable
 
         return deltaX + playerAdj.Value;
     }
-
 
     // Utility
     Tuple<int, int> IndecesOfPlayersOnEachSide(float deltaX)

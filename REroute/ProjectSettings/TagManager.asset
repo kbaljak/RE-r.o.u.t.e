@@ -7,6 +7,11 @@ TagManager:
   - Ledge
   - camPoint
   - TPCamera
+  - buttonSound
+  - BananaItem
+  - OilCanItem
+  - ItemSpawner
+  - Ground
   layers:
   - Default
   - TransparentFX
@@ -18,8 +23,8 @@ TagManager:
   - 
   - 
   - 
-  - 
-  - 
+  - GroundItem
+  - Pickup
   - Parkourable
   - ParkourableDetection
   - 
