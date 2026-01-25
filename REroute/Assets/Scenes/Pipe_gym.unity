@@ -4341,6 +4341,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1336736651}
+    - targetCorrespondingSourceObject: {fileID: 7443408887813606051, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1336736652}
   m_SourcePrefab: {fileID: 100100000, guid: 0b650fca685f2eb41a86538aa883e4c1, type: 3}
 --- !u!1001 &1190881833
 PrefabInstance:
@@ -4651,6 +4654,18 @@ MonoBehaviour:
   broadcastInterval: 2
   maxPlayers: 4
   gameIdentifier: REroute
+--- !u!114 &1336736652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1336736642}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16e5532289636bd489e880ac04f1f074, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &1341236651
 GameObject:
   m_ObjectHideFlags: 0
@@ -7910,6 +7925,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartGameButton
   startGamePrompt: {fileID: 2038440272}
+  level_scene: Map_2
 --- !u!1001 &1516267501525660
 PrefabInstance:
   m_ObjectHideFlags: 0
