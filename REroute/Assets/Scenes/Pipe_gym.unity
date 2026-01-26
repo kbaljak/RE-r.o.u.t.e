@@ -7925,7 +7925,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StartGameButton
   startGamePrompt: {fileID: 2038440272}
-  level_scene: Map_2
+  level_scene: TestScene
 --- !u!1001 &1516267501525660
 PrefabInstance:
   m_ObjectHideFlags: 0

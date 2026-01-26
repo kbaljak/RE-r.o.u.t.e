@@ -138,34 +138,6 @@ public class PlayerController : NetworkBehaviour
             enabled = false;
             return;
         }
-        // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
-        var camPoint = GameObject.FindGameObjectWithTag("camPoint");
-        if (camPoint != null)
-        {
-            virtualChild = camPoint.GetComponent<VirtualChild>();
-            if (virtualChild != null)
-            {
-                virtualChild.SetVirtualParent(gameObject);
-                Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
-            }
-
-            // get player camera controller from cameraPoint
-            playerCamera = camPoint.GetComponent<PlayerCameraController>();
-
-            // assign cameraPoint to TPCamera to follow
-            tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
-            CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
-            cineCam.Follow = camPoint.transform;   
-        }
-
-        plScoreCont = GetComponent<PlayerScoreController>();
-        if (plScoreCont == null) { Debug.LogError("Coudl not find Player Score Controller!"); }
-
-        playerItemInteraction = GetComponent<PlayerItemInteraction>();
-        if (playerItemInteraction == null)
-        {
-            Debug.LogError("PlayerItemInteraction component not found on PlayerController!");
-        }
 
         string myName;
         if (IsHostStarted) { myName = NetworkConnectionStarter.Instance.GetHostName(); }
@@ -184,6 +156,52 @@ public class PlayerController : NetworkBehaviour
     public string GetPlayerName()
     {
         return playerNameTag.Value;
+    }
+    public void OnSceneTransition()
+    {
+        if (!IsOwner) return;
+
+        Debug.Log("PlayerController: Scene transition - re-initializing");
+        
+        // Re-setup character (find new cameras in scene)
+        StartCoroutine(DelayedSceneSetup());
+    }
+
+    private IEnumerator DelayedSceneSetup()
+    {
+        // Wait for scene to fully initialize
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForEndOfFrame();
+        
+        // Re-find cameras in new scene
+        SetupCharacter();
+        
+        // Reset movement state
+        ResetMovementState();
+        
+        Debug.Log("PlayerController: Scene setup complete");
+    }
+    private void ResetMovementState()
+    {
+        // Reset movement variables
+        moveSpeed = 0f;
+        fallSpeed = 0f;
+        moveDirection = transform.forward;
+        
+        // Reset states
+        isGrounded = false;
+        slide = false;
+        currentlySliding = false;
+        roll = false;
+        
+        // Reset camera following
+        followRotation = PlayerFollowRotation.CAMERA;
+        
+        // Make sure character controller is enabled
+        if (charCont != null)
+        {
+            charCont.enabled = true;
+        }
     }
 
     void EnablePlayer(bool value)
@@ -215,15 +233,47 @@ public class PlayerController : NetworkBehaviour
     private void Start()
     {
         charCont = GetComponent<CharacterController>();
-        // Input
+            
+        // Input setup (only once)
         freeLookAction = InputSystem.actions.FindAction("Free look");
         moveAction = InputSystem.actions.FindAction("Move");
         jumpAction = InputSystem.actions.FindAction("Jump");
         sprintAction = InputSystem.actions.FindAction("Sprint");
         slideAction = InputSystem.actions.FindAction("Slide");
-        // Other
+            
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
+        SetupCharacter();
+    
         currentRespawnPoint = transform.position;
+    }
+
+    private void SetupCharacter()
+    {
+        // find cameraPoint gameObject so that we can add later instatiated gameObject player as it's virtual parent
+        var camPoint = GameObject.FindGameObjectWithTag("camPoint");
+        if (camPoint != null)
+        {
+            virtualChild = camPoint.GetComponent<VirtualChild>();
+            if (virtualChild != null)
+            {
+                virtualChild.SetVirtualParent(gameObject);
+                Debug.Log("Assigned player prefb as virtual parent to CameraPoint");
+            }
+
+            // get player camera controller from cameraPoint
+            playerCamera = camPoint.GetComponent<PlayerCameraController>();
+
+            // assign cameraPoint to TPCamera to follow
+            tpCamera = GameObject.FindGameObjectWithTag("TPCamera");
+            CinemachineCamera cineCam = tpCamera.GetComponent<CinemachineCamera>();
+            cineCam.Follow = camPoint.transform;   
+        }
+
+        plScoreCont = GetComponent<PlayerScoreController>();
+        if (plScoreCont == null) { Debug.LogError("Coudl not find Player Score Controller!"); }
+
+        playerItemInteraction = GetComponent<PlayerItemInteraction>();
+        if (playerItemInteraction == null) { Debug.LogError("PlayerItemInteraction component not found on PlayerController!"); }
     }
 
     private void LateUpdate()
@@ -1074,13 +1124,6 @@ public class PlayerController : NetworkBehaviour
             charCont.height = 1.8f;
         }
     }
-
-
-
-
-
-
-
 
     //// Smooth transition functions
     IEnumerator RollSpeedLoss_Smooth()
