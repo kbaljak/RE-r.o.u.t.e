@@ -38,6 +38,7 @@ public class Anim_Rolling : StateMachineBehaviour
         if (callDisableRootOnExit) { plAnimCont.DisableRootMotion(!continuallyApplyRootPos); }
         if (callLandingAnimDoneOnExit) { plAnimCont.LandingAnimationDone(); }
         animator.ResetTrigger("break");
+        playerCont.AddScoreAfterRoll();
     }
 
     // OnStateMove is called right after Animator.OnAnimatorMove()  // Implement code that processes and affects root motion

@@ -1,13 +1,12 @@
 using FishNet.Managing;
-using FishNet.Managing.Scened;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class StartGameButton : MonoBehaviour
 {
+    public static StartGameButton Instance { get; private set; }
     [SerializeField] private TextMeshProUGUI startGamePrompt;
-    [SerializeField] public string level_scene = "Map_2";
     private InputAction buttonPressAction;
     private NetworkManager _networkManager;
 
@@ -44,7 +43,14 @@ public class StartGameButton : MonoBehaviour
         if (buttonPressAction.WasPressedThisFrame() && canBePressed)
         {
             Debug.Log("Player pressed the button! Loading new scene!");
-            _networkManager.GetComponent<LoadScenes>().LoadLevelScene(level_scene);
+            _networkManager.GetComponent<LoadScenes>().TeleportPlayersToLevelArea();
         }
+    }
+
+    public void DisablePrompt()
+    {  
+        Debug.LogWarning("Disable Prompt");
+        canBePressed = false;
+        startGamePrompt.gameObject.SetActive(false);
     }
 }

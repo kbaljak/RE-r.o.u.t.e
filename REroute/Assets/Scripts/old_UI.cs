@@ -8,7 +8,6 @@ public class UI : MonoBehaviour
 
     [SerializeField] private Slider speedSlider;
     [SerializeField] private TextMeshProUGUI speedText;
-    [SerializeField] private TextMeshProUGUI fpsText;
 
     private PlayerController playerCont;
 
@@ -17,7 +16,7 @@ public class UI : MonoBehaviour
         if (Instance != null) { Debug.LogError("Double UI???"); }
         Instance = this;
 
-        GetComponent<Canvas>().enabled = false; enabled = false; 
+        //GetComponent<Canvas>().enabled = false; enabled = false; 
     }
     public static void InitializePlayerController(PlayerController target)
     { 
@@ -35,8 +34,6 @@ public class UI : MonoBehaviour
 
     void Update()
     {
-        fpsText.text = Mathf.RoundToInt(1.0f / Time.deltaTime).ToString();
-
         UpdateSpeed();
     }
 

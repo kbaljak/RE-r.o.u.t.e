@@ -106,7 +106,9 @@ public class PlayerParkourDetection : MonoBehaviour
         //Debug.Log("CheckVaultables() [" + vaultTrigger.detected.Count + "]");
         foreach (Collider collider in vaultTrigger.detected)
         {
+            if (collider == null) { return false; }
             ParkourInteractType typeDetected = CheckForInteraction(collider, true);
+            if (typeDetected == ParkourInteractType.None) { return true; }
             if (typeDetected == ParkourInteractType.Vault) { return true; }
         }
         return false;
@@ -116,6 +118,8 @@ public class PlayerParkourDetection : MonoBehaviour
     {
         switch (col.tag)
         {
+            // case null:
+            //     return ParkourInteractType.None;
             case "Ledge":
                 if (!col.GetComponent<Ledge>())
                 { Debug.LogError("ERROR: No 'Ledge' object found on a GO in 'Climbable' layer and marked as 'Ledge'."); }

@@ -19,7 +19,7 @@ public class BananaItem : NetworkBehaviour
     {
         if(!IsServerInitialized) return;
 
-        if (collision.gameObject.CompareTag("Ground") && !isLanded.Value)
+        if ((collision.gameObject.CompareTag("Ground") || collision.gameObject.CompareTag("Untagged")) && !isLanded.Value)
         {
             Debug.Log(gameObject.name + " landed on " + collision.gameObject.tag);
             StickToImpactPoint(collision);

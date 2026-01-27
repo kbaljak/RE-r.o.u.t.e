@@ -4,6 +4,7 @@ using FishNet.Object.Synchronizing;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Data.Common;
 
 public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 
@@ -144,6 +145,8 @@ public class PlayerController : NetworkBehaviour
         else { myName = NetworkConnectionStarter.Instance.GetPlayerName(); }
 
         SetPlayerNameServerRPC(myName);
+
+        SetupCharacter();
         
     }
 
@@ -153,25 +156,58 @@ public class PlayerController : NetworkBehaviour
         playerNameTag.Value = name;
     }
 
+    [ObserversRpc]
+    public void TeleportPlayerToLevelSpawnPoints(Vector3 newPosition, Quaternion newRotation)
+    {
+        // Only execute on the owner's client
+        if (!IsOwner) return;
+        
+        Debug.Log($"TeleportPlayer called on {gameObject.name} - Owner: {IsOwner}");
+        
+        // Disable character controller temporarily
+        if (charCont != null)
+        {
+            charCont.enabled = false;
+        }
+        
+        // Set new position and rotation
+        transform.position = newPosition;
+        transform.rotation = newRotation;
+        
+        // Reset movement state to prevent weird physics issues
+        moveSpeed = 0f;
+        fallSpeed = 0f;
+        moveDirection = transform.forward;
+        
+        Debug.Log($"Player teleported to {newPosition}");
+        
+        // Re-enable character controller
+        if (charCont != null)
+        {
+            charCont.enabled = true;
+        }
+    }
     public string GetPlayerName()
     {
         return playerNameTag.Value;
     }
-    public void OnSceneTransition()
-    {
-        if (!IsOwner) return;
 
-        Debug.Log("PlayerController: Scene transition - re-initializing");
+    // [ObserversRpc]
+    // public void ClientReinitializeAfterSceneLoad()
+    // {
+    //     if (!IsOwner) return;
         
-        // Re-setup character (find new cameras in scene)
-        StartCoroutine(DelayedSceneSetup());
-    }
+    //     Debug.Log("ClientReinitializeAfterSceneLoad called on owner");
+    //     StartCoroutine(DelayedSceneSetup());
+    // }
 
     private IEnumerator DelayedSceneSetup()
     {
         // Wait for scene to fully initialize
         yield return new WaitForEndOfFrame();
         yield return new WaitForEndOfFrame();
+
+        Debug.Log("Starting delayed scene setup...");
         
         // Re-find cameras in new scene
         SetupCharacter();
@@ -202,6 +238,8 @@ public class PlayerController : NetworkBehaviour
         {
             charCont.enabled = true;
         }
+
+        Debug.Log("Movement state reset complete");
     }
 
     void EnablePlayer(bool value)
@@ -242,7 +280,7 @@ public class PlayerController : NetworkBehaviour
         slideAction = InputSystem.actions.FindAction("Slide");
             
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
-        SetupCharacter();
+        //SetupCharacter();
     
         currentRespawnPoint = transform.position;
     }
@@ -313,6 +351,11 @@ public class PlayerController : NetworkBehaviour
         canControlMove = true;
     }
     public void SetRespawnPoint(Vector3 pos) { currentRespawnPoint = pos; }
+
+    public void AddScoreAfterRoll()
+    {
+        plScoreCont.OnCombatRollPerformedScore();
+    }
 
     //// Update
     private void Update()
@@ -454,6 +497,7 @@ public class PlayerController : NetworkBehaviour
         moveAngle = Vector3.SignedAngle(cameraForward, moveDirection, groundSlopeNormal);
         if (backwardMovement) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
     }
+
     void Update_Movement_Normal(Vector3 cameraForward)
     {
         if (canControlMove)
@@ -1016,6 +1060,7 @@ public class PlayerController : NetworkBehaviour
         {
             moveSpeed = walkSpeed;
         }*/
+        plScoreCont.OnVaultPerformedScore();
     }
 
     //// Common

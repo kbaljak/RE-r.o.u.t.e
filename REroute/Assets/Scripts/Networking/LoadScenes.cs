@@ -1,82 +1,65 @@
-using System;
 using System.Collections.Generic;
-using FishNet;
 using FishNet.Connection;
 using FishNet.Managing;
-using FishNet.Managing.Scened;
 using FishNet.Object;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class LoadScenes : MonoBehaviour
 {
     private NetworkManager _networkManager;
-    public void LoadLevelScene(string sceneName)
+    [SerializeField] public List<Transform> levelSpawnPoints = new List<Transform>();
+    [SerializeField] public GameObject startGameButton;
+    private int playerIndex;
+
+    private void Start()
     {
         _networkManager = GetComponent<NetworkManager>();
-        if (_networkManager == null) { Debug.LogError("Could not get Network Manager!"); return; }
-
-        if (!_networkManager.IsServerStarted) { Debug.LogError("Only Host can load scenes!"); return; }
-
-        SceneLoadData sld = new SceneLoadData(sceneName);
-        sld.ReplaceScenes = ReplaceOption.All;
-
-        _networkManager.SceneManager.OnLoadEnd += OnSceneLoadEnd;
-        InstanceFinder.SceneManager.LoadGlobalScenes(sld);
+        if (_networkManager == null) { Debug.LogError("Could not find NetworkManager!"); }
     }
-
-    private void OnSceneLoadEnd(SceneLoadEndEventArgs args)
+    public void TeleportPlayersToLevelArea()
     {
-        _networkManager.SceneManager.OnLoadEnd -= OnSceneLoadEnd;
-
-        Debug.Log("Scene load complete. Repositioning players...");
-
-        GameObject spawnPointsParent = GameObject.Find("SpawnPoints");
-        if (spawnPointsParent == null) { Debug.LogError("SpawnPoints GameObject not found in scene!"); return; }
-
-        List<Transform> spawnPoints = new List<Transform>();
-        for (int i = 0; i < spawnPointsParent.transform.childCount; i++)
-        {
-            spawnPoints.Add(spawnPointsParent.transform.GetChild(i));
-        }
-        if (spawnPoints.Count == 0) {  Debug.LogError("No spawn points found!"); return; }
-
-        int playerIndex = 0;
         foreach (NetworkConnection conn in _networkManager.ServerManager.Clients.Values)
         {
             if (conn.FirstObject != null)
             {
                 NetworkObject playerNetObj = conn.FirstObject;
-                PlayerController playerController = playerNetObj.GetComponent<PlayerController>();
-
-                if (playerController != null)
-                {
-                    Transform spawnPoint = spawnPoints[playerIndex % spawnPoints.Count];
-                    
-                    TeleportPlayerToSpawn(playerController, spawnPoint);
-                    
-                    Debug.Log($"Player {playerIndex + 1} teleported to {spawnPoint.name}");
-                    playerIndex++;
-                }
+                
+                Debug.Log($"Processing player {playerIndex + 1}: {playerNetObj.name}");
+                
+                // Get spawn point (cycle if more players than spawn points)
+                Transform spawnPoint = levelSpawnPoints[playerIndex % levelSpawnPoints.Count];
+                
+                TeleportPlayerToSpawnPoint(playerNetObj, spawnPoint);
+                
+                Debug.Log($"Player {playerIndex + 1} teleported to {spawnPoint.name} at position {spawnPoint.position}");
+                playerIndex++;
+            }
+            else
+            {
+                Debug.LogWarning($"Connection has null FirstObject!");
             }
         }
     }
-    private void TeleportPlayerToSpawn(PlayerController player, Transform spawnPoint)
+
+    private void TeleportPlayerToSpawnPoint(NetworkObject playerNetObj, Transform spawnPoint)
     {
-        CharacterController charController = player.GetComponent<CharacterController>();
-        if (charController != null)
+        // Get the PlayerController component
+        PlayerController playerController = playerNetObj.GetComponent<PlayerController>();
+        if (playerController != null)
         {
-            charController.enabled = false;
+            // Call the RPC on the player to teleport them
+            playerController.TeleportPlayerToLevelSpawnPoints(spawnPoint.position, spawnPoint.rotation);
         }
-
-        player.transform.position = spawnPoint.position;
-        player.transform.rotation = spawnPoint.rotation;
-
-        if (charController != null)
+        else
         {
-            charController.enabled = true;
+            Debug.LogError($"PlayerController not found on {playerNetObj.name}!");
         }
-
-        player.OnSceneTransition();
+        
+        // Disable the start game prompt after first teleport
+        if (playerIndex == 0)
+        {
+            StartGameButton strtGameBtn = startGameButton.GetComponent<StartGameButton>();
+            if (strtGameBtn != null) { strtGameBtn.DisablePrompt(); }
+        }
     }
 }

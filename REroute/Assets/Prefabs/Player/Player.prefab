@@ -3534,6 +3534,8 @@ MonoBehaviour:
   - {fileID: -5948133355759224539}
   - {fileID: 1792036367656086916}
   - {fileID: 1897457646274550055}
+  - {fileID: 7053530580125167638}
+  - {fileID: 0}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -3687,9 +3689,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a829f02f038f0d4dac0ac4b1bfe8316, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerScoreController
-  _componentIndexCache: 255
+  _componentIndexCache: 4
   _addedNetworkObject: {fileID: -8763808860493201350}
-  _networkObjectCache: {fileID: 0}
+  _networkObjectCache: {fileID: -8763808860493201350}
   vaultPoints: 10
   combatRollPoints: 5
   oilApplicationPoints: 2
