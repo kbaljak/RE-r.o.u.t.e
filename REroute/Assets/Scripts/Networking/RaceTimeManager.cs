@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FishNet.Connection;
@@ -50,45 +51,37 @@ public class RaceTimeManager : MonoBehaviour
         if (raceStarted) { Debug.LogWarning("Race already started!"); return; }
 
         Debug.Log("[Server] Starting race countdown sequence...");
-        //StartCoroutine(CountdownSequence());        
+        StartCoroutine(CountdownSequence());        
     }
 
-    // private string CountdownSequence()
-    // {
-    //     FreezeAllPlayers(true);
+    private IEnumerator CountdownSequence()
+    {
+        //FreezeAllPlayers(true);
 
-    //     foreach (NetworkConnection conn in playerRaceData.Keys)
-    //     {
-    //         PlayerUIController plUICont = conn.FirstObject.gameObject.GetComponent<PlayerUIController>();
-    //         if (plUICont == null) { Debug.LogError($"For connection {conn} could not find PlayerUIController script"); }
-    //         playerUIControllers.Add(plUICont);
-    //     }
+        foreach (NetworkConnection conn in playerRaceData.Keys)
+        {
+            PlayerUIController plUICont = conn.FirstObject.gameObject.GetComponent<PlayerUIController>();
+            if (plUICont == null) { Debug.LogError($"For connection {conn} could not find PlayerUIController script"); }
+            playerUIControllers.Add(plUICont);
+        }
 
-    //     for (int i = countdownFrom; i >= 1; i--)
-    //     {
-    //         Debug.Log($"[Server] Countdown: {i}");
+        for (int i = countdownFrom; i >= 1; i--)
+        {
+            Debug.Log($"[Server] Countdown: {i}");
 
-    //         foreach (PlayerUIController uiController in playerUIControllers) { uiController.ObserversUpdateCountdown(i); }
+            foreach (PlayerUIController uiController in playerUIControllers) { uiController.ObserversUpdateCountdown(i); }
 
-    //         yield return new WaitForSeconds(delayBetweenNumbers);
-
-    //         Debug.Log("[Server] Race starting NOW!");
+            yield return new WaitForSeconds(delayBetweenNumbers);
+        }
+        Debug.Log("[Server] Race starting NOW!");
             
-    //         StartRace();
-            
-    //         foreach (PlayerUIController uiController in playerUIControllers) { uiController.ObserversStartRaceTimer(); }
+        StartRace();
+        //FreezeAllPlayers(false);
+    }
 
-    //         FreezeAllPlayers(false);
-    //     }
-    // }
-
-    /// <summary>
-    /// Starts the race - call this when all players are ready (Server only)
-    /// </summary>
     public void StartRace()
     {
         if (!IsServer()) return;
-        //if (raceStarted) { Debug.LogWarning("Race already started!"); return; }
 
         raceStarted = true;
         raceStartTime = Time.time;
@@ -99,7 +92,6 @@ public class RaceTimeManager : MonoBehaviour
 
         Debug.LogWarning($"[Server] Race started at {raceStartTime}");
         
-        // Notify all clients that race has started
         BroadcastRaceStarted();
     }
     private void FreezeAllPlayers(bool freeze)
@@ -107,7 +99,7 @@ public class RaceTimeManager : MonoBehaviour
 
         foreach (NetworkConnection conn in playerRaceData.Keys)
         {
-            PlayerController plCont = conn.FirstObject.gameObject.GetComponent<PlayerController>();
+            PlayerController plCont = conn.FirstObject.GetComponent<PlayerController>();
             if (plCont != null)
             {
                 plCont.EnablePlayer(!freeze);
@@ -116,10 +108,7 @@ public class RaceTimeManager : MonoBehaviour
             Debug.Log($"[Server] {(freeze ? "Freezing" : "Unfreezing")} player {conn}");
         }
     }
-    /// <summary>
-    /// Registers a player for the race (Server only)
-    /// Call this when a player spawns or joins before race starts
-    /// </summary>
+
     public void RegisterPlayer(NetworkConnection connection, string playerName)
     {
         if (!IsServer()) return;
@@ -138,7 +127,7 @@ public class RaceTimeManager : MonoBehaviour
                 hasFinished = false
             };
 
-            Debug.LogWarning($"[Server] Registered player {playerName} for race");
+            Debug.LogWarning($"[Server] Registered player: {playerName} with conn: {connection} for race");
         }
     }
 
@@ -164,7 +153,6 @@ public class RaceTimeManager : MonoBehaviour
             return;
         }
 
-        // Record finish time
         float currentTime = Time.time;
         float raceTime = currentTime - raceStartTime;
         data.finishTime = raceTime;
@@ -172,7 +160,6 @@ public class RaceTimeManager : MonoBehaviour
         finishedPlayerCount++;
         data.finishPosition = finishedPlayerCount;
 
-        // Update best time if this is the first finisher or faster
         if (raceTime < bestFinishTime)
         {
             bestFinishTime = raceTime;
@@ -190,10 +177,8 @@ public class RaceTimeManager : MonoBehaviour
             }
         }
 
-        // Notify this player that they finished
         NotifyPlayerFinished(connection, data.finishPosition, raceTime);
 
-        // Check if all players finished
         if (finishedPlayerCount >= playerRaceData.Count)
         {
             EndRace();
@@ -205,8 +190,7 @@ public class RaceTimeManager : MonoBehaviour
     {
         if (!IsServer()) return;
 
-        // You can implement client notification here if needed
-        // For now, clients will know race started when they can earn points
+        foreach (PlayerUIController uiController in playerUIControllers) { uiController.ObserversStartRaceTimer(); }
         Debug.Log("[Server] Broadcasting race start to all clients");
     }
 
@@ -214,7 +198,6 @@ public class RaceTimeManager : MonoBehaviour
     {
         if (!IsServer()) return;
 
-        // Find the player's PlayerScoreController and notify them
         if (connection.FirstObject != null)
         {
             PlayerUIController scoreController = connection.FirstObject.GetComponent<PlayerUIController>();
@@ -306,38 +289,27 @@ public class RaceTimeManager : MonoBehaviour
 
         foreach (PlayerUIController uiController in playerUIControllers)
         {
-            //uiController.ObserversStopRaceTimer();
+            uiController.ObserversStopRaceTimer();
         }
 
         Debug.Log("[Server] All race timers stopped.");
     }
-    /// <summary>
-    /// Gets the final scores after race completion
-    /// </summary>
+
     public List<PlayerFinalScore> GetFinalScores()
     {
         return new List<PlayerFinalScore>(finalScores);
     }
 
-    /// <summary>
-    /// Checks if the race is currently active
-    /// </summary>
     public bool IsRaceActive()
     {
         return raceStarted;
     }
 
-    /// <summary>
-    /// Gets the best finish time
-    /// </summary>
     public float GetBestTime()
     {
         return bestFinishTime;
     }
 
-    /// <summary>
-    /// Helper to check if this is the server
-    /// </summary>
     private bool IsServer()
     {
         return _networkManager != null && _networkManager.IsServerStarted;

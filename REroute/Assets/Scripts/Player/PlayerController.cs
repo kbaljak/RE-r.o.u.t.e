@@ -164,6 +164,7 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RegisterPlayer(string playerName, NetworkConnection conn = null)
     {
+        Debug.LogWarning("Registering conn: " + conn);
         RaceTimeManager.Instance.RegisterPlayer(conn, playerName);
     }
 
@@ -389,7 +390,7 @@ public class PlayerController : NetworkBehaviour
         Update_AnimatorParams();
     }
     Vector2 GetMoveInput() { return moveAction.ReadValue<Vector2>(); }
-    Vector3 GetCameraForward() { return Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal); }
+    Vector3 GetCameraForward() { if (playerCamera == null) { return Vector3.zero; } else { return Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal); }}
     Vector3 GetTransformForward() { return Vector3.ProjectOnPlane(new Vector3(transform.forward.x, 0, transform.forward.z), groundSlopeNormal); }
     Vector3 GetFrameMovementDirection(Vector3 cameraForward, Vector2 input, Vector3 transformForward)
     {

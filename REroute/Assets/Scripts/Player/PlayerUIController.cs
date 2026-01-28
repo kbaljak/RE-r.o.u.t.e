@@ -18,10 +18,10 @@ public class PlayerUIController: NetworkBehaviour
     [SerializeField] private TextMeshProUGUI playerName;
     [SerializeField] private RectTransform playerNameTagCanvas;
     
-    [Header("Countdown & Timer UI")]
-    [SerializeField] private GameObject countdownUI;
-    [SerializeField] private TextMeshProUGUI countdownText;
-    [SerializeField] private TextMeshProUGUI timerText;
+    public GameObject countDownUI;
+    public TextMeshProUGUI countDownTimeText;
+    public GameObject timerUI;
+    public TextMeshProUGUI timerText;
 
     private PlayerController plCont;
 
@@ -56,9 +56,30 @@ public class PlayerUIController: NetworkBehaviour
         GameObject speedTextObj = GameObject.Find("PlayerUI/Canvas/SpeedUI/SpeedText");
         if (speedTextObj != null) { speedText = speedTextObj.GetComponent<TextMeshProUGUI>(); }
         else { Debug.LogWarning("Speed UI Text not found. Assign it manually or update the path."); }
+
+        countDownUI = GameObject.Find("PlayerUI/Canvas/CountDown");
+        if (countDownUI == null) { Debug.LogWarning("CountDown not found. Assign it manually or update the path."); }
+
+        timerUI = GameObject.Find("PlayerUI/Canvas/Timer");
+        if (timerUI == null) { Debug.LogWarning("Timer not found. Assign it manually or update the path."); }
+
+        countDownTimeText = GameObject.Find("PlayerUI/Canvas/CountDown/CountDownTimerText").GetComponent<TextMeshProUGUI>();
+        if (countDownTimeText == null) { Debug.LogWarning("CountDownTimerText not found. Assign it manually or update the path."); }
+
+        timerText = GameObject.Find("PlayerUI/Canvas/Timer/TimerText").GetComponent<TextMeshProUGUI>();
+        if (timerText == null) { Debug.LogWarning("TimerText not found. Assign it manually or update the path."); }
+
         UpdateScoreUI();
     }
 
+    private void OnTriggerEnter(Collider coll)
+    {
+        if (coll.gameObject.name == "FinishLine")
+        {
+            Debug.Log("Finished!");
+            OnPlayerCrossedFinishLine();
+        }
+    }
     private void Start()
     {
         Invoke(nameof(SetName), 0.1f);
@@ -67,6 +88,7 @@ public class PlayerUIController: NetworkBehaviour
     void Update()
     {
         UpdateSpeed();
+        UpdateTimer();
     }
     void UpdateSpeed()
     {
@@ -75,6 +97,19 @@ public class PlayerUIController: NetworkBehaviour
         float curSpeed = plCont.moveSpeed;
         speedSlider.value = curSpeed;
         speedText.text = (curSpeed).ToString("#.#");
+    }
+    void UpdateTimer()
+    {
+        if (!isTimerRunning) return;
+        if (timerText == null) return;
+        
+        elapsedTime += Time.deltaTime;
+        
+        int hours = Mathf.FloorToInt(elapsedTime / 3600f);
+        int minutes = Mathf.FloorToInt((elapsedTime % 3600f) / 60f);
+        int seconds = Mathf.FloorToInt(elapsedTime % 60f);
+        
+        timerText.text = string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
     }
     private void SetName()
     {
@@ -161,12 +196,13 @@ public class PlayerUIController: NetworkBehaviour
         AddScore(oilApplicationPoints, "Oil Applied");
     }
     
-    [ServerRpc]
-    private void ServerNotifyFinishLine()
+    [ServerRpc(RequireOwnership = false)]
+    private void ServerNotifyFinishLine(NetworkConnection conn = null)
     {
         if (RaceTimeManager.Instance != null)
         {
-            RaceTimeManager.Instance.ServerPlayerFinished(Owner);
+            Debug.LogWarning("Network conn: " + conn);
+            RaceTimeManager.Instance.ServerPlayerFinished(conn);
         }
         else
         {
@@ -207,6 +243,43 @@ public class PlayerUIController: NetworkBehaviour
         //TODO:
         // Maybe trigger a UI to show each player their score
     }
+
+    [ObserversRpc]
+    public void ObserversUpdateCountdown(int countdownNumber)
+    {
+        if (!IsOwner) return;
+        
+        countDownUI.SetActive(true);
+        
+        countDownTimeText.text = countdownNumber.ToString();
+
+        Debug.Log($"[Client] Countdown: {countdownNumber}");
+    }
+
+    [ObserversRpc]
+    public void ObserversStartRaceTimer()
+    {
+        if (!IsOwner) return;
+        
+        countDownUI.SetActive(false);
+        timerUI.SetActive(true);
+        // Start the timer
+        isTimerRunning = true;
+        elapsedTime = 0f;
+        
+        Debug.Log("[Client] Race started! Timer running.");
+    }
+
+    [ObserversRpc]
+    public void ObserversStopRaceTimer()
+    {
+        if (!IsOwner) return;
+        
+        isTimerRunning = false;
+        
+        Debug.Log($"[Client] Race ended! Final time: {timerText.text}");
+    }
+
     private void AddScore(int points, string action)
     {
         if (!IsServerStarted) return;

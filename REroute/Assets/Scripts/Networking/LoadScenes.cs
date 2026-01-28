@@ -26,7 +26,6 @@ public class LoadScenes : MonoBehaviour
                 
                 Debug.Log($"Processing player {playerIndex + 1}: {playerNetObj.name}");
                 
-                // Get spawn point (cycle if more players than spawn points)
                 Transform spawnPoint = levelSpawnPoints[playerIndex % levelSpawnPoints.Count];
                 
                 TeleportPlayerToSpawnPoint(playerNetObj, spawnPoint);
@@ -43,11 +42,9 @@ public class LoadScenes : MonoBehaviour
 
     private void TeleportPlayerToSpawnPoint(NetworkObject playerNetObj, Transform spawnPoint)
     {
-        // Get the PlayerController component
         PlayerController playerController = playerNetObj.GetComponent<PlayerController>();
         if (playerController != null)
         {
-            // Call the RPC on the player to teleport them
             playerController.TeleportPlayerToLevelSpawnPoints(spawnPoint.position, spawnPoint.rotation);
         }
         else
@@ -55,11 +52,12 @@ public class LoadScenes : MonoBehaviour
             Debug.LogError($"PlayerController not found on {playerNetObj.name}!");
         }
         
-        // Disable the start game prompt after first teleport
         if (playerIndex == 0)
         {
             StartGameButton strtGameBtn = startGameButton.GetComponent<StartGameButton>();
             if (strtGameBtn != null) { strtGameBtn.DisablePrompt(); }
         }
+
+        RaceTimeManager.Instance.StartRaceWithCountdown();
     }
 }
