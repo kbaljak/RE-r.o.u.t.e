@@ -37,5 +37,9 @@ public class LevelMaster : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         musicSource.volume = 1f;
+
+        PointToGoal ptg = UI.Find("DirectionGuide/DirectionArrow").GetComponent<PointToGoal>();
+        ptg.beacon = GameObject.Find("FinishLine").transform;
+        ptg.gameObject.SetActive(true);
     }
 }

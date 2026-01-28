@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PointToGoal : MonoBehaviour
 {
-    [SerializeField] Transform beacon;
+    public Transform beacon;
     [SerializeField] Transform playerCamera;
     [SerializeField] bool ignoreVertical = true;
 
