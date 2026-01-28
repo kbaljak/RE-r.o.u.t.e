@@ -17,7 +17,7 @@ public class UI : MonoBehaviour
 
     void Awake() 
     {
-        if (Instance != null) { Destroy(gameObject); } //Debug.LogError("Double UI???");
+        if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
 
         //GetComponent<Canvas>().enabled = false; enabled = false;
@@ -57,7 +57,10 @@ public class UI : MonoBehaviour
         else { speedSlider.value = 0;  speedText.text = ""; }
     }
 
-
+    public static void EnableCountdown(bool value)
+    {
+        Find("PlayerUI/CountDown").gameObject.SetActive(value);
+    }
 
     public static Transform Find(string path) => Instance.transform.Find("Canvas/" + path);
 }

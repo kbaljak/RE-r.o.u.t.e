@@ -257,6 +257,15 @@ public class PlayerUIController: NetworkBehaviour
 
         Debug.Log($"[Client] Countdown: {countdownNumber}");
     }
+    public void UpdateCountdown(int countdownNumber) 
+    {
+        //if (!plCont.IsOwner) return;
+
+        countDownUI.SetActive(true);
+        countDownTimeText.text = countdownNumber.ToString();
+
+        Debug.Log($"[Client] Countdown: {countdownNumber}");
+    }
 
     [ObserversRpc]
     public void ObserversStartRaceTimer()

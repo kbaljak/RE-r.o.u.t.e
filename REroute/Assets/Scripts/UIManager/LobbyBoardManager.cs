@@ -8,7 +8,7 @@ public class LobbyBoardManager : MonoBehaviour
 {
     public static LobbyBoardManager Instance { get; private set; }
 
-    [SerializeField] public GameObject lobbyBoardCanvas;
+    [SerializeField] public GameObject canvas;
     [SerializeField] public GameObject playerEntryList;
     [SerializeField] public GameObject playerEntryPrefab;
     [SerializeField] public RectTransform codeText;
@@ -39,7 +39,7 @@ public class LobbyBoardManager : MonoBehaviour
         if (codeText != null) {codeText.GetComponent<TextMeshProUGUI>().text = generatedLobbyCode; }
         else { Debug.LogError("Could not find CodeText UI element! Did you assign it in the editor?"); }
 
-        if (lobbyBoardCanvas == null) { Debug.LogError("Could not find Lobby Board Cavas!"); }
+        //if (lobbyBoardCanvas == null) { Debug.LogError("Could not find Lobby Board Cavas!"); }
 
         if (codeString == null) { Debug.LogError("Could not find Lobby Code String!"); }
 
@@ -55,12 +55,12 @@ public class LobbyBoardManager : MonoBehaviour
         if (openLobbyBoard.WasPressedThisFrame())
         {
             PopulateLobbyBoard();
-            lobbyBoardCanvas.SetActive(true);
+            canvas.SetActive(true);
         }
 
         if (openLobbyBoard.WasReleasedThisFrame())
         {
-            lobbyBoardCanvas.SetActive(false);
+            canvas.SetActive(false);
             ClearLobbyBoard();
         }
     }

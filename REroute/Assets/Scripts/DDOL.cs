@@ -14,7 +14,9 @@ public class DDOL : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); }
+        Debug.Log("Instance: " + Instance);
+        if (Instance != null) { Destroy(gameObject); return; }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
@@ -22,28 +24,11 @@ public class DDOL : MonoBehaviour
     /// <summary>
     /// Returns the current DDOL or creates one if not yet created.
     /// </summary>
-    public static DDOL GetDDOL()
-    {
-        // Not yet made.
-        if (Instance == null)
-        {
-            GameObject obj = new();
-            obj.name = "DontDestroyOnLoad";
-            DDOL ddol = obj.AddComponent<DDOL>();
-            DontDestroyOnLoad(ddol);
-            Instance = ddol;
-            return ddol;
-        }
-        // Already  made.
-        else
-        {
-            return Instance;
-        }
-    }
+    public static DDOL GetDDOL() => Instance;
 
 
     //// Additions
     public static Transform Find(string name) => Instance.transform.Find(name);
-    public static NetworkManager GetNetworkManager() => Instance.transform.Find("NetworkManager").GetComponent<NetworkManager>();
+    public static NetworkManager GetNetworkManager() { Debug.Log("Instance for NetworkManager: " + Instance); return Instance.transform.Find("NetworkManager").GetComponent<NetworkManager>(); }
     public static LoadScenes GetSceneLoader() => Instance.transform.Find("NetworkObjects").GetComponent<LoadScenes>();
 }

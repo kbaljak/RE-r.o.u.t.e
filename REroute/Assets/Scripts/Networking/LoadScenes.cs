@@ -9,18 +9,26 @@ using UnityEngine;
 public class LoadScenes : NetworkBehaviour
 {
     private NetworkManager _networkManager;
-    [SerializeField] public List<Transform> levelSpawnPoints = new List<Transform>();
     [SerializeField] public GameObject startGameButton;
-    private int playerIndex;
 
     private void Start()
     {
         _networkManager = DDOL.GetDDOL().transform.Find("NetworkManager").GetComponent<NetworkManager>();
         if (_networkManager == null) { Debug.LogError("Could not find NetworkManager!"); }
     }
-    public void TeleportPlayersToLevelArea()
+
+    public void LevelStart(LevelMaster levelMaster)
     {
-        foreach (NetworkConnection conn in _networkManager.ServerManager.Clients.Values)
+        if (!IsServerStarted) { return; }
+        TeleportPlayersToSpawnPoints(levelMaster.spawnPoints);
+    }
+    [Server]
+    void TeleportPlayersToSpawnPoints(Transform[] levelSpawnPoints)
+    {
+        NetworkManager networkManager = DDOL.GetNetworkManager();
+
+        int playerIndex = 0;
+        foreach (NetworkConnection conn in networkManager.ServerManager.Clients.Values)
         {
             if (conn.FirstObject != null)
             {
@@ -28,7 +36,7 @@ public class LoadScenes : NetworkBehaviour
                 
                 Debug.Log($"Processing player {playerIndex + 1}: {playerNetObj.name}");
                 
-                Transform spawnPoint = levelSpawnPoints[playerIndex % levelSpawnPoints.Count];
+                Transform spawnPoint = levelSpawnPoints[playerIndex % levelSpawnPoints.Length];
                 
                 TeleportPlayerToSpawnPoint(playerNetObj, spawnPoint);
                 
@@ -40,9 +48,15 @@ public class LoadScenes : NetworkBehaviour
                 Debug.LogWarning($"Connection has null FirstObject!");
             }
         }
-    }
 
-    private void TeleportPlayerToSpawnPoint(NetworkObject playerNetObj, Transform spawnPoint)
+        Debug.Log("[Server] Starting race countdown sequence...");
+
+        foreach (PlayerController plCont in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
+        {
+            plCont.StartRaceCountdown_RPC();
+        }
+    }
+    private static void TeleportPlayerToSpawnPoint(NetworkObject playerNetObj, Transform spawnPoint)
     {
         PlayerController playerController = playerNetObj.GetComponent<PlayerController>();
         if (playerController != null)
@@ -53,14 +67,15 @@ public class LoadScenes : NetworkBehaviour
         {
             Debug.LogError($"PlayerController not found on {playerNetObj.name}!");
         }
-        
-        if (playerIndex == 0)
-        {
-            StartGameButton strtGameBtn = startGameButton.GetComponent<StartGameButton>();
-            if (strtGameBtn != null) { strtGameBtn.DisablePrompt(); }
-        }
+    }
 
-        RaceTimeManager.Instance.StartRaceWithCountdown();
+    [ServerRpc]
+    public void FreezeAllPlayers(bool value)
+    {
+        foreach (PlayerController plCont in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
+        {
+            plCont.EnablePlayerControl_RPC(!value);
+        }
     }
 
     public void LoadLevel(string sceneName)

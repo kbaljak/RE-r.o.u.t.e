@@ -1,16 +1,19 @@
+using FishNet.Managing;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelMaster : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public Transform[] spawnPoints;
+
     void Start()
     {
-        
-    }
+        NetworkManager networkManager = DDOL.GetNetworkManager();
+        if (!networkManager.IsServerStarted) { return; }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Debug.Log("Loaded level '" + SceneManager.GetActiveScene().name + "'");
+
+        //DDOL.GetSceneLoader().TeleportPlayersToSpawnPoints(this);
+        DDOL.GetSceneLoader().LevelStart(this);
     }
 }

@@ -7,6 +7,7 @@ public class EscapeMenuUI : MonoBehaviour
 {
     public static EscapeMenuUI Instance { get; private set; }
 
+    [SerializeField] GameObject canvas;
     [SerializeField] Button settingsBtn;
     [SerializeField] Button quitBtn;
     private InputAction openEscapeMenu;
@@ -43,7 +44,7 @@ public class EscapeMenuUI : MonoBehaviour
             escapeMenuToggled = !escapeMenuToggled;
             visibleCursor = !visibleCursor;
 
-            gameObject.SetActive(escapeMenuToggled);
+            canvas.SetActive(escapeMenuToggled);
             Cursor.lockState = escapeMenuToggled ? CursorLockMode.None: CursorLockMode.Locked;
             Cursor.visible = visibleCursor;
 

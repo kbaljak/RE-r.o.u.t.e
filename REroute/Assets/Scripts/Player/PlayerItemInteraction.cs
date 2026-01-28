@@ -302,7 +302,7 @@ public class PlayerItemInteraction : NetworkBehaviour
             NetworkObject heldItemNetObj = heldItem.GetComponent<NetworkObject>();
             if (heldItemNetObj != null)
             {
-                //Debug.Log("Spawning " + heldItem + "and the owner is: " + Owner.ClientId);
+                Debug.Log("Spawning " + heldItem + "and the owner is: " + Owner.ClientId);
                 Spawn(heldItem, Owner);
                 _heldItemObjectId.Value = heldItemNetObj.ObjectId;
                 SetItemInHandObserversRPC(heldItemNetObj.ObjectId, true);

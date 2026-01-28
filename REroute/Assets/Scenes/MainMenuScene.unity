@@ -1437,7 +1437,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e9511906cd84e561a8118f323643665, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkLobbyManager
-  LobbySceneName: Pipe_gym
+  LobbySceneName: Lobby
 --- !u!4 &2055683128
 Transform:
   m_ObjectHideFlags: 0

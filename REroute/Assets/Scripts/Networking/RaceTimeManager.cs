@@ -1,10 +1,12 @@
+using FishNet.Connection;
+using FishNet.Managing;
+using FishNet.Object;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using FishNet.Connection;
-using FishNet.Managing;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 public class RaceTimeManager : MonoBehaviour
 {
@@ -43,41 +45,46 @@ public class RaceTimeManager : MonoBehaviour
 
         _networkManager = GetComponent<NetworkManager>();
         if (_networkManager == null) { Debug.LogError("Could not find Network Manager");}
+
+        UI.EnableCountdown(false);
     }
 
-    public void StartRaceWithCountdown()
+    public void StartRaceWithCountdown(PlayerController myPlCont)
     {
-        if (!IsServer()) return;
-        if (raceStarted) { Debug.LogWarning("Race already started!"); return; }
-
-        Debug.Log("[Server] Starting race countdown sequence...");
-        StartCoroutine(CountdownSequence());        
+        Debug.Log("[Client] Starting race countdown sequence...");
+        StartCoroutine(CountdownSequence(myPlCont));
     }
 
-    private IEnumerator CountdownSequence()
+    private IEnumerator CountdownSequence(PlayerController myPlCont)
     {
-        //FreezeAllPlayers(true);
+        LoadScenes sceneLoader = DDOL.GetSceneLoader();
+        PlayerUIController myUICont = myPlCont.GetComponent<PlayerUIController>();
 
-        foreach (var kvp in playerRaceDataDict)
+        myPlCont.EnablePlayerControl(false); //sceneLoader.FreezeAllPlayers(true);
+        UI.EnableCountdown(true);
+
+        /*foreach (var kvp in playerRaceDataDict)
         {
             NetworkConnection conn = kvp.Value.connection;
             PlayerUIController plUICont = conn.FirstObject.gameObject.GetComponent<PlayerUIController>();
             if (plUICont == null) { Debug.LogError($"For connection {conn} could not find PlayerUIController script"); }
             playerUIControllers.Add(plUICont);
-        }
+        }*/
 
         for (int i = countdownFrom; i >= 1; i--)
         {
             Debug.Log($"[Server] Countdown: {i}");
 
-            foreach (PlayerUIController uiController in playerUIControllers) { uiController.ObserversUpdateCountdown(i); }
+            //foreach (PlayerUIController uiController in playerUIControllers) { uiController.ObserversUpdateCountdown(i); }
+            myUICont.UpdateCountdown(i);
 
             yield return new WaitForSeconds(delayBetweenNumbers);
         }
         Debug.Log("[Server] Race starting NOW!");
-            
+
+        UI.EnableCountdown(false);
         StartRace();
-        //FreezeAllPlayers(false);
+        myPlCont.EnablePlayerControl(true); //sceneLoader.FreezeAllPlayers(false);
     }
 
     public void StartRace()
@@ -92,23 +99,25 @@ public class RaceTimeManager : MonoBehaviour
         finalScores.Clear();
 
         Debug.LogWarning($"[Server] Race started at {raceStartTime}");
-        
+
         BroadcastRaceStarted();
     }
-    // private void FreezeAllPlayers(bool freeze)
-    // {
+    /*public static void FreezeAllPlayers(bool freeze)
+    {
+        NetworkManager networkManager = DDOL.GetNetworkManager();
+        foreach (NetworkConnection conn in networkManager.ServerManager.Clients.Values)
+        {
+            PlayerController plCont = conn.FirstObject.GetComponent<PlayerController>();
+            if (plCont != null)
+            {
+                plCont.EnablePlayerControl_RPC(!freeze);
+                //plCont.EnablePlayerControl(!freeze);
+            }
+            else { Debug.LogError($"For connection {conn} could not find PlayerController script"); }
 
-    //     foreach (NetworkConnection conn in playerRaceData.Keys)
-    //     {
-    //         PlayerController plCont = conn.FirstObject.GetComponent<PlayerController>();
-    //         if (plCont != null)
-    //         {
-    //             plCont.EnablePlayer(!freeze);
-    //         }else { Debug.LogError($"For connection {conn} could not find PlayerController script"); }
-
-    //         Debug.Log($"[Server] {(freeze ? "Freezing" : "Unfreezing")} player {conn}");
-    //     }
-    // }
+            Debug.Log($"[Server] {(freeze ? "Freezing" : "Unfreezing")} player {conn}");
+        }
+    }*/
 
     public void RegisterPlayer(string playerIdHash, NetworkConnection connection, string playerName)
     {

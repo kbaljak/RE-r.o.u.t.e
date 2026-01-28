@@ -56,6 +56,8 @@ public class PlayerAnimationController : MonoBehaviour
     }
     private void Update()
     {
+        if (!playerCont.IsOwner) { return; }
+
         // Grab ledge impact physics visualization
         if (holdLedgePhysicsImpact)
         {

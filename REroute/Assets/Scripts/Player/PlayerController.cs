@@ -141,7 +141,7 @@ public class PlayerController : NetworkBehaviour
         {
             //gameObject.GetComponent<PlayerController>().enabled = false;
             //gameObject.GetComponent<CharacterController>().enabled = false;
-            enabled = false;
+            enabled = false; playerParkour.enabled = false;
             return;
         }
 
@@ -282,12 +282,10 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("Movement state reset complete");
     }
 
-    public void EnablePlayer(bool value)
+    public void EnablePlayerControl(bool value)
     {
         if (!IsOwner) { return; }
 
-        moveCharacter = value;
-        applyGravity = value;
         canControlMove = value;
     }
     private void ResetVars()
@@ -404,11 +402,11 @@ public class PlayerController : NetworkBehaviour
     //// Update
     private void Update()
     {
-        //if (!IsOwner) return;
+        if (!IsOwner) return;
 
         if (playerCamera != null)
         {
-            Update_FaceCamera();    
+            Update_FaceCamera();
         }
 
         Update_ClimbableDetect();
@@ -544,6 +542,8 @@ public class PlayerController : NetworkBehaviour
 
     void Update_Movement_Normal(Vector3 cameraForward)
     {
+        if (playerCamera == null) { return; }
+
         if (canControlMove)
         {
             // Input to movement direction
@@ -1311,6 +1311,15 @@ public class PlayerController : NetworkBehaviour
 
         currentlySliding = true;
     }
+
+
+    [ObserversRpc]
+    public void StartRaceCountdown_RPC()
+    {
+        DDOL.GetNetworkManager().GetComponent<RaceTimeManager>().StartRaceWithCountdown(this);
+    }
+    [ObserversRpc]
+    public void EnablePlayerControl_RPC(bool value) { Debug.Log("[Client] EnablePlayerControl_RPC(" + value + ")"); EnablePlayerControl(value); }
 }
 
 enum LedgeHoldType { BracedHang, Hang, Freehang };
