@@ -14,10 +14,6 @@ public class Anim_Snap : StateMachineBehaviour
     Vector3 deltaToTargetPosition;
     float timer = 0f;
 
-    // void Awake()
-    // {
-    //     if (!playerCont.IsOwner) { return; }
-    // }
 
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

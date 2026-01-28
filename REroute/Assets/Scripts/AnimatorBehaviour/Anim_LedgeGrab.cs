@@ -1,5 +1,7 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 
 public class Anim_LedgeGrab : StateMachineBehaviour
@@ -9,7 +11,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     PlayerParkourDetection playerParkour;
 
     [Header("General")]
-    new public string name;
+    public string name;
     public bool processUpdate = true;
     bool update = false;
     [Header("Root Motion")]
@@ -58,10 +60,7 @@ public class Anim_LedgeGrab : StateMachineBehaviour
     float timer = 0f;
     bool snappedLastFrame = false;
 
-    // void Awake()
-    // {
-    //     if (!playerCont.IsOwner) { update = false; return; }
-    // }
+
 
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
@@ -266,51 +265,49 @@ public class Anim_LedgeGrab : StateMachineBehaviour
 }
 
 
-// #if UNITY_EDITOR
-// [CustomEditor(typeof(Anim_LedgeGrab))]
-// public class Anim_LedgeGrab_Inspector : Editor
-// {
-//     Anim_LedgeGrab ledgeGrab;
+[CustomEditor(typeof(Anim_LedgeGrab))]
+public class Anim_LedgeGrab_Inspector : Editor
+{
+    Anim_LedgeGrab ledgeGrab;
 
-//     UnityEditor.Animations.StateMachineBehaviourContext[] context;
-//     float clipLength = 0f;
-//     List<UnityEditor.Animations.AnimatorStateTransition> transitions = new List<UnityEditor.Animations.AnimatorStateTransition>();
+    UnityEditor.Animations.StateMachineBehaviourContext[] context;
+    float clipLength = 0f;
+    List<AnimatorStateTransition> transitions = new List<AnimatorStateTransition>();
 
-//     public void OnEnable()
-//     {
-//         context = UnityEditor.Animations.AnimatorController.FindStateMachineBehaviourContext(target as StateMachineBehaviour);
+    public void OnEnable()
+    {
+        context = UnityEditor.Animations.AnimatorController.FindStateMachineBehaviourContext(target as StateMachineBehaviour);
 
-//         if (context != null)
-//         {
-//             if (context.Length > 0)
-//             {
-//                 // animatorObject can be an AnimatorState or AnimatorStateMachine
-//                 UnityEditor.Animations.AnimatorState state = context[0].animatorObject as UnityEditor.Animations.AnimatorState;
-//                 if (state != null)
-//                 {
-//                     Anim_LedgeGrab behaviour = target as Anim_LedgeGrab;
-//                     clipLength = state.motion.averageDuration / state.speed;
-//                     foreach (AnimatorStateTransition t in state.transitions)
-//                     { transitions.Add(t); }
-//                 }
-//             }
-//         }
-//     }
+        if (context != null)
+        {
+            if (context.Length > 0)
+            {
+                // animatorObject can be an AnimatorState or AnimatorStateMachine
+                UnityEditor.Animations.AnimatorState state = context[0].animatorObject as UnityEditor.Animations.AnimatorState;
+                if (state != null)
+                {
+                    Anim_LedgeGrab behaviour = target as Anim_LedgeGrab;
+                    clipLength = state.motion.averageDuration / state.speed;
+                    foreach (AnimatorStateTransition t in state.transitions)
+                    { transitions.Add(t); }
+                }
+            }
+        }
+    }
 
-//     public override void OnInspectorGUI()
-//     {
-//         base.OnInspectorGUI();
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
 
-//         ledgeGrab = (Anim_LedgeGrab)target;
+        ledgeGrab = (Anim_LedgeGrab)target;
 
-//         EditorGUILayout.Space(10);
-//         EditorGUILayout.LabelField("---- State info");
-//         EditorGUILayout.LabelField("Motion length:", clipLength.ToString());
-//         for (int i = 0; i < transitions.Count; i++)
-//         {
-//             EditorGUILayout.LabelField("#" + i.ToString() + "\ttransition end time:", (clipLength * transitions[i].exitTime).ToString());
-//         }
+        EditorGUILayout.Space(10);
+        EditorGUILayout.LabelField("---- State info");
+        EditorGUILayout.LabelField("Motion length:", clipLength.ToString());
+        for (int i = 0; i < transitions.Count; i++)
+        {
+            EditorGUILayout.LabelField("#" + i.ToString() + "\ttransition end time:", (clipLength * transitions[i].exitTime).ToString());
+        }
         
-//     }
-// }
-// #endif
+    }
+}

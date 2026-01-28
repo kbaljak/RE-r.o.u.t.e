@@ -21,10 +21,6 @@ public class Anim_RootMotion : StateMachineBehaviour
     float timer = 0f;
     bool update = true;
 
-    // void Awake()
-    // {
-    //     if (!playerCont.IsOwner) { return; }
-    // }
 
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)

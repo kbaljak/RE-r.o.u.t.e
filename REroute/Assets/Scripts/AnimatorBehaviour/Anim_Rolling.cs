@@ -9,10 +9,6 @@ public class Anim_Rolling : StateMachineBehaviour
     public bool callDisableRootOnExit = true;
     public bool callLandingAnimDoneOnExit = false;
 
-    // void Awake()
-    // {
-    //     if (!playerCont.IsOwner) { return; }
-    // }
     // OnStateEnter is called when a transition starts and the state machine starts to evaluate this state
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
@@ -38,7 +34,6 @@ public class Anim_Rolling : StateMachineBehaviour
         if (callDisableRootOnExit) { plAnimCont.DisableRootMotion(!continuallyApplyRootPos); }
         if (callLandingAnimDoneOnExit) { plAnimCont.LandingAnimationDone(); }
         animator.ResetTrigger("break");
-        playerCont.AddScoreAfterRoll();
     }
 
     // OnStateMove is called right after Animator.OnAnimatorMove()  // Implement code that processes and affects root motion

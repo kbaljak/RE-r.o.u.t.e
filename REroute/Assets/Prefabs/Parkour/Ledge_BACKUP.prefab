@@ -80,7 +80,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -1687722910, guid: e2905dcd1624d804a878b37f992164b1, type: 3}
-  m_Color: {r: 0.46858314, g: 0.8490566, b: 0.6834387, a: 0.88235295}
+  m_Color: {r: 0, g: 0.2985139, b: 1, a: 0.88235295}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
@@ -103,7 +103,7 @@ GameObject:
   - component: {fileID: 8108532614825256442}
   - component: {fileID: 6124038449474862472}
   m_Layer: 12
-  m_Name: Vaultable
+  m_Name: Ledge_BACKUP
   m_TagString: Ledge
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -185,8 +185,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0c2edd444441da4799917c5512eb585, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Ledge
-  ledgeData: {fileID: 0}
-  vaultable: 1
+  vaultable: 0
 --- !u!1 &2897634793164550715
 GameObject:
   m_ObjectHideFlags: 0
@@ -267,7 +266,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -271855132, guid: e2905dcd1624d804a878b37f992164b1, type: 3}
-  m_Color: {r: 0.46858314, g: 0.8490566, b: 0.6834387, a: 0.88235295}
+  m_Color: {r: 0, g: 0.2985139, b: 1, a: 0.88235295}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2
@@ -357,7 +356,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: -1687722910, guid: e2905dcd1624d804a878b37f992164b1, type: 3}
-  m_Color: {r: 0.46858314, g: 0.8490566, b: 0.6834387, a: 0.88235295}
+  m_Color: {r: 0, g: 0.2985139, b: 1, a: 0.88235295}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 2

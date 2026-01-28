@@ -1,7 +1,7 @@
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
-#if UNITY_EDITOR
 public class ScriptableObjectManager
 {
     static string pathPrefix = "Assets/ScriptableObjectData/";
@@ -14,4 +14,3 @@ public class ScriptableObjectManager
         //return Resources.Load<T>(pathPrefix + typeName);
     }
 }
-#endif

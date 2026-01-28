@@ -73,7 +73,7 @@
                     "name": "Previous",
                     "type": "Button",
                     "id": "2776c80d-3c14-4091-8c56-d04ced07a2b0",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -91,42 +91,6 @@
                     "name": "Free look",
                     "type": "Button",
                     "id": "55b7030c-fab8-4667-9878-bf90af0ca696",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Throw",
-                    "type": "Button",
-                    "id": "ba658c77-62f3-4d0c-ba17-429f173b44dc",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "UseItem",
-                    "type": "Button",
-                    "id": "60038176-b13a-4707-9848-997e38aba9cb",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "OpenEscapeMenu",
-                    "type": "Button",
-                    "id": "730478f8-c80a-4d3a-b4b4-97ffdf5758b7",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "OpenLobbyBoard",
-                    "type": "Button",
-                    "id": "ae124e48-71ba-4c66-8a04-e62d154d515c",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -538,61 +502,6 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "Free look",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "013d4dea-2618-40a9-9b70-f984f3f71a72",
-                    "path": "<Keyboard>/q",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Throw",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "90b29012-d6a9-453e-a5bc-f9609ff4d013",
-                    "path": "<Gamepad>/rightTrigger",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Throw",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "ef2e5237-10ae-4fb4-a367-8e99a02a0cf2",
-                    "path": "<Keyboard>/e",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "UseItem",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "12cd245d-9d6f-424a-a5ec-0939dc13ab77",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "OpenEscapeMenu",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9971b81a-2e35-4bbe-bff1-caf3cafd0fd4",
-                    "path": "<Keyboard>/tab",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "OpenLobbyBoard",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
