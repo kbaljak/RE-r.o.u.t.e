@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Reflection;
+//using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,6 +29,8 @@ public class ResidentialBuilding_Editor : MonoBehaviour
     public int length = 1; private int last_length = 1;
 
     private bool update = false;
+
+    public Material[] materials = new Material[2];
 
 
     void Awake()
@@ -92,7 +94,7 @@ public class ResidentialBuilding_Editor : MonoBehaviour
 
         frontBottom = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "FrontBottom.blend");
         frontMiddle = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "FrontMid.blend");
-        frontTop = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "FrontTop.blend");
+        frontTop = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "FrontTop.prefab");
 
         backMiddle = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackMid.blend");
         backBottomSingle = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackBottomSingle.blend");
@@ -107,15 +109,15 @@ public class ResidentialBuilding_Editor : MonoBehaviour
         backBottomSE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackBottomSE.blend");
         //backBottomFull = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackBottomFull.blend");
 
-        backTopS = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopS.blend");
-        backTopW = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopW.blend");
-        backTopN = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopN.blend");
-        backTopE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopE.blend");
-        backTopSW = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopSW.blend");
-        backTopNW = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopNW.blend");
-        backTopNE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopNE.blend");
-        backTopSE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopSE.blend");
-        backTopFull = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + modelNamePrefix + "BackTopFull.blend");
+        backTopS = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopS.prefab");
+        backTopW = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopW.prefab");
+        backTopN = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopN.prefab");
+        backTopE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopE.prefab");
+        backTopSW = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopSW.prefab");
+        backTopNW = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopNW.prefab");
+        backTopNE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopNE.prefab");
+        backTopSE = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopSE.prefab");
+        backTopFull = AssetDatabase.LoadAssetAtPath<GameObject>(folderPath + "Prefabs/" + modelNamePrefix + "BackTopFull.prefab");
 
         //Debug.Log("Fetch done");
     }
@@ -279,6 +281,30 @@ public class ResidentialBuilding_Editor : MonoBehaviour
         // Instantiate GameObjects
         BuildFront();
         BuildBack();
+
+        // Set materials
+        SetMaterials();
     }
 
+    void SetMaterials_Recursive(Transform t)
+    {
+        if (t.GetComponent<MeshRenderer>())
+        {
+            if (t.name.Contains("Bottom"))
+            {
+                Material[] temp = new Material[2];
+                temp[0] = materials[1]; temp[1] = materials[0];
+                t.GetComponent<MeshRenderer>().sharedMaterials = temp;
+            }
+            else { t.GetComponent<MeshRenderer>().sharedMaterials = materials; }
+        }
+        if (t.childCount > 0)
+        {
+            foreach (Transform child in t) { SetMaterials_Recursive(child); }
+        }
+    }
+    void SetMaterials()
+    {
+        SetMaterials_Recursive(transform);
+    }
 }
