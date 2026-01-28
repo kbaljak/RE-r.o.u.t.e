@@ -11,8 +11,8 @@ public class LobbyBoardManager : MonoBehaviour
     [SerializeField] public GameObject canvas;
     [SerializeField] public GameObject playerEntryList;
     [SerializeField] public GameObject playerEntryPrefab;
-    [SerializeField] public RectTransform codeText;
-    [SerializeField] public RectTransform codeString;
+    [SerializeField] public RectTransform codeCode;
+    [SerializeField] public RectTransform codeTxt;
     private NetworkManager _networkManager;
     private List<GameObject> activePlayerEntries = new List<GameObject>();
     private InputAction openLobbyBoard;
@@ -36,12 +36,12 @@ public class LobbyBoardManager : MonoBehaviour
         else { generatedLobbyCode = NetworkLobbyManager.Instance.GetLobbyCode(); }
         
 
-        if (codeText != null) {codeText.GetComponent<TextMeshProUGUI>().text = generatedLobbyCode; }
+        if (codeCode != null) { codeCode.GetComponent<TextMeshProUGUI>().text = generatedLobbyCode; }
         else { Debug.LogError("Could not find CodeText UI element! Did you assign it in the editor?"); }
 
         //if (lobbyBoardCanvas == null) { Debug.LogError("Could not find Lobby Board Cavas!"); }
 
-        if (codeString == null) { Debug.LogError("Could not find Lobby Code String!"); }
+        if (codeTxt == null) { Debug.LogError("Could not find Lobby Code String!"); }
 
         openLobbyBoard = InputSystem.actions.FindAction("OpenLobbyBoard");
         if (openLobbyBoard == null) { Debug.LogError("Could not find OpenEscapeMenu!");}
@@ -88,7 +88,7 @@ public class LobbyBoardManager : MonoBehaviour
         }
         else if (_networkManager.IsClientOnlyStarted)
         {
-            codeString.gameObject.SetActive(false);
+            codeTxt.gameObject.SetActive(false);
             foreach (var conn in _networkManager.ClientManager.Clients.Values)
             {
                 if (conn.FirstObject != null)
