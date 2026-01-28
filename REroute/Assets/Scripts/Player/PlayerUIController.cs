@@ -204,7 +204,7 @@ public class PlayerUIController: NetworkBehaviour
         if (RaceTimeManager.Instance != null)
         {
             Debug.LogWarning("Network conn: " + conn);
-            RaceTimeManager.Instance.ServerPlayerFinished(conn);
+            RaceTimeManager.Instance.ServerPlayerFinished(plCont.GetPlayerHash());
         }
         else
         {

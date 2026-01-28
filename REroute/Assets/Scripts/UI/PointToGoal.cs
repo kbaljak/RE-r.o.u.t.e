@@ -16,6 +16,7 @@ public class PointToGoal : MonoBehaviour
         {
             Debug.LogError("PointToGoal script must be attached to a UI element with RectTransform.");
         }
+        gameObject.SetActive(false);
     }
 
     private void Start()

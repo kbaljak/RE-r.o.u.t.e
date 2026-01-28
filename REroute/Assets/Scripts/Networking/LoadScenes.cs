@@ -67,6 +67,9 @@ public class LoadScenes : NetworkBehaviour
     {
         SceneLoadData sld = new SceneLoadData(sceneName);
         sld.ReplaceScenes = ReplaceOption.All;
+        PlayerController[] players = Object.FindObjectsByType<PlayerController>(FindObjectsSortMode.None);
+        sld.MovedNetworkObjects = new NetworkObject[players.Length];
+        for (int i = 0; i < players.Length; ++i) { sld.MovedNetworkObjects[i] = players[i]; }
 
         SceneManager.LoadGlobalScenes(sld);
     }

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class PlayerItemInteraction : NetworkBehaviour
 {
-    private PlayerScoreController plScoreCont;
+    private PlayerUIController plScoreCont;
     [SerializeField] Transform itemHandHoldPoint;
     [SerializeField] Transform itemBackHoldPoint;
     [SerializeField] List<GameObject> itemPrefabs;
@@ -79,7 +79,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         }
         hasEmptyHand = true;
 
-        //plScoreCont = UI.Instance.playerUI.GetComponent<PlayerScoreController>();
+        plScoreCont = transform.parent.GetComponent<PlayerUIController>();
         //if (plScoreCont == null) { Debug.LogError("Could now find PlayerScoreController!"); }
     
         throwItemAction = InputSystem.actions.FindAction("Throw");

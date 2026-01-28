@@ -26,7 +26,7 @@ public class RaceTimeManager : MonoBehaviour
 
     private NetworkManager _networkManager;
 
-    private Dictionary<NetworkConnection, PlayerRaceData> playerRaceData = new Dictionary<NetworkConnection, PlayerRaceData>();
+    private Dictionary<string, PlayerRaceData> playerRaceDataDict = new Dictionary<string, PlayerRaceData>();
 
     private List<PlayerFinalScore> finalScores = new List<PlayerFinalScore>();
 
@@ -58,8 +58,9 @@ public class RaceTimeManager : MonoBehaviour
     {
         //FreezeAllPlayers(true);
 
-        foreach (NetworkConnection conn in playerRaceData.Keys)
+        foreach (var kvp in playerRaceDataDict)
         {
+            NetworkConnection conn = kvp.Value.connection;
             PlayerUIController plUICont = conn.FirstObject.gameObject.GetComponent<PlayerUIController>();
             if (plUICont == null) { Debug.LogError($"For connection {conn} could not find PlayerUIController script"); }
             playerUIControllers.Add(plUICont);
@@ -87,35 +88,35 @@ public class RaceTimeManager : MonoBehaviour
         raceStartTime = Time.time;
         bestFinishTime = float.MaxValue;
         finishedPlayerCount = 0;
-        playerRaceData.Clear();
+        //playerRaceDataDict.Clear();
         finalScores.Clear();
 
         Debug.LogWarning($"[Server] Race started at {raceStartTime}");
         
         BroadcastRaceStarted();
     }
-    private void FreezeAllPlayers(bool freeze)
-    {
+    // private void FreezeAllPlayers(bool freeze)
+    // {
 
-        foreach (NetworkConnection conn in playerRaceData.Keys)
-        {
-            PlayerController plCont = conn.FirstObject.GetComponent<PlayerController>();
-            if (plCont != null)
-            {
-                plCont.EnablePlayer(!freeze);
-            }else { Debug.LogError($"For connection {conn} could not find PlayerController script"); }
+    //     foreach (NetworkConnection conn in playerRaceData.Keys)
+    //     {
+    //         PlayerController plCont = conn.FirstObject.GetComponent<PlayerController>();
+    //         if (plCont != null)
+    //         {
+    //             plCont.EnablePlayer(!freeze);
+    //         }else { Debug.LogError($"For connection {conn} could not find PlayerController script"); }
 
-            Debug.Log($"[Server] {(freeze ? "Freezing" : "Unfreezing")} player {conn}");
-        }
-    }
+    //         Debug.Log($"[Server] {(freeze ? "Freezing" : "Unfreezing")} player {conn}");
+    //     }
+    // }
 
-    public void RegisterPlayer(NetworkConnection connection, string playerName)
+    public void RegisterPlayer(string playerIdHash, NetworkConnection connection, string playerName)
     {
         if (!IsServer()) return;
 
-        if (!playerRaceData.ContainsKey(connection))
+        if (!playerRaceDataDict.ContainsKey(playerIdHash))
         {
-            playerRaceData[connection] = new PlayerRaceData
+            PlayerRaceData data = new PlayerRaceData
             {
                 connection = connection,
                 playerName = playerName,
@@ -127,7 +128,22 @@ public class RaceTimeManager : MonoBehaviour
                 hasFinished = false
             };
 
-            Debug.LogWarning($"[Server] Registered player: {playerName} with conn: {connection} for race");
+            Debug.Log("player data: " + data);
+
+            playerRaceDataDict.Add(playerIdHash, data);
+            // playerRaceData[playerIdHash] = new PlayerRaceData
+            // {
+            //     connection = connection,
+            //     playerName = playerName,
+            //     startTime = raceStartTime,
+            //     finishTime = 0f,
+            //     actionScore = 0,
+            //     finalScore = 0,
+            //     finishPosition = 0,
+            //     hasFinished = false
+            // };
+
+            Debug.LogWarning($"[Server] Registered player: {playerName} with conn: {connection} and hash: {playerIdHash} for race");
         }
     }
 
@@ -135,17 +151,23 @@ public class RaceTimeManager : MonoBehaviour
     /// Server receives notification that a player finished
     /// Called via PlayerScoreController's ServerRPC
     /// </summary>
-    public void ServerPlayerFinished(NetworkConnection connection)
+    public void ServerPlayerFinished(string playerHash)
     {
         if (!IsServer()) return;
         if (!raceStarted) return;
-        if (!playerRaceData.ContainsKey(connection)) 
+
+        foreach (string kvp in playerRaceDataDict.Keys) { Debug.Log($"Found keys:\n{kvp}"); }
+
+        Debug.Log("ServerPlayerFinished(), checking for " + playerHash);
+
+        if (!playerRaceDataDict.ContainsKey(playerHash)) 
         {
             Debug.LogError($"[Server] Unknown player tried to finish race!");
             return;
         }
 
-        PlayerRaceData data = playerRaceData[connection];
+        PlayerRaceData data = playerRaceDataDict[playerHash];
+        NetworkConnection connection = data.connection;
         
         if (data.hasFinished)
         {
@@ -179,7 +201,7 @@ public class RaceTimeManager : MonoBehaviour
 
         NotifyPlayerFinished(connection, data.finishPosition, raceTime);
 
-        if (finishedPlayerCount >= playerRaceData.Count)
+        if (finishedPlayerCount >= playerRaceDataDict.Count)
         {
             EndRace();
         }
@@ -240,7 +262,7 @@ public class RaceTimeManager : MonoBehaviour
 
         StopAllTimers();
 
-        foreach (var kvp in playerRaceData)
+        foreach (var kvp in playerRaceDataDict)
         {
             PlayerRaceData data = kvp.Value;
             

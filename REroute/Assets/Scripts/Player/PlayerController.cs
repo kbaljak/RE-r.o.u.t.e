@@ -1,17 +1,21 @@
+using FishNet.Connection;
 using FishNet.Object;
-using System.Collections;
 using FishNet.Object.Synchronizing;
+using System.Collections;
+using System.Data.Common;
+using System.Security.Cryptography;
+using System.Text;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using System.Data.Common;
-using FishNet.Connection;
 
 public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
 {
+    private string playerHash;
+
     [Header("References")]
     public CharacterController charCont;
     public PlayerAnimationController plAnimCont;
@@ -165,9 +169,32 @@ public class PlayerController : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void RegisterPlayer(string playerName, NetworkConnection conn = null)
     {
+        playerHash = ComputePlayerHash(conn);
         Debug.LogWarning("Registering conn: " + conn);
-        RaceTimeManager.Instance.RegisterPlayer(conn, playerName);
+        RaceTimeManager.Instance.RegisterPlayer(playerHash, conn, playerName);
     }
+    public static string ComputePlayerHash(object value)
+    {
+        if (value == null)
+            return null;
+
+
+        using (var sha256 = SHA256.Create())
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value.ToString());
+            byte[] hash = sha256.ComputeHash(bytes);
+
+
+            var sb = new StringBuilder();
+            foreach (byte b in hash)
+                sb.Append(b.ToString("x2"));
+
+
+            // return only first 10 characters
+            return sb.ToString().Substring(0, 15);
+        }
+    }
+    public string GetPlayerHash() => playerHash;
 
     [ObserversRpc]
     public void TeleportPlayerToLevelSpawnPoints(Vector3 newPosition, Quaternion newRotation)
