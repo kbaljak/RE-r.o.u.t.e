@@ -287,6 +287,7 @@ public class PlayerController : NetworkBehaviour
         if (!IsOwner) { return; }
 
         canControlMove = value;
+        followRotation = value ? PlayerFollowRotation.CAMERA : PlayerFollowRotation.NONE;
     }
     private void ResetVars()
     {
@@ -1318,8 +1319,8 @@ public class PlayerController : NetworkBehaviour
     {
         DDOL.GetNetworkManager().GetComponent<RaceTimeManager>().StartRaceWithCountdown(this);
     }
-    [ObserversRpc]
-    public void EnablePlayerControl_RPC(bool value) { Debug.Log("[Client] EnablePlayerControl_RPC(" + value + ")"); EnablePlayerControl(value); }
+    //[ObserversRpc]
+    //public void EnablePlayerControl_RPC(bool value) { Debug.Log("[Client] EnablePlayerControl_RPC(" + value + ")"); EnablePlayerControl(value); }
 }
 
 enum LedgeHoldType { BracedHang, Hang, Freehang };

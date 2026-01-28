@@ -69,14 +69,14 @@ public class LoadScenes : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
+    /*[ServerRpc]
     public void FreezeAllPlayers(bool value)
     {
         foreach (PlayerController plCont in FindObjectsByType<PlayerController>(FindObjectsSortMode.None))
         {
             plCont.EnablePlayerControl_RPC(!value);
         }
-    }
+    }*/
 
     public void LoadLevel(string sceneName)
     {
