@@ -7,7 +7,7 @@ public class UI : MonoBehaviour
     private static UI Instance;
 
     [SerializeField] private Slider speedSlider;
-    [SerializeField] private TextMeshProUGUI speedText;
+    [SerializeField] public TextMeshProUGUI speedText;
 
     private PlayerController playerCont;
 

@@ -3407,6 +3407,7 @@ GameObject:
   - component: {fileID: 1897457646274550055}
   - component: {fileID: 7592093966784826543}
   - component: {fileID: 7053530580125167638}
+  - component: {fileID: -7088747375579581834}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -3670,7 +3671,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7815874160605487132}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ecfaed6ee08c3f469009858e74e7db2, type: 3}
   m_Name: 
@@ -3684,7 +3685,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7815874160605487132}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a829f02f038f0d4dac0ac4b1bfe8316, type: 3}
   m_Name: 
@@ -3696,6 +3697,27 @@ MonoBehaviour:
   combatRollPoints: 5
   oilApplicationPoints: 2
   bananThrownPoints: 1
+--- !u!114 &-7088747375579581834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7815874160605487132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02bf26c9af8a9b46b4da444e50ffc59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUIController
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: -8763808860493201350}
+  _networkObjectCache: {fileID: 0}
+  vaultPoints: 10
+  combatRollPoints: 5
+  oilApplicationPoints: 2
+  bananThrownPoints: 1
+  playerName: {fileID: 5373989904661388938}
+  playerNameTagCanvas: {fileID: 3394629800472222742}
 --- !u!1 &7866691907284274524
 GameObject:
   m_ObjectHideFlags: 0
