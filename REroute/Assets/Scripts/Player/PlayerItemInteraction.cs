@@ -20,6 +20,7 @@ public class PlayerItemInteraction : NetworkBehaviour
     private int climbedLedgeNetObjId = -1;
     private float oilApplicationTimer = 0f;
     public float OIL_APPLICATION_TIME_WINDOW = 1f;
+    public PlayerAnimationController plAnimCont;
 
     InputAction throwItemAction;
     InputAction applyOilAction;
@@ -78,6 +79,8 @@ public class PlayerItemInteraction : NetworkBehaviour
            return;
         }
         hasEmptyHand = true;
+
+        plAnimCont = transform.parent.GetComponent<PlayerController>().plAnimCont;
 
         plScoreCont = transform.parent.GetComponent<PlayerUIController>();
         //if (plScoreCont == null) { Debug.LogError("Could now find PlayerScoreController!"); }
@@ -148,6 +151,8 @@ public class PlayerItemInteraction : NetworkBehaviour
         if(other.gameObject.CompareTag("BananaItem") && other.gameObject.layer == LayerMask.NameToLayer("GroundItem"))
         {
             Debug.LogWarning("Player stepped on a banana. He should FLIP HIS PANTS!!!");
+            plAnimCont.anim.SetTrigger("BananaSlip");
+            plAnimCont.BananaStart_AnimEvent();
         }
     }
 

@@ -1,10 +1,10 @@
-using FishNet.Connection;
-using FishNet.Object;
-using FishNet.Object.Synchronizing;
 using System.Collections;
 using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text;
+using FishNet.Connection;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -1105,6 +1105,26 @@ public class PlayerController : NetworkBehaviour
             moveSpeed = walkSpeed;
         }*/
         plScoreCont.OnVaultPerformedScore();
+    }
+
+    //Slip
+    public void GotUpFromSlip()
+    {
+        Debug.Log("GotUpFromSlip()");
+        isGroundedAnimBlock = true;
+        landingPass = true;
+        //charCont.enabled = true;
+        AnimationSolo(false);
+        followRotation = PlayerFollowRotation.CAMERA;
+    }
+
+    public void ForceStopSliding()
+    {
+        plAnimCont.anim.SetBool("sliding", false);
+        slide = false;
+        currentlySliding = false;
+        slopeSliding = false;
+        SetSmallCollider(false);
     }
 
     //// Common

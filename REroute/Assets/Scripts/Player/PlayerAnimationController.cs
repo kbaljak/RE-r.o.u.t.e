@@ -278,5 +278,18 @@ public class PlayerAnimationController : MonoBehaviour
         //playerCont.charCont.enabled = true;
         playerCont.VaultedLedge();
     }
+    public void BananaStart_AnimEvent()
+    {
+        Debug.Log("BananaStart event");
+        playerCont.AnimationSolo(true);
+        playerCont.ForceStopSliding();
+        //playerCont.charCont.enabled = false;
+    }
+    public void BananaEnd_AnimEvent()
+    {
+        Debug.Log("BananaEnd event");
+        //playerCont.charCont.enabled = true;
+        playerCont.GotUpFromSlip();
+    }
 
 }
