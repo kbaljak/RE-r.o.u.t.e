@@ -765,20 +765,21 @@ public class PlayerController : NetworkBehaviour
         bool raycastHit = false;
         float raycastLength = 0.25f;
         float raycastRadius = 0.2f;
+        LayerMask mask = LayerMask.GetMask("Default");
         Debug.DrawRay(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
-        if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+        if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength, mask)) { raycastHit = true; }
         else
         {
             Debug.DrawRay(groundRaycastPoint.position - (transform.forward * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
-            if (Physics.Raycast(groundRaycastPoint.position - (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+            if (Physics.Raycast(groundRaycastPoint.position - (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength, mask)) { raycastHit = true; }
             else
             {
                 Debug.DrawRay(groundRaycastPoint.position + (transform.right * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
-                if (Physics.Raycast(groundRaycastPoint.position + (transform.right * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+                if (Physics.Raycast(groundRaycastPoint.position + (transform.right * raycastRadius), Vector3.down, out hit, raycastLength, mask)) { raycastHit = true; }
                 else
                 {
                     Debug.DrawRay(groundRaycastPoint.position - (transform.right * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
-                    if (Physics.Raycast(groundRaycastPoint.position - (transform.right * raycastRadius), Vector3.down, out hit, raycastLength)) { raycastHit = true; }
+                    if (Physics.Raycast(groundRaycastPoint.position - (transform.right * raycastRadius), Vector3.down, out hit, raycastLength, mask)) { raycastHit = true; }
                 }
             }
         }
@@ -820,7 +821,7 @@ public class PlayerController : NetworkBehaviour
                 {
                     if (!slide && !backwardMovement && groundIsSlope)  //slopeAngle > 9f
                     {
-                        if (moveSpeed > walkSpeed && Slope.SlideCheck(slopeDirection, moveDirection))
+                        if (moveSpeed > walkSpeed) //&& Slope.SlideCheck(slopeDirection, moveDirection))
                         {
                             Slide(true);
                             plAnimCont.transform.localEulerAngles = new Vector3(slopeAngle, plAnimCont.transform.localEulerAngles.y, plAnimCont.transform.localEulerAngles.z);
