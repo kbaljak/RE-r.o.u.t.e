@@ -1894,7 +1894,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI
   speedSlider: {fileID: 5063937551693625517}
   speedText: {fileID: 4246484140351180095}
-  playerUI: {fileID: 5037669193683366011}
+  playerUI: {fileID: 0}
   throwChargeMeter: {fileID: 5969425944449049693}
   applyOilPrompt: {fileID: 4284924198611257770}
 --- !u!1 &3292942237099583784
@@ -3416,9 +3416,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2512099591760067453}
-  - component: {fileID: 5037669193683366011}
-  - component: {fileID: 4061675392939078527}
-  - component: {fileID: 7417691748499236185}
   m_Layer: 5
   m_Name: PlayerUI
   m_TagString: Untagged
@@ -3452,104 +3449,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &5037669193683366011
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6292795912173856863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e02bf26c9af8a9b46b4da444e50ffc59, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerUIController
-  _componentIndexCache: 0
-  _addedNetworkObject: {fileID: 7417691748499236185}
-  _networkObjectCache: {fileID: 7417691748499236185}
-  vaultPoints: 10
-  combatRollPoints: 5
-  oilApplicationPoints: 2
-  bananThrownPoints: 1
-  playerName: {fileID: 0}
-  playerNameTagCanvas: {fileID: 0}
-  countdownUI: {fileID: 6535094235192547442}
-  countdownText: {fileID: 5322525110390621081}
-  timerText: {fileID: 4017501846167260970}
---- !u!114 &4061675392939078527
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6292795912173856863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a829f02f038f0d4dac0ac4b1bfe8316, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerScoreController
-  _componentIndexCache: 1
-  _addedNetworkObject: {fileID: 7417691748499236185}
-  _networkObjectCache: {fileID: 7417691748499236185}
-  vaultPoints: 10
-  combatRollPoints: 5
-  oilApplicationPoints: 2
-  bananThrownPoints: 1
-  scoreText: {fileID: 1737456526743012077}
---- !u!114 &7417691748499236185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6292795912173856863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: FishNet.Runtime::FishNet.Object.NetworkObject
-  <IsNested>k__BackingField: 1
-  WasActiveDuringEdit: 0
-  WasActiveDuringEdit_Set1: 1
-  <ComponentIndex>k__BackingField: 2
-  <PredictedSpawn>k__BackingField: {fileID: 0}
-  <PredictedOwner>k__BackingField: {fileID: 0}
-  NetworkBehaviours:
-  - {fileID: 5037669193683366011}
-  - {fileID: 4061675392939078527}
-  InitializedParentNetworkBehaviour: {fileID: 0}
-  InitializedNestedNetworkObjects: []
-  RuntimeParentNetworkBehaviour: {fileID: 0}
-  RuntimeChildNetworkBehaviours: []
-  _isNetworked: 1
-  _isSpawnable: 1
-  _isGlobal: 0
-  _initializeOrder: 0
-  _preventDespawnOnDisconnect: 0
-  _defaultDespawnType: 0
-  NetworkObserver: {fileID: 0}
-  _enablePrediction: 0
-  _predictionType: 0
-  _graphicalObject: {fileID: 0}
-  _detachGraphicalObject: 0
-  _enableStateForwarding: 1
-  _networkTransform: {fileID: 0}
-  _ownerInterpolation: 1
-  _ownerSmoothedProperties: 255
-  _adaptiveInterpolation: 3
-  _spectatorSmoothedProperties: 255
-  _spectatorInterpolation: 2
-  _enableTeleport: 0
-  _teleportThreshold: 1
-  <PrefabId>k__BackingField: 65535
-  <SpawnableCollectionId>k__BackingField: 0
-  <AssetPathHash>k__BackingField: 0
-  <SceneId>k__BackingField: 0
-  SerializedTransformProperties:
-    Position: {x: 0, y: 0, z: 0}
-    Rotation: {x: 0, y: 0, z: 0, w: 1}
-    Scale: {x: 1, y: 1, z: 1}
-    IsValid: 1
 --- !u!1 &6324251479839379515
 GameObject:
   m_ObjectHideFlags: 0

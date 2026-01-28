@@ -32,6 +32,7 @@ public class PlayerScoreController : NetworkBehaviour
 
     public void OnVaultPerformedScore()
     {
+        Debug.Log("OnVaultPerformedScore() IsOwner: " + IsOwner);
         if (!IsOwner) return;
         RequestServerAddVaultScore();
     }
@@ -149,6 +150,7 @@ public class PlayerScoreController : NetworkBehaviour
     }
     private void AddScore(int points, string action)
     {
+        Debug.Log("[Server] AddScore");
         if (!IsServerStarted) return;
 
         currentScore += points;

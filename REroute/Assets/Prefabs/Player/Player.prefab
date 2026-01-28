@@ -3534,6 +3534,7 @@ GameObject:
   - component: {fileID: -8763808860493201350}
   - component: {fileID: -5948133355759224539}
   - component: {fileID: 1792036367656086916}
+  - component: {fileID: 4881489836816876676}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -3662,9 +3663,7 @@ MonoBehaviour:
   - {fileID: 4632275365401548454}
   - {fileID: -5948133355759224539}
   - {fileID: 1792036367656086916}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 7510307226322677582}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
   RuntimeParentNetworkBehaviour: {fileID: 0}
@@ -3766,6 +3765,31 @@ MonoBehaviour:
   _interpolation: 2
   _clientAuthoritative: 1
   _sendToOwner: 0
+--- !u!114 &4881489836816876676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7815874160605487132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e02bf26c9af8a9b46b4da444e50ffc59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUIController
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: -8763808860493201350}
+  _networkObjectCache: {fileID: 0}
+  vaultPoints: 10
+  combatRollPoints: 5
+  oilApplicationPoints: 2
+  bananThrownPoints: 1
+  playerName: {fileID: 5373989904661388938}
+  playerNameTagCanvas: {fileID: 3394629800472222742}
+  countDownUI: {fileID: 0}
+  countDownTimeText: {fileID: 0}
+  timerUI: {fileID: 0}
+  timerText: {fileID: 0}
 --- !u!1 &7866691907284274524
 GameObject:
   m_ObjectHideFlags: 0

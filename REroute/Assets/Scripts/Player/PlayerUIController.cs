@@ -38,35 +38,32 @@ public class PlayerUIController: NetworkBehaviour
     {
         base.OnStartClient();
 
-        //plCont = GetComponent<PlayerController>();
+        plCont = GetComponent<PlayerController>();
 
-        //if (!plCont.IsOwner) return;
+        if (!plCont.IsOwner) return;
 
-        if (scoreText == null)
-        {
-            GameObject scoreObject = GameObject.Find("PlayerUI/ScorePanel/PlayerScore");
-            if (scoreObject != null) { scoreText = scoreObject.GetComponent<TextMeshProUGUI>(); }
-            else { Debug.LogWarning("Score UI Text not found. Assign it manually or update the path."); }
-        }
+        Transform scoreTransform = UI.Find("PlayerUI/ScorePanel/PlayerScore");
+        if (scoreTransform != null) { scoreText = scoreTransform.GetComponent<TextMeshProUGUI>(); }
+        else { Debug.LogWarning("Score UI Text not found. Assign it manually or update the path."); }
 
-        GameObject speedSliderObj = GameObject.Find("PlayerUI/SpeedUI/Slider");
-        if (speedSliderObj != null) { speedSlider = speedSliderObj.GetComponent<Slider>(); }
+        Transform speedSliderT = UI.Find("PlayerUI/SpeedUI/Slider");
+        if (speedSliderT != null) { speedSlider = speedSliderT.GetComponent<Slider>(); }
         else { Debug.LogWarning("Speed UI Slider not found. Assign it manually or update the path."); }
 
-        GameObject speedTextObj = GameObject.Find("PlayerUI/SpeedUI/SpeedText");
-        if (speedTextObj != null) { speedText = speedTextObj.GetComponent<TextMeshProUGUI>(); }
+        Transform speedTextT = UI.Find("PlayerUI/SpeedUI/SpeedText");
+        if (speedTextT != null) { speedText = speedTextT.GetComponent<TextMeshProUGUI>(); }
         else { Debug.LogWarning("Speed UI Text not found. Assign it manually or update the path."); }
 
-        countDownUI = GameObject.Find("PlayerUI/Canvas/CountDown");
+        countDownUI = UI.Find("PlayerUI/CountDown").gameObject;
         if (countDownUI == null) { Debug.LogWarning("CountDown not found. Assign it manually or update the path."); }
 
-        timerUI = GameObject.Find("PlayerUI/Canvas/Timer");
+        timerUI = UI.Find("PlayerUI/Timer").gameObject;
         if (timerUI == null) { Debug.LogWarning("Timer not found. Assign it manually or update the path."); }
 
-        countDownTimeText = GameObject.Find("PlayerUI/Canvas/CountDown/CountDownTimerText").GetComponent<TextMeshProUGUI>();
+        countDownTimeText = UI.Find("PlayerUI/CountDown/CountDownTimerText").GetComponent<TextMeshProUGUI>();
         if (countDownTimeText == null) { Debug.LogWarning("CountDownTimerText not found. Assign it manually or update the path."); }
 
-        timerText = GameObject.Find("PlayerUI/Canvas/Timer/TimerText").GetComponent<TextMeshProUGUI>();
+        timerText = UI.Find("PlayerUI/Timer/TimerText").GetComponent<TextMeshProUGUI>();
         if (timerText == null) { Debug.LogWarning("TimerText not found. Assign it manually or update the path."); }
 
         UpdateScoreUI();
@@ -80,14 +77,12 @@ public class PlayerUIController: NetworkBehaviour
             OnPlayerCrossedFinishLine();
         }
     }
-    public void SetPlayer(PlayerController plCont)
+    /*public void SetPlayer(PlayerController plCont)
     {
         if (!plCont.IsOwner) { return; }
 
         this.plCont = plCont;
-
-        SetName();
-    }
+    }*/
 
     void Update()
     {
@@ -117,7 +112,7 @@ public class PlayerUIController: NetworkBehaviour
         
         timerText.text = string.Format("{0:00}:{1:00}:{2:00}", hours, minutes, seconds);
     }
-    private void SetName()
+    /*private void SetName()
     {
         string name = plCont.GetPlayerName();
         
@@ -129,29 +124,30 @@ public class PlayerUIController: NetworkBehaviour
         
         playerName.text = name;
         Debug.Log($"Set nametag to: {name}");
-    }
+    }*/
 
     public void OnVaultPerformedScore()
     {
-        if (!IsOwner) return;
+        Debug.Log("OnVaultPerformedScore() IsOwner: " + IsOwner);
+        if (!plCont.IsOwner) return;
         RequestServerAddVaultScore();
     }
     public void OnCombatRollPerformedScore()
     {
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
         RequestServerAddCombatRollScore();
     }
 
     public void OnBananaThrownScore()
     {
         Debug.LogWarning("Called!");
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
         RequestServerAddBananaThrownScore();
     }
 
     public void OnOilAppliedScore()
     {
-        if (!IsOwner) { return; }
+        if (!plCont.IsOwner) { return; }
         RequestServerAddOilApplicationScore();
     }
 
@@ -167,7 +163,7 @@ public class PlayerUIController: NetworkBehaviour
 
     public void OnPlayerCrossedFinishLine()
     {
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
         
         ServerNotifyFinishLine();
     }
@@ -253,7 +249,7 @@ public class PlayerUIController: NetworkBehaviour
     [ObserversRpc]
     public void ObserversUpdateCountdown(int countdownNumber)
     {
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
         
         countDownUI.SetActive(true);
         
@@ -265,7 +261,7 @@ public class PlayerUIController: NetworkBehaviour
     [ObserversRpc]
     public void ObserversStartRaceTimer()
     {
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
         
         countDownUI.SetActive(false);
         timerUI.SetActive(true);
@@ -279,7 +275,7 @@ public class PlayerUIController: NetworkBehaviour
     [ObserversRpc]
     public void ObserversStopRaceTimer()
     {
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
         
         isTimerRunning = false;
         
@@ -297,7 +293,7 @@ public class PlayerUIController: NetworkBehaviour
     }
     private void UpdateScoreUI()
     {
-        if (!IsOwner) return;
+        if (!plCont.IsOwner) return;
 
         if (scoreText != null)
         {

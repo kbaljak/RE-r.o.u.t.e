@@ -79,8 +79,8 @@ public class PlayerItemInteraction : NetworkBehaviour
         }
         hasEmptyHand = true;
 
-        plScoreCont = UI.Instance.playerUI.GetComponent<PlayerScoreController>();
-        if (plScoreCont == null) { Debug.LogError("Could now find PlayerScoreController!"); }
+        //plScoreCont = UI.Instance.playerUI.GetComponent<PlayerScoreController>();
+        //if (plScoreCont == null) { Debug.LogError("Could now find PlayerScoreController!"); }
     
         throwItemAction = InputSystem.actions.FindAction("Throw");
         if(throwItemAction != null){ throwItemAction.Enable(); }

@@ -18,7 +18,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerParkourDetection playerParkour;
     public PlayerCameraController playerCamera;
     [SerializeField] private PlayerItemInteraction playerItemInteraction;
-    private PlayerScoreController plScoreCont;
+    private PlayerUIController plScoreCont;
     public Transform head;
     public Transform climbTriggersT;
     private VirtualChild virtualChild;
@@ -320,8 +320,8 @@ public class PlayerController : NetworkBehaviour
             cineCam.Follow = camPoint.transform;   
         }
 
-        plScoreCont = UI.Instance.playerUI.GetComponent<PlayerScoreController>();
-        if (plScoreCont == null) { Debug.LogError("Coudl not find Player Score Controller!"); }
+        plScoreCont = GetComponent<PlayerUIController>();
+        if (plScoreCont == null) { Debug.LogError("Coudl not find Player UI Controller!"); }
 
         
         if (playerItemInteraction == null)

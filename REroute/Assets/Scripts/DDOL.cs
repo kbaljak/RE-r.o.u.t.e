@@ -43,6 +43,7 @@ public class DDOL : MonoBehaviour
 
 
     //// Additions
+    public static Transform Find(string name) => Instance.transform.Find(name);
     public static NetworkManager GetNetworkManager() => Instance.transform.Find("NetworkManager").GetComponent<NetworkManager>();
     public static LoadScenes GetSceneLoader() => Instance.transform.Find("NetworkObjects").GetComponent<LoadScenes>();
 }

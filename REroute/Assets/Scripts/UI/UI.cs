@@ -11,8 +11,6 @@ public class UI : MonoBehaviour
     [SerializeField] private Slider speedSlider;
     [SerializeField] public TextMeshProUGUI speedText;
 
-    public PlayerUIController playerUI;
-
     [SerializeField] public GameObject throwChargeMeter;
     [SerializeField] public GameObject applyOilPrompt;
 
@@ -35,7 +33,7 @@ public class UI : MonoBehaviour
         speedSlider.maxValue = playerCont.runMaxSpeed;
 
         // Pass on to PlayerUI
-
+        //playerUI.SetPlayer(target);
 
         transform.GetChild(0).GetComponent<Canvas>().enabled = true; enabled = true;
     }
@@ -58,4 +56,8 @@ public class UI : MonoBehaviour
         }
         else { speedSlider.value = 0;  speedText.text = ""; }
     }
+
+
+
+    public static Transform Find(string path) => Instance.transform.Find("Canvas/" + path);
 }
