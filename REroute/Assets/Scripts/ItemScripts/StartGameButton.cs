@@ -43,6 +43,7 @@ public class StartGameButton : MonoBehaviour
         if (buttonPressAction.WasPressedThisFrame() && canBePressed)
         {
             Debug.Log("Player pressed the button! Loading new scene!");
+            startGamePrompt.gameObject.SetActive(false);
             DDOL.GetSceneLoader().LoadLevel("Map_2");
         }
     }

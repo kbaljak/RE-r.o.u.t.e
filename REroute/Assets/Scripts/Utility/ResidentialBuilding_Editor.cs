@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System.Collections.Generic;
 //using System.Reflection;
 using UnityEditor;
@@ -308,3 +309,4 @@ public class ResidentialBuilding_Editor : MonoBehaviour
         SetMaterials_Recursive(transform);
     }
 }
+#endif

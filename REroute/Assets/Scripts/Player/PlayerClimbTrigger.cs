@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 
 public class PlayerClimbTrigger : MonoBehaviour
@@ -13,6 +15,7 @@ public class PlayerClimbTrigger : MonoBehaviour
     private void OnTriggerExit(Collider other) { detected.Remove(other); } //playerParkourDetection.ClimbableExit(other); }
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(PlayerClimbTrigger))]
 public class PlayerController_Inspector : Editor
 {
@@ -50,3 +53,4 @@ public class PlayerController_Inspector : Editor
         }
     }
 }
+#endif

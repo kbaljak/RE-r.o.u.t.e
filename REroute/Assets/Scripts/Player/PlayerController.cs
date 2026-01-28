@@ -55,7 +55,7 @@ public class PlayerController : NetworkBehaviour
     // Predict landing for roll input
     bool groundPredicted = false;
     [SerializeField] private float predictionTime = 0.1f;
-    bool roll = false;
+    bool roll = false; bool currentlyRolling = false;
     bool slide = false; bool currentlySliding = false;
     bool slopeSliding = false;
     
@@ -540,7 +540,6 @@ public class PlayerController : NetworkBehaviour
         moveAngle = Vector3.SignedAngle(cameraForward, moveDirection, groundSlopeNormal);
         if (backwardMovement) { moveAngle = (180f - Mathf.Abs(moveAngle)) * Mathf.Sign(moveAngle); }
     }
-
     void Update_Movement_Normal(Vector3 cameraForward)
     {
         if (playerCamera == null) { return; }
@@ -869,6 +868,7 @@ public class PlayerController : NetworkBehaviour
         }
         isGrounded = value;
 
+        if (currentlyRolling && !isGrounded) { RollDone(); plAnimCont.anim.SetTrigger("break"); }
         // If is in air (incl timer padding)
         if (!isGrounded)
         {
@@ -941,7 +941,7 @@ public class PlayerController : NetworkBehaviour
         roll = false;
         while (timer < predictionTime)
         {
-            if (slideAction.IsPressed()) { roll = true; break; }
+            if (slideAction.WasReleasedThisFrame() || slideAction.WasPressedThisFrame() || slideAction.IsPressed()) { roll = true; break; }  // || slideAction.IsPressed()
             timer += Time.deltaTime;
             yield return new WaitForEndOfFrame();
         }
@@ -957,7 +957,11 @@ public class PlayerController : NetworkBehaviour
             if (hardLanding)
             {
                 plAnimCont.anim.SetInteger("landingType", roll ? 2 : 3);
-                if (roll) { StartCoroutine(RollSpeedLoss_Smooth()); } //moveSpeed *= 0.5f; }
+                if (roll) 
+                {
+                    currentlyRolling = true;
+                    StartCoroutine(RollSpeedLoss_Smooth());
+                } //moveSpeed *= 0.5f; }
                 else { MovementAnimationSolo(true);  //AnimationSolo(true, true);
                     moveSpeed = smooth_hardlanding_startSpeed; //(moveSpeed * 0.25f > smooth_hardlanding_startSpeed) ? smooth_hardlanding_startSpeed : (moveSpeed * 0.25f);
                     StartCoroutine(HardLandingAcceleration_Smooth()); }
@@ -971,7 +975,7 @@ public class PlayerController : NetworkBehaviour
                     moveSpeed *= factor; //playerVelocity.x *= factor; playerVelocity.z *= factor;
                 }
                 plAnimCont.anim.SetInteger("landingType", 1);
-                followRotation = PlayerFollowRotation.CAMERA;
+                if (canControlMove) { followRotation = PlayerFollowRotation.CAMERA; }
             }
         }
         //if (hardLanding) { followRotation = PlayerFollowRotation.MOVEMENT; }
@@ -979,6 +983,10 @@ public class PlayerController : NetworkBehaviour
         roll = false;
         groundPredicted = false;
         landingPass = false;
+    }
+    public void RollDone()
+    {
+        currentlyRolling = false;
     }
     // Sliding
     void Slide(bool slopeSlide)
@@ -1144,10 +1152,12 @@ public class PlayerController : NetworkBehaviour
         GetComponent<CharacterController>().detectCollisions = !enabled; //playerCont.GetComponent<CharacterController>().enabled = true;
         canControlMove = !enabled;
         //if (!enabled) { accelerationFactor = 1f; }
-        applyGravity = !enabled;
+        applyGravity = !enabled || keepMoving;
         moveCharacter = !enabled || keepMoving;
         //followCameraRotation = !enabled;
         followRotation = enabled ? PlayerFollowRotation.NONE : PlayerFollowRotation.CAMERA;
+
+        plAnimCont.transform.localPosition = Vector3.zero;
     }
     public void MovementAnimationSolo(bool enabled)
     {
@@ -1159,6 +1169,8 @@ public class PlayerController : NetworkBehaviour
         //followCameraRotation = !enabled;
         followRotation = enabled ? PlayerFollowRotation.NONE : PlayerFollowRotation.CAMERA;
         plAnimCont.transform.localEulerAngles = new Vector3(plAnimCont.transform.localEulerAngles.x, 0, plAnimCont.transform.localEulerAngles.z);
+
+        plAnimCont.transform.localPosition = Vector3.zero;
     }
 
     //// Utility

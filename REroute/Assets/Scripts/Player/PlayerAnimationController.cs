@@ -1,10 +1,11 @@
+using FishNet.Component.Animating;
 using System.Collections;
 using UnityEngine;
 
 public class PlayerAnimationController : MonoBehaviour
 {
     internal Animator anim;
-    PlayerController playerCont;
+    public PlayerController playerCont;
 
     public bool isRoot = true;
 
@@ -198,6 +199,7 @@ public class PlayerAnimationController : MonoBehaviour
         // Set animator parameters
         anim.SetInteger("vaultType", vaultType);
         anim.SetTrigger("vault");
+        playerCont.GetComponent<NetworkAnimator>().SetTrigger("vault");
     }
 
 
@@ -224,6 +226,7 @@ public class PlayerAnimationController : MonoBehaviour
     {
         yield return new WaitUntil(() => !anim.applyRootMotion);
         playerCont.followRotation = PlayerFollowRotation.CAMERA;
+        transform.localPosition = Vector3.zero;
     }
 
 
@@ -252,9 +255,10 @@ public class PlayerAnimationController : MonoBehaviour
         playerCont.AnimationSolo(false);  //playerCont.RootMotionMovement(false);
     }
     public void DisableRootMotion_AnimEvent() => DisableRootMotion(true);
-    public void LandingAnimationDone()
+    public void LandingAnimationDone(bool movement = false)
     {
         Debug.Log("LandingAnimationDone()");
+        
         playerCont.AnimationSolo(false);
         StartCoroutine(LandingAnimationDoneRootMotionSync());
     }

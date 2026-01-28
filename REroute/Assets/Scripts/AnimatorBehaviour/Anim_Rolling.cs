@@ -6,6 +6,7 @@ public class Anim_Rolling : StateMachineBehaviour
     PlayerController playerCont;
 
     public bool continuallyApplyRootPos = true;
+    public bool callEnableRootOnEnter = true;
     public bool callDisableRootOnExit = true;
     public bool callLandingAnimDoneOnExit = false;
 
@@ -19,7 +20,7 @@ public class Anim_Rolling : StateMachineBehaviour
         plAnimCont = animator.gameObject.GetComponent<PlayerAnimationController>();
         if (plAnimCont.isRoot) { playerCont = animator.gameObject.GetComponent<PlayerController>(); }
         else { playerCont = animator.transform.parent.GetComponent<PlayerController>(); }
-        plAnimCont.EnableRootMotion(true);
+        if (callEnableRootOnEnter) { plAnimCont.EnableRootMotion(true); }
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks
@@ -38,6 +39,7 @@ public class Anim_Rolling : StateMachineBehaviour
         if (callDisableRootOnExit) { plAnimCont.DisableRootMotion(!continuallyApplyRootPos); }
         if (callLandingAnimDoneOnExit) { plAnimCont.LandingAnimationDone(); }
         animator.ResetTrigger("break");
+        playerCont.RollDone();
         playerCont.AddScoreAfterRoll();
     }
 

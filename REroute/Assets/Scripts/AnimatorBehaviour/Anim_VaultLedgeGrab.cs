@@ -2,8 +2,10 @@ using NUnit.Framework.Constraints;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Animations;
+#endif
 using UnityEngine;
 
 public class Anim_VaultLedgeGrab : StateMachineBehaviour
@@ -232,6 +234,7 @@ public class Anim_VaultLedgeGrab : StateMachineBehaviour
 }
 
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(Anim_VaultLedgeGrab))]
 public class Anim_VaultLedgeGrab_Inspector : Editor
 {
@@ -278,3 +281,4 @@ public class Anim_VaultLedgeGrab_Inspector : Editor
         
     }
 }
+#endif

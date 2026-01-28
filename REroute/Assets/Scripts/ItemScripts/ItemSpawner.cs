@@ -36,9 +36,10 @@ public class ItemSpawner : NetworkBehaviour
         // Singleton pattern
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("Multiple ItemSpawners detected! Destroying duplicate.");
-            Destroy(gameObject);
-            return;
+            //Debug.LogWarning("Multiple ItemSpawners detected! Destroying duplicate.");
+
+            // Destroy past Instance
+            Destroy(Instance);
         }
         Instance = this;
     }

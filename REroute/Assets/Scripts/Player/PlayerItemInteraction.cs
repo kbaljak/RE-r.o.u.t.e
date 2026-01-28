@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using FishNet.Object.Synchronizing;
 using UnityEngine.UI;
+using FishNet.Component.Animating;
 
 public class PlayerItemInteraction : NetworkBehaviour
 {
@@ -152,6 +153,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         {
             Debug.LogWarning("Player stepped on a banana. He should FLIP HIS PANTS!!!");
             plAnimCont.anim.SetTrigger("BananaSlip");
+            plAnimCont.playerCont.GetComponent<NetworkAnimator>().SetTrigger("BananaSlip");
             plAnimCont.BananaStart_AnimEvent();
         }
     }

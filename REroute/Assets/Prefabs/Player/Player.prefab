@@ -650,6 +650,7 @@ MonoBehaviour:
   - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}
   - {fileID: 9054075434902177078, guid: 8f651a87142ae6e40afa0bf4057f6acf, type: 3}
   OIL_APPLICATION_TIME_WINDOW: 2
+  plAnimCont: {fileID: 0}
   throwCharge: 0
   minThrowCharge: 5
   maxThrowCharge: 20
@@ -1713,6 +1714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c12fdb1426123684eb3ba76e591b6e06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
+  playerCont: {fileID: 0}
   isRoot: 0
   rightHandIKTarget: {fileID: 1470070983699910467}
   leftHandIKTarget: {fileID: 5815202162028777996}
@@ -3615,6 +3617,7 @@ MonoBehaviour:
   isGrounded: 1
   groundedPadTime: 0.06
   predictionTime: 0.3
+  currentlyRolling: 0
   linearOrQuadraticRunAccel: 0
   followRotation: 1
   walkSpeed: 2.5
@@ -4260,7 +4263,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3972739351079241194
 Transform:
   m_ObjectHideFlags: 0
