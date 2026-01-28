@@ -278,7 +278,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
+  m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
@@ -596,6 +596,88 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
   playerParkourDetection: {fileID: 6148794795613088992}
+--- !u!1 &895697436401421556
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6361735347478382363}
+  - component: {fileID: 7510307226322677582}
+  - component: {fileID: 4506748037152684294}
+  m_Layer: 3
+  m_Name: ItemInteraction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6361735347478382363
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895697436401421556}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.9, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6008359961423701854}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7510307226322677582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895697436401421556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 482031fd3eea2daa5866d5f2e81aca78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerItemInteraction
+  _componentIndexCache: 3
+  _addedNetworkObject: {fileID: -8763808860493201350}
+  _networkObjectCache: {fileID: -8763808860493201350}
+  itemHandHoldPoint: {fileID: 2166054492481163914}
+  itemBackHoldPoint: {fileID: 4784847372494517927}
+  itemPrefabs:
+  - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}
+  - {fileID: 9054075434902177078, guid: 8f651a87142ae6e40afa0bf4057f6acf, type: 3}
+  OIL_APPLICATION_TIME_WINDOW: 2
+  throwCharge: 0
+  minThrowCharge: 5
+  maxThrowCharge: 20
+  debugHasEmptyHand: 0
+  debugHeldItemInstance: {fileID: 0}
+--- !u!136 &4506748037152684294
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 895697436401421556}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.2
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1060278570487215591
 GameObject:
   m_ObjectHideFlags: 0
@@ -2182,7 +2264,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
   grabTrigger: {fileID: 4259307574198512010}
   standJumpClimbTrigger: {fileID: 5339253722278056711}
-  vaultTrigger: {fileID: 5546702335209658343}
+  vaultTrigger: {fileID: 8154340717011963366}
   hangingHeight: 2.4
   bracedHangHeight: 2
   lowHeight: 1
@@ -2582,6 +2664,38 @@ Transform:
   m_Children:
   - {fileID: 5362834455794847794}
   m_Father: {fileID: 1425989908128242821}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4315218175219305217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7272233371018810072}
+  m_Layer: 3
+  m_Name: UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7272233371018810072
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4315218175219305217}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8849326332320500622}
+  m_Father: {fileID: 6008359961423701854}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4393523026723427601
 GameObject:
@@ -3174,6 +3288,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4635372160882007652}
+  - component: {fileID: 8107176846826079049}
+  - component: {fileID: 8154340717011963366}
   m_Layer: 13
   m_Name: VaultCollider
   m_TagString: Untagged
@@ -3190,13 +3306,47 @@ Transform:
   m_GameObject: {fileID: 6994002614525051155}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8566954936597059773}
   m_Father: {fileID: 7967203083294090016}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8107176846826079049
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6994002614525051155}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.4, y: 1.2, z: 1.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8154340717011963366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6994002614525051155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dabcc134493272440bcb6e702c18dcbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
+  playerParkourDetection: {fileID: 6148794795613088992}
 --- !u!1 &7064414144688179726
 GameObject:
   m_ObjectHideFlags: 0
@@ -3206,8 +3356,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8849326332320500622}
-  - component: {fileID: 7460142468453881032}
-  - component: {fileID: 5546702335209658343}
+  - component: {fileID: 8255468895146705749}
   m_Layer: 0
   m_Name: NameTag
   m_TagString: Untagged
@@ -3229,30 +3378,9 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3394629800472222742}
-  m_Father: {fileID: 6008359961423701854}
+  m_Father: {fileID: 7272233371018810072}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &7460142468453881032
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7064414144688179726}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.4, y: 1.2, z: 1.2}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5546702335209658343
+--- !u!114 &8255468895146705749
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3261,10 +3389,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 7064414144688179726}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dabcc134493272440bcb6e702c18dcbc, type: 3}
+  m_Script: {fileID: 11500000, guid: 6ecfaed6ee08c3f469009858e74e7db2, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerClimbTrigger
-  playerParkourDetection: {fileID: 6148794795613088992}
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerNameTag
+  playerCont: {fileID: 4632275365401548454}
+  playerName: {fileID: 5373989904661388938}
+  playerNameTagCanvas: {fileID: 3394629800472222742}
 --- !u!1 &7140275592337475525
 GameObject:
   m_ObjectHideFlags: 0
@@ -3404,10 +3534,6 @@ GameObject:
   - component: {fileID: -8763808860493201350}
   - component: {fileID: -5948133355759224539}
   - component: {fileID: 1792036367656086916}
-  - component: {fileID: 1897457646274550055}
-  - component: {fileID: 7592093966784826543}
-  - component: {fileID: 7053530580125167638}
-  - component: {fileID: -7088747375579581834}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -3432,7 +3558,8 @@ Transform:
   - {fileID: 5604996663290663512}
   - {fileID: 4499362724475081816}
   - {fileID: 7967203083294090016}
-  - {fileID: 8849326332320500622}
+  - {fileID: 7272233371018810072}
+  - {fileID: 6361735347478382363}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &5724244584803338349
@@ -3479,6 +3606,7 @@ MonoBehaviour:
   plAnimCont: {fileID: 1280958438658191862}
   playerParkour: {fileID: 6148794795613088992}
   playerCamera: {fileID: 0}
+  playerItemInteraction: {fileID: 7510307226322677582}
   head: {fileID: 6726878395482213429}
   climbTriggersT: {fileID: 7967203083294090016}
   rollMarker: {fileID: 2038705406236927645}
@@ -3534,8 +3662,8 @@ MonoBehaviour:
   - {fileID: 4632275365401548454}
   - {fileID: -5948133355759224539}
   - {fileID: 1792036367656086916}
-  - {fileID: 1897457646274550055}
-  - {fileID: 7053530580125167638}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 0}
   InitializedParentNetworkBehaviour: {fileID: 0}
   InitializedNestedNetworkObjects: []
@@ -3638,86 +3766,6 @@ MonoBehaviour:
   _interpolation: 2
   _clientAuthoritative: 1
   _sendToOwner: 0
---- !u!114 &1897457646274550055
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7815874160605487132}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 482031fd3eea2daa5866d5f2e81aca78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerItemInteraction
-  _componentIndexCache: 3
-  _addedNetworkObject: {fileID: -8763808860493201350}
-  _networkObjectCache: {fileID: -8763808860493201350}
-  itemHandHoldPoint: {fileID: 2166054492481163914}
-  itemBackHoldPoint: {fileID: 4784847372494517927}
-  itemPrefabs:
-  - {fileID: 205880749347064312, guid: e984a9f81714417958f74407e14faacc, type: 3}
-  - {fileID: 9054075434902177078, guid: 8f651a87142ae6e40afa0bf4057f6acf, type: 3}
-  OIL_APPLICATION_TIME_WINDOW: 2
-  throwCharge: 0
-  minThrowCharge: 5
-  maxThrowCharge: 20
-  debugHasEmptyHand: 0
-  debugHeldItemInstance: {fileID: 0}
---- !u!114 &7592093966784826543
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7815874160605487132}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ecfaed6ee08c3f469009858e74e7db2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerNameTag
-  playerName: {fileID: 5373989904661388938}
-  playerNameTagCanvas: {fileID: 3394629800472222742}
---- !u!114 &7053530580125167638
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7815874160605487132}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a829f02f038f0d4dac0ac4b1bfe8316, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerScoreController
-  _componentIndexCache: 4
-  _addedNetworkObject: {fileID: -8763808860493201350}
-  _networkObjectCache: {fileID: -8763808860493201350}
-  vaultPoints: 10
-  combatRollPoints: 5
-  oilApplicationPoints: 2
-  bananThrownPoints: 1
---- !u!114 &-7088747375579581834
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7815874160605487132}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e02bf26c9af8a9b46b4da444e50ffc59, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerUIController
-  _componentIndexCache: 255
-  _addedNetworkObject: {fileID: -8763808860493201350}
-  _networkObjectCache: {fileID: 0}
-  vaultPoints: 10
-  combatRollPoints: 5
-  oilApplicationPoints: 2
-  bananThrownPoints: 1
-  playerName: {fileID: 5373989904661388938}
-  playerNameTagCanvas: {fileID: 3394629800472222742}
 --- !u!1 &7866691907284274524
 GameObject:
   m_ObjectHideFlags: 0

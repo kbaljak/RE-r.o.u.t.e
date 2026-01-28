@@ -3,22 +3,20 @@ using UnityEngine;
 
 public class PlayerNameTag : MonoBehaviour
 {
+    [SerializeField] private PlayerController playerCont;
     [SerializeField] private TextMeshProUGUI playerName;
     [SerializeField] private RectTransform playerNameTagCanvas;
-    private PlayerController plCont;
 
     private void Start()
     {
-        plCont = GetComponent<PlayerController>();
-        
-        if (plCont.IsOwner) { return; }
+        if (playerCont.IsOwner) { return; }
         
         Invoke(nameof(SetName), 0.1f);
     }
 
     private void SetName()
     {
-        string name = plCont.GetPlayerName();
+        string name = playerCont.GetPlayerName();
         
         if (string.IsNullOrEmpty(name))
         {

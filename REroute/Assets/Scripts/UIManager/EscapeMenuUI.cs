@@ -7,7 +7,6 @@ public class EscapeMenuUI : MonoBehaviour
 {
     public static EscapeMenuUI Instance { get; private set; }
 
-    [SerializeField] Transform escapeMenuCavas;
     [SerializeField] Button settingsBtn;
     [SerializeField] Button quitBtn;
     private InputAction openEscapeMenu;
@@ -30,8 +29,6 @@ public class EscapeMenuUI : MonoBehaviour
         openEscapeMenu = InputSystem.actions.FindAction("OpenEscapeMenu");
         if (openEscapeMenu == null) { Debug.LogError("Could not find OpenEscapeMenu!");}
 
-        if (escapeMenuCavas == null) { Debug.LogError("No escape menu cavas, did you assign it in the inspector?"); }
-
         if (settingsBtn == null) { Debug.LogError("No settings button, did you assign it in the inspector?"); }
         else { settingsBtn.onClick.AddListener(OnSettingsButtonPressed); }
 
@@ -46,7 +43,7 @@ public class EscapeMenuUI : MonoBehaviour
             escapeMenuToggled = !escapeMenuToggled;
             visibleCursor = !visibleCursor;
 
-            escapeMenuCavas.gameObject.SetActive(escapeMenuToggled);
+            gameObject.SetActive(escapeMenuToggled);
             Cursor.lockState = escapeMenuToggled ? CursorLockMode.None: CursorLockMode.Locked;
             Cursor.visible = visibleCursor;
 

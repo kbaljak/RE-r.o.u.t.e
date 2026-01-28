@@ -1,10 +1,12 @@
-using System.Collections.Generic;
 using FishNet.Connection;
 using FishNet.Managing;
+using FishNet.Managing.Scened;
 using FishNet.Object;
+using GameKit.Dependencies.Utilities.Types;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class LoadScenes : MonoBehaviour
+public class LoadScenes : NetworkBehaviour
 {
     private NetworkManager _networkManager;
     [SerializeField] public List<Transform> levelSpawnPoints = new List<Transform>();
@@ -13,7 +15,7 @@ public class LoadScenes : MonoBehaviour
 
     private void Start()
     {
-        _networkManager = GetComponent<NetworkManager>();
+        _networkManager = DDOL.GetDDOL().transform.Find("NetworkManager").GetComponent<NetworkManager>();
         if (_networkManager == null) { Debug.LogError("Could not find NetworkManager!"); }
     }
     public void TeleportPlayersToLevelArea()
@@ -59,5 +61,13 @@ public class LoadScenes : MonoBehaviour
         }
 
         RaceTimeManager.Instance.StartRaceWithCountdown();
+    }
+
+    public void LoadLevel(string sceneName)
+    {
+        SceneLoadData sld = new SceneLoadData(sceneName);
+        sld.ReplaceScenes = ReplaceOption.All;
+
+        SceneManager.LoadGlobalScenes(sld);
     }
 }

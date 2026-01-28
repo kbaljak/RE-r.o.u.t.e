@@ -11,7 +11,7 @@ public class PlayerScoreController : NetworkBehaviour
     [SerializeField] private int oilApplicationPoints = 2;
     [SerializeField] private int bananThrownPoints = 1;
 
-    private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI scoreText;
     private int currentScore = 0;
     private int displayedScore = 0;
 

@@ -12,6 +12,14 @@ namespace GameKit.Dependencies.Utilities.Types
         private static DDOL _instance;
         #endregion
 
+
+        private void Awake()
+        {
+            if (_instance != null) { Destroy(gameObject); }
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
         /// <summary>
         /// Returns the current DDOL or creates one if not yet created.
         /// </summary>
@@ -21,7 +29,7 @@ namespace GameKit.Dependencies.Utilities.Types
             if (_instance == null)
             {
                 GameObject obj = new();
-                obj.name = "FirstGearGames DDOL";
+                obj.name = "DontDestroyOnLoad";
                 DDOL ddol = obj.AddComponent<DDOL>();
                 DontDestroyOnLoad(ddol);
                 _instance = ddol;

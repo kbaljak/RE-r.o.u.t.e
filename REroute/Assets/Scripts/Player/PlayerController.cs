@@ -17,7 +17,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerAnimationController plAnimCont;
     public PlayerParkourDetection playerParkour;
     public PlayerCameraController playerCamera;
-    private PlayerItemInteraction playerItemInteraction;
+    [SerializeField] private PlayerItemInteraction playerItemInteraction;
     private PlayerScoreController plScoreCont;
     public Transform head;
     public Transform climbTriggersT;
@@ -152,7 +152,8 @@ public class PlayerController : NetworkBehaviour
         SetupCharacter();
 
         //RaceTimeManager.Instance.RegisterPlayer(Owner, myName);
-        
+
+        UI.InitializePlayerController(this);
     }
 
     [ServerRpc]
@@ -319,11 +320,15 @@ public class PlayerController : NetworkBehaviour
             cineCam.Follow = camPoint.transform;   
         }
 
-        plScoreCont = GetComponent<PlayerScoreController>();
+        plScoreCont = UI.Instance.playerUI.GetComponent<PlayerScoreController>();
         if (plScoreCont == null) { Debug.LogError("Coudl not find Player Score Controller!"); }
 
-        playerItemInteraction = GetComponent<PlayerItemInteraction>();
-        if (playerItemInteraction == null) { Debug.LogError("PlayerItemInteraction component not found on PlayerController!"); }
+        
+        if (playerItemInteraction == null)
+        {
+            if (transform.Find("ItemInteraction")) { playerItemInteraction = transform.Find("ItemInteraction").GetComponent<PlayerItemInteraction>(); }
+            if (playerItemInteraction == null) { Debug.LogError("PlayerItemInteraction component not found on PlayerController!"); }
+        }
     }
 
     private void LateUpdate()
@@ -1011,9 +1016,9 @@ public class PlayerController : NetworkBehaviour
         playerParkour.holdingLedge = false;
         
         // player climbed ledge, player can apply oil to ledge
-        int ledgeNetID = ledge.GetComponent<NetworkObject>().ObjectId;
+        //int ledgeNetID = ledge.GetComponent<NetworkObject>().ObjectId;
         //Debug.Log("Ledge net id: " + ledgeNetID);
-        playerItemInteraction.StartOilApplicationTimeWindow(ledgeNetID);
+        //playerItemInteraction.StartOilApplicationTimeWindow(ledgeNetID);
 
         charCont.enabled = true;
         isGroundedAnimBlock = true; isGrounded = false;

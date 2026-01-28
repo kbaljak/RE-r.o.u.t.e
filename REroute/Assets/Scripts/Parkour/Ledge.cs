@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using FishNet.Object;
-using FishNet.Object.Synchronizing;
 using UnityEngine;
 
-public class Ledge : NetworkBehaviour, Parkourable
+public class Ledge : MonoBehaviour, Parkourable
 {
     // Scriptable data
     [SerializeField] private Ledge_Data ledgeData;
@@ -19,24 +17,20 @@ public class Ledge : NetworkBehaviour, Parkourable
 
     public Color32 defaultLedgeColor;
     public Color32 oiledUpLedgeColor;
-    private readonly SyncVar<bool> _isOiledUp = new SyncVar<bool>(false);
+    private bool _isOiledUp = false;
     private List<SpriteRenderer> ledgeVisuals = new List<SpriteRenderer>();
-    public override void OnStartNetwork()
-    {
-        base.OnStartNetwork();
-
-        foreach(Transform ledgeVisual in transform.Find("Visual"))
-        {
-            SpriteRenderer ledgeVisualSpriteRenderer = ledgeVisual.GetComponent<SpriteRenderer>();
-            if (ledgeVisualSpriteRenderer != null) {ledgeVisuals.Add(ledgeVisualSpriteRenderer); }
-        }
-    }
 
     void Awake()
     {
         width = GetComponent<BoxCollider>().size.x;  //transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().size.x; //width = transform.lossyScale.x; 
         if (GetComponent<Ledge_Editor>()) { Destroy(GetComponent<Ledge_Editor>()); }
-        _isOiledUp.OnChange += OnOiledStateChange;
+
+        //_isOiledUp.OnChange += OnOiledStateChange;
+        foreach (Transform ledgeVisual in transform.Find("Visual"))
+        {
+            SpriteRenderer ledgeVisualSpriteRenderer = ledgeVisual.GetComponent<SpriteRenderer>();
+            if (ledgeVisualSpriteRenderer != null) { ledgeVisuals.Add(ledgeVisualSpriteRenderer); }
+        }
     }
 
     private void OnOiledStateChange(bool prev, bool next, bool asServer)
@@ -64,22 +58,19 @@ public class Ledge : NetworkBehaviour, Parkourable
         }
     }
 
-    public void ApplyOilToLedge()
+    /*public void ApplyOilToLedge()
     {
         Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") has been oiled up!");
         _isOiledUp.Value = true;
-    }
+    }*/
 
-    public void RemoveOilFromLedge()
+    /*public void RemoveOilFromLedge()
     {
         Debug.Log("Server: " + gameObject.name + "(" + gameObject.GetComponent<NetworkObject>().ObjectId + ") oil should be removed!");
         _isOiledUp.Value = false;
-    }
+    }*/
     
-    public bool IsLedgeOiledUp()
-    {
-        return _isOiledUp.Value;
-    }
+    public bool IsLedgeOiledUp() => _isOiledUp;
     public float? PlayerGrabbed(PlayerController playerCont)
     {
         // Calculate grab delta

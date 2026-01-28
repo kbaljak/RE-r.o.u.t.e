@@ -32,7 +32,6 @@ public class PlayerItemInteraction : NetworkBehaviour
     public float maxThrowCharge = 20f;
 
     //UI
-    private GameObject playerUICanvas;
     private GameObject throwChargeMeter;
     private GameObject applyOilPrompt;
     
@@ -64,7 +63,7 @@ public class PlayerItemInteraction : NetworkBehaviour
                 {
                     heldItemInstance = itemNetObj.gameObject;
                     hasEmptyHand = false;
-                    //Debug.Log("Client: SyncVar updated held item to " + heldItemInstance.name);   
+                    //Debug.Log("Client: SyncVar updated held item to " + heldItemInstance.name);
                 }
             }
         }
@@ -80,7 +79,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         }
         hasEmptyHand = true;
 
-        plScoreCont = GetComponent<PlayerScoreController>();
+        plScoreCont = UI.Instance.playerUI.GetComponent<PlayerScoreController>();
         if (plScoreCont == null) { Debug.LogError("Could now find PlayerScoreController!"); }
     
         throwItemAction = InputSystem.actions.FindAction("Throw");
@@ -89,19 +88,16 @@ public class PlayerItemInteraction : NetworkBehaviour
 
         applyOilAction = InputSystem.actions.FindAction("UseItem");
         if(applyOilAction != null) { applyOilAction.Enable(); }
-        else {Debug.LogError("UseItem action not found!");}
+        else { Debug.LogError("UseItem action not found!"); }
 
         if (ItemSpawner.Instance == null) { Debug.LogError("PlayerItemInteraction: No ItemSpawner found in scene!");}
         else{ Debug.Log($"PlayerItemInteraction: Found ItemSpawner.Instance"); }
 
-        playerUICanvas = GameObject.Find("PlayerUI/Canvas");
-        throwChargeMeter = GameObject.Find("PlayerUI/Canvas/ThrowChargeMeter");
+        throwChargeMeter = UI.Instance.throwChargeMeter;
+        if (throwChargeMeter == null) { Debug.LogError("Could not find throwChargeMeter slider in scene hierarchy!"); }
 
-        if(throwChargeMeter == null){ Debug.LogError("Could not find throwChargeMeter slider in scene hierarchy!"); }
-        //else { throwChargeMeter.SetActive(false); }
-
-        applyOilPrompt = GameObject.Find("PlayerUI/Canvas/ApplyOilPrompt");
-        if(applyOilPrompt == null) {Debug.LogError("Could not find ApplyOilPrompt in scene hierarchy");}
+        applyOilPrompt = UI.Instance.applyOilPrompt;
+        if (applyOilPrompt == null) {Debug.LogError("Could not find ApplyOilPrompt in scene hierarchy");}
         //else{ applyOilPrompt.SetActive(false); }
 
         itemHandHoldPoint = GameObject.Find("ItemHandHoldPoint").transform;
@@ -317,7 +313,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         if (ServerManager.Objects.Spawned.TryGetValue(ledgeObjectId, out ledgeNetObj))
         {
             Ledge ledgeToOilUp = ledgeNetObj.GetComponent<Ledge>();
-            ledgeToOilUp.ApplyOilToLedge();
+            //ledgeToOilUp.ApplyOilToLedge();
 
             NetworkObject oilCanNetObj;
             if (ServerManager.Objects.Spawned.TryGetValue(_heldItemObjectId.Value, out oilCanNetObj))
@@ -343,7 +339,7 @@ public class PlayerItemInteraction : NetworkBehaviour
         if (ServerManager.Objects.Spawned.TryGetValue(ledgeNetObjId, out ledgeNetObj))
         {
             Ledge ledge = ledgeNetObj.GetComponent<Ledge>();
-            ledge.RemoveOilFromLedge();
+            //ledge.RemoveOilFromLedge();
         }
     }
 

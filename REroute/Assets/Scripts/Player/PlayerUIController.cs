@@ -38,22 +38,22 @@ public class PlayerUIController: NetworkBehaviour
     {
         base.OnStartClient();
 
-        plCont = GetComponent<PlayerController>();  
+        //plCont = GetComponent<PlayerController>();
 
-        if (!plCont.IsOwner) return;
+        //if (!plCont.IsOwner) return;
 
         if (scoreText == null)
         {
-            GameObject scoreObject = GameObject.Find("PlayerUI/Canvas/ScorePanel/PlayerScore");
+            GameObject scoreObject = GameObject.Find("PlayerUI/ScorePanel/PlayerScore");
             if (scoreObject != null) { scoreText = scoreObject.GetComponent<TextMeshProUGUI>(); }
             else { Debug.LogWarning("Score UI Text not found. Assign it manually or update the path."); }
         }
 
-        GameObject speedSliderObj = GameObject.Find("PlayerUI/Canvas/SpeedUI/Slider");
+        GameObject speedSliderObj = GameObject.Find("PlayerUI/SpeedUI/Slider");
         if (speedSliderObj != null) { speedSlider = speedSliderObj.GetComponent<Slider>(); }
         else { Debug.LogWarning("Speed UI Slider not found. Assign it manually or update the path."); }
 
-        GameObject speedTextObj = GameObject.Find("PlayerUI/Canvas/SpeedUI/SpeedText");
+        GameObject speedTextObj = GameObject.Find("PlayerUI/SpeedUI/SpeedText");
         if (speedTextObj != null) { speedText = speedTextObj.GetComponent<TextMeshProUGUI>(); }
         else { Debug.LogWarning("Speed UI Text not found. Assign it manually or update the path."); }
 
@@ -80,15 +80,21 @@ public class PlayerUIController: NetworkBehaviour
             OnPlayerCrossedFinishLine();
         }
     }
-    private void Start()
+    public void SetPlayer(PlayerController plCont)
     {
-        Invoke(nameof(SetName), 0.1f);
+        if (!plCont.IsOwner) { return; }
+
+        this.plCont = plCont;
+
+        SetName();
     }
 
     void Update()
     {
-        UpdateSpeed();
-        UpdateTimer();
+        if (plCont) 
+        { 
+            UpdateSpeed(); UpdateTimer(); 
+        }
     }
     void UpdateSpeed()
     {

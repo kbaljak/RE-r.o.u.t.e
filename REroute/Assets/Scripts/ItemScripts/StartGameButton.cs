@@ -16,7 +16,7 @@ public class StartGameButton : MonoBehaviour
     {
         buttonPressAction = InputSystem.actions.FindAction("UseItem");
 
-        _networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManager>();
+        _networkManager = DDOL.GetNetworkManager(); //NetworkManager.Instances[0].gameObject;  //GameObject.Find("NetworkManager"); 
         if (_networkManager == null) { Debug.LogError("Could not find Network Manager in scene!"); }
     }
 
@@ -43,7 +43,7 @@ public class StartGameButton : MonoBehaviour
         if (buttonPressAction.WasPressedThisFrame() && canBePressed)
         {
             Debug.Log("Player pressed the button! Loading new scene!");
-            _networkManager.GetComponent<LoadScenes>().TeleportPlayersToLevelArea();
+            DDOL.GetSceneLoader().LoadLevel("Map_2"); //TeleportPlayersToLevelArea();
         }
     }
 

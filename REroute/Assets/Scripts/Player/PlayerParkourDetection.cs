@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -34,10 +35,11 @@ public class PlayerParkourDetection : MonoBehaviour
 
     private void Awake()
     {
-
         plCont = transform.parent.GetComponent<PlayerController>();
         //if (plCont != null && !plCont.IsOwner) { enabled = false; return; }
-        if (!plCont.IsOwner) {return;}
+    }
+    private void SetColliders()
+    {
         // Set up triggers
         // Grab trigger
         BoxCollider grabTriggerCol = grabTrigger.gameObject.GetComponent<BoxCollider>();
@@ -55,6 +57,7 @@ public class PlayerParkourDetection : MonoBehaviour
 
     private void Start()
     {
+        SetColliders();
         // Debug
         if (visualizeReach)
         {
