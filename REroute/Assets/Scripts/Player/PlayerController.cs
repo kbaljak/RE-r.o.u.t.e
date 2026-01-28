@@ -5,6 +5,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Data.Common;
+using FishNet.Connection;
 
 public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 
@@ -146,7 +147,11 @@ public class PlayerController : NetworkBehaviour
 
         SetPlayerNameServerRPC(myName);
 
+        RegisterPlayer(myName);
+
         SetupCharacter();
+
+        //RaceTimeManager.Instance.RegisterPlayer(Owner, myName);
         
     }
 
@@ -154,6 +159,12 @@ public class PlayerController : NetworkBehaviour
     private void SetPlayerNameServerRPC(string name)
     {
         playerNameTag.Value = name;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RegisterPlayer(string playerName, NetworkConnection conn = null)
+    {
+        RaceTimeManager.Instance.RegisterPlayer(conn, playerName);
     }
 
     [ObserversRpc]
@@ -201,22 +212,22 @@ public class PlayerController : NetworkBehaviour
     //     StartCoroutine(DelayedSceneSetup());
     // }
 
-    private IEnumerator DelayedSceneSetup()
-    {
-        // Wait for scene to fully initialize
-        yield return new WaitForEndOfFrame();
-        yield return new WaitForEndOfFrame();
+    // private IEnumerator DelayedSceneSetup()
+    // {
+    //     // Wait for scene to fully initialize
+    //     yield return new WaitForEndOfFrame();
+    //     yield return new WaitForEndOfFrame();
 
-        Debug.Log("Starting delayed scene setup...");
+    //     Debug.Log("Starting delayed scene setup...");
         
-        // Re-find cameras in new scene
-        SetupCharacter();
+    //     // Re-find cameras in new scene
+    //     SetupCharacter();
         
-        // Reset movement state
-        ResetMovementState();
+    //     // Reset movement state
+    //     ResetMovementState();
         
-        Debug.Log("PlayerController: Scene setup complete");
-    }
+    //     Debug.Log("PlayerController: Scene setup complete");
+    // }
     private void ResetMovementState()
     {
         // Reset movement variables
@@ -242,7 +253,7 @@ public class PlayerController : NetworkBehaviour
         Debug.Log("Movement state reset complete");
     }
 
-    void EnablePlayer(bool value)
+    public void EnablePlayer(bool value)
     {
         if (!IsOwner) { return; }
 

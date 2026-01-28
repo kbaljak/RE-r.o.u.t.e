@@ -18,6 +18,11 @@ public class PlayerUIController: NetworkBehaviour
     [SerializeField] private TextMeshProUGUI playerName;
     [SerializeField] private RectTransform playerNameTagCanvas;
     
+    [Header("Countdown & Timer UI")]
+    [SerializeField] private GameObject countdownUI;
+    [SerializeField] private TextMeshProUGUI countdownText;
+    [SerializeField] private TextMeshProUGUI timerText;
+
     private PlayerController plCont;
 
     private TextMeshProUGUI scoreText;
@@ -25,6 +30,9 @@ public class PlayerUIController: NetworkBehaviour
     private int displayedScore = 0;
     private Slider speedSlider;
     private TextMeshProUGUI speedText;
+
+    private bool isTimerRunning = false;
+    private float elapsedTime = 0f;
 
     public override void OnStartClient()
     {
