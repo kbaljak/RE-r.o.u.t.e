@@ -50,7 +50,7 @@ public class ResidentialBuilding_Editor : MonoBehaviour
         backSize = backMiddle.GetComponent<MeshFilter>().sharedMesh.bounds.size;
         backSize = new Vector3(backSize.x, backSize.z, backSize.y);
 
-        ClearChildren();
+        //ClearChildren();
     }
 
     void OnValidate()
