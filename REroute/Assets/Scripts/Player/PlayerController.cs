@@ -36,6 +36,7 @@ public class PlayerController : NetworkBehaviour
     InputAction sprintAction;
     InputAction attackAction;
     InputAction slideAction;
+    InputAction respawnAction;
     bool freeLook = false;
 
     /// Movement
@@ -419,6 +420,9 @@ public class PlayerController : NetworkBehaviour
 
         Update_ForwardPosDelta();
         Update_AnimatorParams();
+
+        // Respawn input
+        if (respawnAction.WasReleasedThisFrame()) { Respawn(); }
     }
     Vector2 GetMoveInput() { return moveAction.ReadValue<Vector2>(); }
     Vector3 GetCameraForward() { if (playerCamera == null) { return Vector3.zero; } else { return Vector3.ProjectOnPlane(new Vector3(playerCamera.transform.forward.x, 0, playerCamera.transform.forward.z), groundSlopeNormal); }}
