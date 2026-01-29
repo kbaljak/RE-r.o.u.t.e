@@ -4017,7 +4017,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5050696850437123734, guid: 83d45d6637150c4449467040d241d1f9, type: 3}
       propertyPath: autoConnectInEditor
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5843306574873630531, guid: 83d45d6637150c4449467040d241d1f9, type: 3}
       propertyPath: m_LocalPosition.x

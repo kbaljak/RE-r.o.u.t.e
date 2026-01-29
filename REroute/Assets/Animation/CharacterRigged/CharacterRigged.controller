@@ -1759,6 +1759,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Anim_Rolling
   continuallyApplyRootPos: 0
+  callEnableRootOnEnter: 1
   callDisableRootOnExit: 0
   callLandingAnimDoneOnExit: 1
 --- !u!1109 &-1412616840491660614
@@ -2083,7 +2084,7 @@ MonoBehaviour:
   callDisableRootMotionOnEnd: 1
   enableSnapping: 1
   enableSnapAtEnd: 0
-  snapTargetAdjustment: {x: 0, y: -2, z: -0.25}
+  snapTargetAdjustment: {x: 0, y: -1.9, z: -0.25}
   snapStartDelay: 0
   snapDuration: 0.2
   snapDurationPerAxis: {x: 0, y: 0.3, z: 0.1}
@@ -2836,7 +2837,7 @@ MonoBehaviour:
   callDisableRootMotionOnEnd: 1
   enableSnapping: 1
   enableSnapAtEnd: 0
-  snapTargetAdjustment: {x: 0, y: -1.65, z: -0.3}
+  snapTargetAdjustment: {x: 0, y: -1.7, z: -0.3}
   snapStartDelay: 0
   snapDuration: 0.1
   snapDurationPerAxis: {x: 0, y: 0, z: 0}

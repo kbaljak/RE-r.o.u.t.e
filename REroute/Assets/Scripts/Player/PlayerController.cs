@@ -765,7 +765,7 @@ public class PlayerController : NetworkBehaviour
         bool raycastHit = false;
         float raycastLength = 0.25f;
         float raycastRadius = 0.2f;
-        LayerMask mask = LayerMask.GetMask("Default");
+        LayerMask mask = LayerMask.GetMask("Default", "Parkourable");
         Debug.DrawRay(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down * 0.2f, Color.sandyBrown);
         if (Physics.Raycast(groundRaycastPoint.position + (transform.forward * raycastRadius), Vector3.down, out hit, raycastLength, mask)) { raycastHit = true; }
         else
