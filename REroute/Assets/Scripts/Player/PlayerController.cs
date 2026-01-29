@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Data.Common;
 using System.Security.Cryptography;
 using System.Text;
 using FishNet.Connection;
@@ -15,6 +14,10 @@ public enum PlayerFollowRotation { NONE, CAMERA, MOVEMENT }
 public class PlayerController : NetworkBehaviour
 {
     private string playerHash;
+    public readonly SyncVar<Color> playerColor = new SyncVar<Color>();
+    void OnPlayerColorChange(Color previous, Color next, bool asServer) 
+    { transform.Find("Character/Body").GetComponent<SkinnedMeshRenderer>().material.color = playerColor.Value; }
+
 
     [Header("References")]
     public CharacterController charCont;
@@ -159,7 +162,13 @@ public class PlayerController : NetworkBehaviour
         //RaceTimeManager.Instance.RegisterPlayer(Owner, myName);
 
         UI.InitializePlayerController(this);
+
+        // Color
+        //Color randClr = Random.ColorHSV(0f, 1f, 1f, 1f, 0.6f, 0.8f); randClr.a = 1f;
+        //playerColor.Value = randClr;
+        //transform.Find("Character/Body").GetComponent<SkinnedMeshRenderer>().material.color = playerColor.Value;
     }
+    private void Awake() { playerColor.OnChange += OnPlayerColorChange; }
 
     [ServerRpc]
     private void SetPlayerNameServerRPC(string name)
@@ -318,11 +327,18 @@ public class PlayerController : NetworkBehaviour
         jumpAction = InputSystem.actions.FindAction("Jump");
         sprintAction = InputSystem.actions.FindAction("Sprint");
         slideAction = InputSystem.actions.FindAction("Slide");
-            
+        respawnAction = InputSystem.actions.FindAction("Respawn");
+
         climbTriggersBaseLocalPosZ = climbTriggersT.localPosition.z;
         //SetupCharacter();
     
         currentRespawnPoint = transform.position;
+
+        // Color
+        //Random.InitState((int)System.DateTime.Now.Ticks);
+        //Color randClr = Random.ColorHSV(0f, 1f, 0.6f, 0.6f, 0.6f, 0.7f); randClr.a = 1f;
+        //Color randClr = Color.HSVToRGB(Random.Range(0f, 1f), 0.5f, 0.5f);  randClr.a = 1f;  //Random.ColorHSV(0f, 1f, 0.5f, 0.5f, 0.5f, 0.5f); 
+        playerColor.Value = Color.white; //randClr;
     }
 
     private void SetupCharacter()
