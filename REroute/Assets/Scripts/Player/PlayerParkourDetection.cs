@@ -111,7 +111,7 @@ public class PlayerParkourDetection : MonoBehaviour
         {
             if (collider == null) { return false; }
             ParkourInteractType typeDetected = CheckForInteraction(collider, true);
-            if (typeDetected == ParkourInteractType.None) { return true; }
+            //if (typeDetected == ParkourInteractType.None) { return true; }
             if (typeDetected == ParkourInteractType.Vault) { return true; }
         }
         return false;
