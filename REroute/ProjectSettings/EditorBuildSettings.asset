@@ -6,8 +6,32 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Scenes/MainMenuScene.unity
+    guid: 4bb9e2585ed7e9e40b0b6ec9fb9f3f02
+  - enabled: 1
+    path: Assets/Scenes/HostGameScene.unity
+    guid: ad212fbf45920d542bea9ada9a6308df
+  - enabled: 1
+    path: Assets/Scenes/JoinGameScene.unity
+    guid: 261ebca44be8d54b2a4ae22ea7a4231d
+  - enabled: 1
+    path: Assets/Scenes/ServerDiscoveryScene.unity
+    guid: a79383f6643e6aa03864ab14cfc00f6b
+  - enabled: 1
+    path: Assets/Scenes/SettingsScene.unity
+    guid: e88e476e909871e4d9c0a7007cb4723f
+  - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 442391557d3765e4596e6f7e1a03bfc0
+  - enabled: 0
+    path: Assets/Scenes/Map_1.unity
+    guid: 8c089a852cb5a624595375deefc34d2c
+  - enabled: 1
+    path: Assets/Scenes/Map_2.unity
+    guid: 569a6446aac00054fb4385567ddfbcc0
+  - enabled: 0
+    path: Assets/Scenes/TestScene.unity
+    guid: 906dabfcae5084d488d1627c7bb336a8
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
